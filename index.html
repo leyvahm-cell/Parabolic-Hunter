@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0B0E14">
+<title>Parabolic Hunter</title>
+<style>
+  :root {
+    --bg: #0B0E14; --card: #151A23; --card2: #1B2230; --line: #232B3A;
+    --ink: #E6EAF2; --muted: #8A94A6; --faint: #5A6478;
+    --good: #4CC38A; --good-bg: rgba(76,195,138,.13);
+    --bad: #F2555A; --bad-bg: rgba(242,85,90,.13);
+    --warn: #F5A623; --warn-bg: rgba(245,166,35,.13);
+    --acc: #4C9AFF; --acc-bg: rgba(76,154,255,.13);
+    --dp: #38BDF8; --eve: #A78BFA;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--bg); color: var(--ink); min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  header {
+    position: sticky; top: 0; z-index: 20; backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px); background: rgba(11,14,20,.82);
+    border-bottom: 1px solid var(--line); padding: 14px 16px 0;
+  }
+  .hrow { display: flex; align-items: baseline; justify-content: space-between; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -.4px; }
+  h1 span { color: var(--acc); }
+  .sync { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+  .dot.err { background: var(--bad); }
+  .dot.pulse { animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .tabs { display: flex; gap: 6px; padding: 12px 0 10px; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 0 0 auto; border: 1px solid var(--line); color: var(--muted); background: transparent;
+    font: inherit; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
+  }
+  .tab.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  main { padding: 12px 12px 40px; max-width: 560px; margin: 0 auto; }
+  .banner {
+    background: var(--warn-bg); border: 1px solid rgba(245,166,35,.35); color: var(--warn);
+    font-size: 12.5px; padding: 8px 12px; border-radius: 10px; margin-bottom: 10px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 13px 14px; margin-bottom: 10px; overflow: hidden;
+  }
+  .card.hi { border-color: rgba(76,154,255,.45); box-shadow: 0 0 0 1px rgba(76,154,255,.18); }
+  .top { display: flex; align-items: center; gap: 10px; }
+  .badge {
+    width: 38px; height: 38px; border-radius: 11px; display: flex; align-items: center;
+    justify-content: center; font-size: 19px; flex: 0 0 auto;
+  }
+  .b-star { background: var(--acc-bg); } .b-e2g { background: var(--good-bg); }
+  .b-e2b { background: var(--bad-bg); } .b-e2w { background: var(--warn-bg); }
+  .b-dp { background: rgba(56,189,248,.13); } .b-eve { background: rgba(167,139,250,.13); }
+  .b-fuel { background: var(--warn-bg); }
+  .tt { flex: 1; min-width: 0; }
+  .sym { font-size: 17px; font-weight: 800; letter-spacing: -.2px; }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 1px; white-space: nowrap;
+         overflow: hidden; text-overflow: ellipsis; }
+  .ago { font-size: 12px; color: var(--faint); flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+  .verdict { font-size: 13px; font-weight: 800; padding: 4px 10px; border-radius: 999px; flex: 0 0 auto; }
+  .v-good { color: var(--good); background: var(--good-bg); }
+  .v-bad { color: var(--bad); background: var(--bad-bg); }
+  .v-warn { color: var(--warn); background: var(--warn-bg); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+  .chip {
+    font-size: 12.5px; font-weight: 600; padding: 5px 10px; border-radius: 8px;
+    background: var(--card2); border: 1px solid var(--line); color: var(--ink);
+  }
+  .chip.g { background: var(--good-bg); border-color: rgba(76,195,138,.3); color: var(--good); }
+  .chip.r { background: var(--bad-bg); border-color: rgba(242,85,90,.3); color: var(--bad); }
+  .chip.w { background: var(--warn-bg); border-color: rgba(245,166,35,.3); color: var(--warn); }
+  .ticket {
+    display: flex; gap: 0; margin-top: 11px; background: var(--card2);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+  }
+  .tk { flex: 1; padding: 9px 6px; text-align: center; }
+  .tk + .tk { border-left: 1px solid var(--line); }
+  .tk .k { font-size: 10.5px; font-weight: 700; color: var(--faint); text-transform: uppercase;
+           letter-spacing: .6px; }
+  .tk .v { font-size: 16px; font-weight: 800; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tk.entry .v { color: var(--ink); } .tk.target .v { color: var(--good); } .tk.stop .v { color: var(--bad); }
+  .logline {
+    display: flex; align-items: center; gap: 8px; margin-top: 9px; background: #0E1219;
+    border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px;
+  }
+  .logline code {
+    flex: 1; font: 11.5px/1.45 ui-monospace, "SF Mono", Menlo, monospace; color: var(--muted);
+    white-space: nowrap; overflow-x: auto; scrollbar-width: none;
+  }
+  .logline code::-webkit-scrollbar { display: none; }
+  .copy {
+    flex: 0 0 auto; font: inherit; font-size: 12px; font-weight: 700; color: var(--acc);
+    background: var(--acc-bg); border: 0; border-radius: 8px; padding: 6px 11px;
+  }
+  .refused {
+    margin-top: 9px; font-size: 13px; font-weight: 700; color: var(--bad);
+    background: var(--bad-bg); border-radius: 10px; padding: 8px 11px;
+  }
+  .pending { margin-top: 9px; font-size: 12.5px; color: var(--warn); }
+  .body { margin-top: 10px; font-size: 13.5px; line-height: 1.55; color: var(--ink);
+          white-space: pre-wrap; word-break: break-word; }
+  .body .mut { color: var(--muted); }
+  .empty { text-align: center; color: var(--faint); padding: 60px 20px; font-size: 14px; }
+  .foot { text-align: center; font-size: 11.5px; color: var(--faint); padding: 18px 0 8px; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
+    transform: translateX(-50%); background: var(--ink); color: var(--bg); font-size: 13px;
+    font-weight: 700; padding: 9px 16px; border-radius: 999px; z-index: 50; opacity: 0;
+    transition: opacity .2s;
+  }
+  .toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <h1>Parabolic <span>Hunter</span></h1>
+    <div class="sync"><div class="dot pulse" id="dot"></div><span id="sync">connecting</span></div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</header>
+<main id="main"><div class="empty">Loading the tape…</div></main>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* Walls — standalone alerts board for Marco's options-structure system.
+   Reads the ntfy topic's message history (same feed the phone pushes ride).
+   The scan_log/CSVs remain the record; this is a window, not a store. */
+/* The topic is deliberately NOT in this file (it may live in a public repo).
+   It comes from the URL hash (walls-app.html#your-topic), then sticks in
+   localStorage so the Home Screen app keeps working without the hash. */
+const HASH_TOPIC = decodeURIComponent(location.hash.slice(1) || "").trim();
+if (HASH_TOPIC) { try { localStorage.setItem("walls_topic", HASH_TOPIC); } catch {} }
+let TOPIC = HASH_TOPIC;
+if (!TOPIC) { try { TOPIC = localStorage.getItem("walls_topic") || ""; } catch {} }
+const SINCE = "96h";           // history window pulled on each refresh
+const REFRESH_MS = 60_000;
+const DEMO = new URLSearchParams(location.search).has("demo");
+
+const TABS = [
+  { id: "all",  label: "All" },
+  { id: "star", label: "⭐ Stars" },
+  { id: "e2",   label: "⏱ E2" },
+  { id: "dp",   label: "🌊 Dark pool" },
+  { id: "eve",  label: "🌙 Evening" },
+];
+let tab = "all", msgs = [], failedOnce = false;
+
+// ---------- classification ----------
+function classify(m) {
+  const t = (m.title || "").toLowerCase();
+  const tags = m.tags || [];
+  if (t.includes("entry candidate")) return "star";
+  if (t.includes("e2")) return "e2";
+  if (t.includes("divergence")) return "dp";
+  if (t.includes("evening")) return "eve";
+  if (t.includes("fuel")) return "fuel";
+  if (tags.includes("star")) return "star";
+  return "other";
+}
+function e2Kind(m) {
+  const s = m.message || "";
+  if (s.includes("HELD")) return "good";
+  if (s.includes("FAILED")) return "bad";
+  return "warn";
+}
+function ago(ts) {
+  const s = Math.max(0, Date.now() / 1000 - ts);
+  if (s < 90) return "just now";
+  if (s < 3600) return Math.round(s / 60) + "m ago";
+  if (s < 86400) return Math.round(s / 3600) + "h ago";
+  return Math.round(s / 86400) + "d ago";
+}
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------- card renderers ----------
+function chipClass(line) {
+  if (line.includes("❌") || line.includes("🚫")) return "r";
+  if (line.includes("⛔") || line.includes("⚠️")) return "w";
+  if (line.includes("✅")) return "g";
+  return "";
+}
+function starCard(m) {
+  const sym = (m.title || "").split(" - ")[0] || "?";
+  const lines = (m.message || "").split("\n").filter((l) => l && !l.startsWith("───"));
+  const head = lines.find((l) => l.startsWith("⭐")) || "";
+  const cross = head.replace(/^⭐ \w+: /, "").replace(/\.$/, "");
+  const chain = lines.filter((l) => /^[🧱🎯📏📈🗓🕶📚]/u.test(l));
+  const ticketLine = lines.find((l) => l.startsWith("🎫")) || "";
+  const tk = ticketLine.match(/entry ([\d.]+).*?🎯 ([\d.]+).*?🛑 ([\d.]+)/u);
+  const log = lines.find((l) => l.startsWith("📋"));
+  const refused = lines.find((l) => l.startsWith("🚫"));
+  const pending = lines.find((l) => l.startsWith("⏳"));
+  return `<div class="card hi">
+    <div class="top">
+      <div class="badge b-star">⭐</div>
+      <div class="tt"><div class="sym">${esc(sym)}</div><div class="sub">${esc(cross)}</div></div>
+      <div class="ago">${ago(m.time)}</div>
+    </div>
+    <div class="chips">${chain.map((l) => `<span class="chip ${chipClass(l)}">${esc(l)}</span>`).join("")}</div>
+    ${tk ? `<div class="ticket">
+      <div class="tk entry"><div class="k">Entry</div><div class="v">${tk[1]}</div></div>
+      <div class="tk target"><div class="k">Target</div><div class="v">${tk[2]}</div></div>
+      <div class="tk stop"><div class="k">Stop</div><div class="v">${tk[3]}</div></div>
+    </div>` : ""}
+    ${log ? `<div class="logline"><code>${esc(log.replace("📋 ", ""))}</code>
+      <button class="copy" data-copy="${esc(log.replace("📋 ", ""))}">Copy</button></div>` : ""}
+    ${refused ? `<div class="refused">${esc(refused)}</div>` : ""}
+    ${pending ? `<div class="pending">${esc(pending)}</div>` : ""}
+  </div>`;
+}
+function e2Card(m) {
+  const sym = (m.title || "").split(" - ")[0] || "?";
+  const kind = e2Kind(m);
+  const v = kind === "good" ? "HELD ✅" : kind === "bad" ? "FAILED ✕" : "UNVERIFIED";
+  const lines = (m.message || "").split("\n").filter((l) => l && !l.startsWith("───"));
+  return `<div class="card">
+    <div class="top">
+      <div class="badge b-e2${kind[0]}">${kind === "good" ? "🟢" : kind === "bad" ? "🔴" : "🟡"}</div>
+      <div class="tt"><div class="sym">${esc(sym)}</div><div class="sub">E2 hold verdict</div></div>
+      <span class="verdict v-${kind}">${v}</span>
+    </div>
+    <div class="body">${lines.map(esc).join("\n")}</div>
+    <div class="pending" style="color:var(--faint)">${ago(m.time)}</div>
+  </div>`;
+}
+function dpCard(m) {
+  const lines = (m.message || "").split("\n").filter(Boolean);
+  return `<div class="card">
+    <div class="top">
+      <div class="badge b-dp">🌊</div>
+      <div class="tt"><div class="sym">Dark pool</div><div class="sub">${esc(m.title || "divergence sweep")}</div></div>
+      <div class="ago">${ago(m.time)}</div>
+    </div>
+    <div class="body">${lines.map((l) => (l.startsWith("   ") ? `<span class="mut">${esc(l.trim())}</span>` : esc(l))).join("\n")}</div>
+  </div>`;
+}
+function eveCard(m) {
+  const lines = (m.message || "").split("\n").filter(Boolean);
+  const urgent = (m.message || "").includes("🚨");
+  return `<div class="card${urgent ? " hi" : ""}">
+    <div class="top">
+      <div class="badge b-eve">🌙</div>
+      <div class="tt"><div class="sym">Evening report</div><div class="sub">${esc((m.title || "").replace("Evening - ", ""))}</div></div>
+      <div class="ago">${ago(m.time)}</div>
+    </div>
+    <div class="chips">${lines.map((l) => `<span class="chip ${l.includes("🚨") ? "r" : ""}">${esc(l)}</span>`).join("")}</div>
+  </div>`;
+}
+function plainCard(m, icon, cls) {
+  return `<div class="card">
+    <div class="top">
+      <div class="badge ${cls}">${icon}</div>
+      <div class="tt"><div class="sym">${esc(m.title || "Scanner")}</div></div>
+      <div class="ago">${ago(m.time)}</div>
+    </div>
+    <div class="body">${esc(m.message || "")}</div>
+  </div>`;
+}
+function render() {
+  const el = document.getElementById("main");
+  const shown = msgs.filter((m) => tab === "all" || m.kind === tab);
+  let html = "";
+  if (DEMO || failedOnce) {
+    html += `<div class="banner">${DEMO ? "Demo data — remove ?demo from the URL for the live feed."
+      : "Feed unreachable — showing last loaded messages. Check connection."}</div>`;
+  }
+  if (!shown.length) {
+    html += `<div class="empty">No ${tab === "all" ? "" : TABS.find((t) => t.id === tab).label + " "}messages in the last ${SINCE}.<br><br>Quiet tape is a valid tape.</div>`;
+  } else {
+    html += shown.map((m) =>
+      m.kind === "star" ? starCard(m)
+      : m.kind === "e2" ? e2Card(m)
+      : m.kind === "dp" ? dpCard(m)
+      : m.kind === "eve" ? eveCard(m)
+      : m.kind === "fuel" ? plainCard(m, "⛽", "b-fuel")
+      : plainCard(m, "📟", "b-star")).join("");
+  }
+  html += `<div class="foot">ntfy · ${TOPIC} · window ${SINCE} · auto-refresh 60s</div>`;
+  el.innerHTML = html;
+}
+function renderTabs() {
+  document.getElementById("tabs").innerHTML = TABS.map((t) => {
+    const n = t.id === "all" ? msgs.length : msgs.filter((m) => m.kind === t.id).length;
+    return `<button class="tab${tab === t.id ? " on" : ""}" data-tab="${t.id}">${t.label}${n ? " · " + n : ""}</button>`;
+  }).join("");
+}
+
+// ---------- data ----------
+function renderSetup() {
+  document.getElementById("sync").textContent = "setup";
+  document.getElementById("main").innerHTML = `
+    <div class="card" style="margin-top:24px">
+      <div class="sym" style="margin-bottom:6px">Connect your feed</div>
+      <div class="sub" style="white-space:normal;margin-bottom:12px">
+        Enter your ntfy topic (the same one the scanner pushes to). It's stored
+        only on this device.</div>
+      <input id="topicIn" placeholder="your-ntfy-topic" autocapitalize="none"
+        autocorrect="off" style="width:100%;padding:11px 12px;border-radius:10px;
+        border:1px solid var(--line);background:var(--card2);color:var(--ink);
+        font:inherit;font-size:15px;margin-bottom:10px">
+      <button class="copy" style="width:100%;padding:11px" id="topicGo">Connect</button>
+    </div>`;
+  document.getElementById("topicGo").onclick = () => {
+    const v = document.getElementById("topicIn").value.trim();
+    if (!v) return;
+    try { localStorage.setItem("walls_topic", v); } catch {}
+    location.hash = v; location.reload();
+  };
+}
+
+async function refresh() {
+  const dot = document.getElementById("dot"), sync = document.getElementById("sync");
+  if (!TOPIC && !DEMO) { renderSetup(); return; }
+  dot.classList.add("pulse");
+  try {
+    let text;
+    if (DEMO) { text = demoNDJSON(); }
+    else {
+      const r = await fetch(`https://ntfy.sh/${TOPIC}/json?poll=1&since=${SINCE}`, { cache: "no-store" });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      text = await r.text();
+    }
+    const seen = new Set();
+    msgs = text.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } })
+      .filter((m) => m && m.event === "message" && !seen.has(m.id) && seen.add(m.id))
+      .map((m) => ({ ...m, kind: classify(m) }))
+      .sort((a, b) => b.time - a.time);
+    failedOnce = false;
+    dot.classList.remove("err");
+    sync.textContent = "synced " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (e) {
+    failedOnce = true;
+    dot.classList.add("err");
+    sync.textContent = "offline";
+  }
+  dot.classList.remove("pulse");
+  renderTabs(); render();
+}
+
+// ---------- demo feed (design preview only) ----------
+function demoNDJSON() {
+  const now = Math.floor(Date.now() / 1000);
+  const mk = (o) => JSON.stringify({ event: "message", id: Math.random().toString(36).slice(2), ...o });
+  return [
+    mk({ time: now - 200, title: "NVDA - E2 verdict", tags: ["white_check_mark"],
+      message: "✅ HELD above 225\n📍 226.80 (starred 226.10)\n───\n⏳ you: confirm print direction → paste the LOG from the star" }),
+    mk({ time: now - 2100, title: "NVDA - entry candidate", tags: ["star"],
+      message: "⭐ NVDA: crossed 225.00 at RVOL 1.86 (gate ✅) - now 226.10.\n───\n🧱 E0 913,402 ✅\n🎯 tgt 230\n📏 brk 4.2% ✅\n📈 G1 ABOVE (ma200 187.44)\n🗓 next ER 2026-08-27 (13td, confirmed) ✅, last UP (+3.2% 1d)\n🕶 DP(2026-08-07) $1,338M at 224\n📚 13 breaks/60d\n───\n🎫 NVDA: entry 226.10  ·  🎯 230.00  ·  🛑 225.00 (R/sh 1.10)\n📋 python paper_log.py open NVDA 226.10 --wall 225 --target 230 --ma200 ABOVE\n⏳ [you: E2 hold + print direction]" }),
+    mk({ time: now - 5400, title: "KMB - E2 verdict", tags: ["x"],
+      message: "❌ FAILED hold\n📍 109.61 back under 110 (starred 110.35)\n───\n🚫 no entry" }),
+    mk({ time: now - 7500, title: "FICO - entry candidate", tags: ["star"],
+      message: "⭐ FICO: crossed 1100.00 at RVOL 3.58 (gate ✅) - now 1117.12.\n───\n🧱 E0 133 ❌ dust\n🎯 tgt 1150\n📏 brk 35.5% ❌\n📈 G1 ABOVE (ma200 1082.59)\n🗓 next ER 2026-08-12 (2td, confirmed) ⛔ ER window\n🕶 DP(2026-08-07) $45M at 1040\n📚 8 breaks/60d\n───\n🎫 FICO: entry 1117.12  ·  🎯 1150.00  ·  🛑 1100.00 (R/sh 17.12)\n🚫 refused: CAL, E0, 📏 brk -- the chain refuses" }),
+    mk({ time: now - 12000, title: "3 divergences - 512 scanned", tags: ["ocean"],
+      message: "🐳 MSTR  +4.1%  lvl 104 · px 100.01\n   💰 $210M · 🧱 wall 102 (-1.9%)\n   📊 1/2 next-day hits · 🗓 ER 12td\n📌 SMCI  -3.5%  lvl 46 · px 47.70\n   💰 $38M (sub-100M)\n   📊 1st flag · 🗓 ER 4td\n🐳 CRWV  -3.2%  lvl 121 · px 125.00\n   💰 $156M · 🧱 wall 130 (-3.8%)\n   📊 0/1 next-day hits" }),
+    mk({ time: now - 61000, title: "Evening - 2026-08-07", tags: ["crescent_moon"],
+      message: "💥 45 breaks over prior walls\n📒 book +8.78R · 0 open / 5 closed\n🗂 full report on disk" }),
+  ].join("\n");
+}
+
+// ---------- wiring ----------
+document.addEventListener("click", (e) => {
+  const t = e.target.closest(".tab");
+  if (t) { tab = t.dataset.tab; renderTabs(); render(); return; }
+  const c = e.target.closest(".copy");
+  if (c) {
+    navigator.clipboard?.writeText(c.dataset.copy).then(() => toast("LOG command copied"));
+  }
+});
+function toast(txt) {
+  const el = document.getElementById("toast");
+  el.textContent = txt; el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 1600);
+}
+renderTabs();
+refresh();
+setInterval(refresh, REFRESH_MS);
+</script>
+</body>
+</html>
