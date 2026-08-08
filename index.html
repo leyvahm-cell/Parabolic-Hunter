@@ -126,7 +126,7 @@
 <header>
   <div class="hrow">
     <h1>Parabolic <span>Hunter</span></h1>
-    <div class="sync"><div class="dot pulse" id="dot"></div><span id="sync">connecting</span></div>
+    <div class="sync" id="syncbtn" style="cursor:pointer"><div class="dot pulse" id="dot"></div><span id="sync">connecting</span></div>
   </div>
   <div class="tabs" id="tabs"></div>
 </header>
@@ -145,7 +145,7 @@ const HASH_TOPIC = decodeURIComponent(location.hash.slice(1) || "").trim();
 if (HASH_TOPIC) { try { localStorage.setItem("walls_topic", HASH_TOPIC); } catch {} }
 let TOPIC = HASH_TOPIC;
 if (!TOPIC) { try { TOPIC = localStorage.getItem("walls_topic") || ""; } catch {} }
-const SINCE = "96h";           // history window pulled on each refresh
+const SINCE = "12h";           // ntfy.sh caches messages for 12h max
 const REFRESH_MS = 60_000;
 const DEMO = new URLSearchParams(location.search).has("demo");
 
@@ -288,7 +288,7 @@ function render() {
       : m.kind === "fuel" ? plainCard(m, "⛽", "b-fuel")
       : plainCard(m, "📟", "b-star")).join("");
   }
-  html += `<div class="foot">ntfy · ${TOPIC} · window ${SINCE} · auto-refresh 60s</div>`;
+  html += `<div class="foot">ntfy · ${TOPIC} · live window ${SINCE} (ntfy cache) · auto-refresh 60s · tap status to refresh</div>`;
   el.innerHTML = html;
 }
 function renderTabs() {
@@ -323,7 +323,7 @@ function renderSetup() {
 
 async function refresh() {
   const dot = document.getElementById("dot"), sync = document.getElementById("sync");
-  if (!TOPIC && !DEMO) { renderSetup(); return; }
+  if (!TOPIC && !DEMO) { if (!document.getElementById("topicIn")) renderSetup(); return; }
   dot.classList.add("pulse");
   try {
     let text;
@@ -384,6 +384,7 @@ function toast(txt) {
   el.textContent = txt; el.classList.add("show");
   setTimeout(() => el.classList.remove("show"), 1600);
 }
+document.getElementById("syncbtn").addEventListener("click", refresh);
 renderTabs();
 refresh();
 setInterval(refresh, REFRESH_MS);
