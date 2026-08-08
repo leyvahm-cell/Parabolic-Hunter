@@ -109,6 +109,17 @@
   .t-entry { background: var(--blue-tint); } .t-entry .k, .t-entry .p { color: var(--blue); }
   .t-stop { background: var(--red-tint); } .t-stop .k, .t-stop .p { color: var(--red); }
   .t-tgt { background: var(--green-tint); } .t-tgt .k, .t-tgt .p { color: var(--green); }
+  .band { display: flex; gap: 12px; margin-top: 12px; padding: 10px 12px;
+          border-left: 4px solid var(--green); background: var(--green-tint); }
+  .band .big { font-size: 16px; font-weight: 900; align-self: center; color: var(--green);
+               font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .band .k { font-size: 9.5px; font-weight: 800; letter-spacing: .6px;
+             text-transform: uppercase; color: var(--muted); }
+  .band .t { font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .band.b { border-left-color: var(--blue); background: var(--blue-tint); }
+  .band.b .big { color: var(--blue); }
+  .band.r { border-left-color: var(--red); background: var(--red-tint); }
+  .band.r .big { color: var(--red); }
   .chain { margin-top: 12px; border: 1px solid var(--line); }
   .crow { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12.5px;
           font-weight: 600; border-bottom: 1px solid var(--line); }
@@ -240,6 +251,35 @@ function chipTone(l) {
   return "";
 }
 
+// ---------- evidence bands (structure = gamma, money = dark pool) ----------
+const fmMass = (x) => x >= 1e6 ? (x / 1e6).toFixed(1) + "M" : x >= 1e3 ? Math.round(x / 1e3) + "K" : String(Math.round(x));
+const clean = (l) => l ? l.replace(/^..\s*/u, "").trim() : "";
+function structureBand(chain) {
+  const e0 = chain.find((l) => l.startsWith("🧱"));
+  const tg = chain.find((l) => l.startsWith("🎯"));
+  const fl = chain.find((l) => l.startsWith("🛡"));
+  if (!e0 && !tg && !fl) return "";
+  const mm = (e0 || "").match(/E0 ([\d,]+)/);
+  const big = mm ? fmMass(parseFloat(mm[1].replace(/,/g, ""))) : "—";
+  const dust = (e0 || "").includes("❌") || (tg || "").includes("DUST");
+  const t = [clean(tg), clean(fl)].filter(Boolean).join(" · ") || clean(e0);
+  return `<div class="band${dust ? " r" : ""}"><div class="big">${big}</div>
+    <div class="lbl"><div class="k">Structure — gamma at the broken wall</div>
+    <div class="t">${esc(t)}</div></div></div>`;
+}
+function moneyBand(chain) {
+  const dp = chain.find((l) => l.startsWith("🕶"));
+  if (!dp) return "";
+  const mm = dp.match(/DP\(([^)]+)\)\s+\$([\d,]+)M(.*)$/u);
+  if (!mm) return "";
+  const dollars = parseFloat(mm[2].replace(/,/g, "")) * 1e6;
+  const big = dollars >= 1e9 ? "$" + (dollars / 1e9).toFixed(2) + "B" : "$" + Math.round(dollars / 1e6) + "M";
+  const rest = mm[3].replace(/^\s*·\s*/, "").trim();
+  return `<div class="band b"><div class="big">${big}</div>
+    <div class="lbl"><div class="k">Real money — dark pool ${esc(mm[1])}</div>
+    <div class="t">${esc(rest || "no prints recorded")}</div></div></div>`;
+}
+
 // ---------- star card ----------
 function starCard(m) {
   const sym = (m.title || "").split(" - ")[0] || "?";
@@ -247,7 +287,7 @@ function starCard(m) {
   const head = lines.find((l) => l.startsWith("⭐")) || "";
   const cond = (head.match(/crossed [\d.]+ at RVOL [\d.]+/i) || [head.replace(/^⭐ \w+: /, "")])[0];
   const nowPx = parseFloat((head.match(/now ([\d.]+)/) || [])[1] || "");
-  const chain = lines.filter((l) => /^[🧱🎯📏📈🗓🕶📚]/u.test(l));
+  const chain = lines.filter((l) => /^[🧱🎯📏📈🗓🕶📚🛡]/u.test(l));
   const tk = (lines.find((l) => l.startsWith("🎫")) || "")
     .match(/entry ([\d.]+).*?🎯 ([\d.]+).*?🛑 ([\d.]+)/u);
   const log = lines.find((l) => l.startsWith("📋"));
@@ -284,7 +324,8 @@ function starCard(m) {
     <div class="cond">${esc(cond)}</div>
     <div class="agoline"><div class="bar"><i></i></div><span class="t up">Starred</span></div>
     ${meter}${tri}
-    <div class="chain">${chain.map((l) =>
+    ${structureBand(chain)}${moneyBand(chain)}
+    <div class="chain">${chain.filter((l) => !/^[🧱🎯🛡🕶]/u.test(l)).map((l) =>
       `<div class="crow ${chipTone(l)}"><span class="ic">${esc(l.slice(0, 2))}</span>${esc(l.slice(2).replace(/^ /, ""))}</div>`).join("")}
     </div>
     ${log ? `<div class="btns"><button class="bigbtn" data-copy="${esc(log.replace("📋 ", ""))}">Copy log — 1 tap</button></div>` : ""}
@@ -420,11 +461,11 @@ function demoNDJSON() {
     mk({ time: now - 200, title: "NVDA - E2 verdict", tags: ["white_check_mark"],
       message: "✅ HELD above 225\n📍 226.80 (starred 226.10)\n───\n⏳ you: confirm print direction → paste the LOG from the star" }),
     mk({ time: now - 1500, title: "NVDA - entry candidate", tags: ["star"],
-      message: "⭐ NVDA: crossed 225.00 at RVOL 1.86 (gate ✅) - now 226.10.\n───\n🧱 E0 913,402 ✅\n🎯 tgt 230\n📏 brk 4.2% ✅\n📈 G1 ABOVE (ma200 187.44)\n🗓 next ER 2026-08-27 (13td, confirmed) ✅, last UP (+3.2% 1d)\n🕶 DP(2026-08-07) $1,338M at 224\n📚 13 breaks/60d\n───\n🎫 NVDA: entry 226.10  ·  🎯 230.00  ·  🛑 225.00 (R/sh 1.10)\n📋 python paper_log.py open NVDA 226.10 --wall 225 --target 230 --ma200 ABOVE\n⏳ [you: E2 hold + print direction]" }),
+      message: "⭐ NVDA: crossed 225.00 at RVOL 1.86 (gate ✅) - now 226.10.\n───\n🧱 E0 913,402 ✅\n🎯 tgt 230 (502k, held 6d)\n🛡 floor 220 (313k put)\n📏 brk 4.2% ✅\n📈 G1 ABOVE (ma200 187.44)\n🗓 next ER 2026-08-27 (13td, confirmed) ✅, last UP (+3.2% 1d)\n🕶 DP(2026-08-07) $1,338M · 4.2M sh at 224\n📚 13 breaks/60d\n───\n🎫 NVDA: entry 226.10  ·  🎯 230.00  ·  🛑 225.00 (R/sh 1.10)\n📋 python paper_log.py open NVDA 226.10 --wall 225 --target 230 --ma200 ABOVE\n⏳ [you: E2 hold + print direction]" }),
     mk({ time: now - 5400, title: "KMB - E2 verdict", tags: ["x"],
       message: "❌ FAILED hold\n📍 109.61 back under 110 (starred 110.35)\n───\n🚫 no entry" }),
     mk({ time: now - 7500, title: "FICO - entry candidate", tags: ["star"],
-      message: "⭐ FICO: crossed 1100.00 at RVOL 3.58 (gate ✅) - now 1117.12.\n───\n🧱 E0 133 ❌ dust\n🎯 tgt 1150\n📏 brk 35.5% ❌\n📈 G1 ABOVE (ma200 1082.59)\n🗓 next ER 2026-08-12 (2td, confirmed) ⛔ ER window\n🕶 DP(2026-08-07) $45M at 1040\n📚 8 breaks/60d\n───\n🎫 FICO: entry 1117.12  ·  🎯 1150.00  ·  🛑 1100.00 (R/sh 17.12)\n🚫 refused: CAL, E0, 📏 brk -- the chain refuses" }),
+      message: "⭐ FICO: crossed 1100.00 at RVOL 3.58 (gate ✅) - now 1117.12.\n───\n🧱 E0 133 ❌ dust\n🎯 tgt 1150 (3.7k DUST)\n🛡 floor 1050 (2.1k put)\n📏 brk 35.5% ❌\n📈 G1 ABOVE (ma200 1082.59)\n🗓 next ER 2026-08-12 (2td, confirmed) ⛔ ER window\n🕶 DP(2026-08-07) $45M · 43k sh at 1040\n📚 8 breaks/60d\n───\n🎫 FICO: entry 1117.12  ·  🎯 1150.00  ·  🛑 1100.00 (R/sh 17.12)\n🚫 refused: CAL, E0, 📏 brk -- the chain refuses" }),
     mk({ time: now - 12000, title: "3 divergences - 512 scanned", tags: ["ocean"],
       message: "🐳 MSTR  +4.1%  lvl 104 · px 100.01\n   💰 $210M · 🧱 wall 102 (-1.9%)\n   📊 1/2 next-day hits · 🗓 ER 12td\n📌 SMCI  -3.5%  lvl 46 · px 47.70\n   💰 $38M (sub-100M)\n   📊 1st flag · 🗓 ER 4td" }),
     mk({ time: now - 20000, title: "Evening - 2026-08-07", tags: ["crescent_moon"],
