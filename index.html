@@ -133,6 +133,8 @@
     color: #fff; font: inherit; font-size: 13px; font-weight: 900; padding: 13px 8px;
     text-transform: uppercase; letter-spacing: .8px;
   }
+  .bigbtn.ghost { background: var(--card); color: var(--ink); border-color: var(--ink); flex: 0 0 32%; }
+  .bigbtn.armed { background: var(--ink); border-color: var(--ink); }
   .refuse {
     margin-top: 12px; background: var(--ink); color: var(--card); font-size: 12px;
     font-weight: 800; padding: 10px 12px; text-transform: uppercase; letter-spacing: .6px;
@@ -231,6 +233,7 @@ function classify(m) {
   if (t.includes("divergence")) return "dp";
   if (t.includes("evening")) return "eve";
   if (t.includes("fuel")) return "fuel";
+  if (t.includes("book")) return "book";
   if (tags.includes("star")) return "star";
   return "other";
 }
@@ -328,7 +331,10 @@ function starCard(m) {
     <div class="chain">${chain.filter((l) => !/^[🧱🎯🛡🕶]/u.test(l)).map((l) =>
       `<div class="crow ${chipTone(l)}"><span class="ic">${esc(l.slice(0, 2))}</span>${esc(l.slice(2).replace(/^ /, ""))}</div>`).join("")}
     </div>
-    ${log ? `<div class="btns"><button class="bigbtn" data-copy="${esc(log.replace("📋 ", ""))}">Copy log — 1 tap</button></div>` : ""}
+    ${log ? `<div class="btns">
+      <button class="bigbtn" data-logcmd="${esc(log.replace("📋 ", ""))}">Log trade</button>
+      <button class="bigbtn ghost" data-copy="${esc(log.replace("📋 ", ""))}">Copy</button>
+    </div>` : ""}
     ${refused ? `<div class="refuse">${esc(refused.replace("🚫 ", "")).replace("--", "·")}</div>` : ""}
     ${pending ? `<div class="pending">${esc(pending)}</div>` : ""}
   </div></div>`;
@@ -478,7 +484,31 @@ document.addEventListener("click", (e) => {
   const t = e.target.closest(".tab");
   if (t) { tab = t.dataset.tab; renderTabs(); render(); return; }
   const c = e.target.closest("[data-copy]");
-  if (c) { navigator.clipboard?.writeText(c.dataset.copy).then(() => toast("Log command copied")); }
+  if (c) { navigator.clipboard?.writeText(c.dataset.copy).then(() => toast("Log command copied")); return; }
+  // Phone-to-book: two-tap confirm, then publish the command to the secret
+  // command topic; the desk listener validates, executes, and pushes a receipt.
+  const g = e.target.closest("[data-logcmd]");
+  if (g) {
+    let ct = "";
+    try { ct = localStorage.getItem("walls_cmd") || ""; } catch {}
+    if (!ct) {
+      ct = (prompt("Command topic (from cmd_listener.py on the PC):") || "").trim();
+      if (!ct) return;
+      try { localStorage.setItem("walls_cmd", ct); } catch {}
+    }
+    if (g.dataset.armed !== "1") {
+      g.dataset.armed = "1"; g.classList.add("armed");
+      const orig = g.textContent; g.textContent = "Tap again to log";
+      setTimeout(() => { g.dataset.armed = "0"; g.classList.remove("armed");
+                         g.textContent = orig; }, 3500);
+      return;
+    }
+    g.dataset.armed = "0"; g.classList.remove("armed"); g.textContent = "Sent";
+    fetch("https://ntfy.sh/" + encodeURIComponent(ct),
+          { method: "POST", body: g.dataset.logcmd, headers: { "Title": "cmd" } })
+      .then(() => toast("Sent to the desk — watch for the receipt"))
+      .catch(() => { g.textContent = "Log trade"; toast("Send failed — check connection"); });
+  }
 });
 document.getElementById("syncbtn").addEventListener("click", refresh);
 function toast(txt) {
