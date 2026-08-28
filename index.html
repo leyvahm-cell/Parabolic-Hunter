@@ -8,513 +8,629 @@
 <meta name="theme-color" content="#F3F2F2">
 <title>Parabolic Hunter</title>
 <style>
-  :root {
-    --bg: #F3F2F2; --card: #FFFFFF; --ink: #201E1D; --muted: #6B6663; --faint: #9B9591;
-    --line: #E4E1DF; --red: #EC3013; --red-tint: #FDEBE7; --green: #157F3D;
-    --green-tint: #EAF4EC; --blue: #1D4ED8; --blue-tint: #EBF0FB; --amber: #B45309;
-    --amber-tint: #FBF3E4; --band: #F5F3F2; --track: #E4E1DF;
-  }
-  [data-theme="dark"] {
-    --bg: #14120F; --card: #1E1B18; --ink: #F3F1EF; --muted: #A8A29D; --faint: #6E6963;
-    --line: #322E2A; --red: #FF4D2E; --red-tint: #3A1B14; --green: #4CC38A;
-    --green-tint: #15291D; --blue: #6C9BFF; --blue-tint: #172032; --amber: #F5A623;
-    --amber-tint: #322710; --band: #262220; --track: #3A3530;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    background: var(--bg); color: var(--ink); min-height: 100vh;
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-  }
-  .up { text-transform: uppercase; letter-spacing: .8px; }
-  header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 2px solid var(--ink); }
-  .status {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 16px 0; font-size: 11px; font-weight: 800; color: var(--muted);
-  }
-  .status .live { color: var(--green); }
-  .status .closed { color: var(--muted); }
-  .themebtn { background: none; border: 1px solid var(--line); border-radius: 6px;
-              font-size: 12px; padding: 3px 8px; color: var(--muted); }
-  .hrow { display: flex; align-items: center; justify-content: space-between; padding: 2px 16px 8px; }
-  h1 { font-size: 26px; font-weight: 900; letter-spacing: -.5px; }
-  h1 em { font-style: normal; color: var(--red); }
-  .sync { font-size: 11px; font-weight: 700; color: var(--muted); display: flex;
-          align-items: center; gap: 6px; cursor: pointer; }
-  .dot { width: 8px; height: 8px; background: var(--green); }
-  .dot.err { background: var(--red); }
-  .dot.pulse { animation: pulse 1.2s infinite; }
-  @keyframes pulse { 50% { opacity: .3; } }
-  .tabs { display: flex; border-top: 1px solid var(--line); }
-  .tab {
-    flex: 1; background: var(--band); border: 0; border-right: 1px solid var(--line);
-    font: inherit; font-size: 11.5px; font-weight: 800; padding: 11px 4px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: .5px; position: relative;
-  }
-  .tab:last-child { border-right: 0; }
-  .tab b { color: var(--red); margin-left: 4px; }
-  .tab.on { background: var(--card); color: var(--ink); }
-  .tab.on::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--red); }
-  .ribbon {
-    display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    background: var(--red); color: #fff; padding: 11px 16px; font-size: 13px; font-weight: 800;
-  }
-  .ribbon span { text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
-                 overflow: hidden; text-overflow: ellipsis; }
-  main { max-width: 560px; margin: 0 auto; padding: 12px 12px 40px; }
-  .banner {
-    background: var(--amber-tint); color: var(--amber); border: 1px solid var(--amber);
-    font-size: 12px; font-weight: 700; padding: 8px 12px; margin-bottom: 10px;
-  }
-  .card { background: var(--card); border: 1px solid var(--line); margin-bottom: 12px;
-          box-shadow: 0 1px 0 var(--line); }
-  .pad { padding: 13px 14px; }
-  .top { display: flex; align-items: baseline; gap: 8px; }
-  .sym { font-size: 21px; font-weight: 900; letter-spacing: -.3px; }
-  .chipst {
-    font-size: 10px; font-weight: 800; padding: 3px 7px; text-transform: uppercase;
-    letter-spacing: .6px; align-self: center;
-  }
-  .st-star { background: var(--red-tint); color: var(--red); }
-  .st-ref  { background: var(--band); color: var(--muted); }
-  .st-held { background: var(--green-tint); color: var(--green); }
-  .st-fail { background: var(--red-tint); color: var(--red); }
-  .st-warn { background: var(--amber-tint); color: var(--amber); }
-  .px { margin-left: auto; text-align: right; }
-  .px .v { font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
-  .px .a { font-size: 11px; color: var(--faint); font-weight: 700; }
-  .cond { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase;
-          letter-spacing: .5px; margin-top: 3px; }
-  .agoline { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-  .agoline .t { font-size: 11px; font-weight: 700; color: var(--faint); flex: 0 0 auto; }
-  .bar { flex: 1; height: 4px; background: var(--track); position: relative; }
-  .bar i { position: absolute; inset: 0; right: 30%; background: var(--red); }
-  /* structure meter: stop / entry / now / target on a real scale */
-  .meter { margin-top: 12px; }
-  .meter .trk { position: relative; height: 4px; background: var(--track); margin: 14px 6px 4px; }
-  .mk { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px;
-        border-radius: 50%; border: 2px solid var(--card); }
-  .mk.stop { background: var(--red); } .mk.entry { background: var(--ink); }
-  .mk.now { background: var(--blue); width: 14px; height: 14px; z-index: 2; }
-  .mk.tgt { background: var(--green); }
-  .mlbl { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800;
-          color: var(--faint); text-transform: uppercase; letter-spacing: .4px; padding: 0 2px; }
-  .tri { display: flex; margin-top: 12px; border: 1px solid var(--line); }
-  .tri > div { flex: 1; padding: 9px 8px; }
-  .tri > div + div { border-left: 1px solid var(--line); }
-  .tri .k { font-size: 10px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
-  .tri .v { font-size: 17px; font-weight: 900; margin-top: 2px; font-variant-numeric: tabular-nums; }
-  .tri .p { font-size: 11px; font-weight: 700; margin-top: 1px; }
-  .t-entry { background: var(--blue-tint); } .t-entry .k, .t-entry .p { color: var(--blue); }
-  .t-stop { background: var(--red-tint); } .t-stop .k, .t-stop .p { color: var(--red); }
-  .t-tgt { background: var(--green-tint); } .t-tgt .k, .t-tgt .p { color: var(--green); }
-  .band { display: flex; gap: 12px; margin-top: 12px; padding: 10px 12px;
-          border-left: 4px solid var(--green); background: var(--green-tint); }
-  .band .big { font-size: 16px; font-weight: 900; align-self: center; color: var(--green);
-               font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .band .k { font-size: 9.5px; font-weight: 800; letter-spacing: .6px;
-             text-transform: uppercase; color: var(--muted); }
-  .band .t { font-size: 12px; font-weight: 700; margin-top: 2px; }
-  .band.b { border-left-color: var(--blue); background: var(--blue-tint); }
-  .band.b .big { color: var(--blue); }
-  .band.r { border-left-color: var(--red); background: var(--red-tint); }
-  .band.r .big { color: var(--red); }
-  .chain { margin-top: 12px; border: 1px solid var(--line); }
-  .crow { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12.5px;
-          font-weight: 600; border-bottom: 1px solid var(--line); }
-  .crow:last-child { border-bottom: 0; }
-  .crow.g { background: var(--green-tint); } .crow.r { background: var(--red-tint); }
-  .crow.w { background: var(--amber-tint); }
-  .crow .ic { flex: 0 0 18px; text-align: center; }
-  .btns { display: flex; gap: 8px; margin-top: 12px; }
-  .bigbtn {
-    flex: 1; border: 2px solid var(--red); background: var(--red);
-    color: #fff; font: inherit; font-size: 13px; font-weight: 900; padding: 13px 8px;
-    text-transform: uppercase; letter-spacing: .8px;
-  }
-  .bigbtn.ghost { background: var(--card); color: var(--ink); border-color: var(--ink); flex: 0 0 32%; }
-  .bigbtn.armed { background: var(--ink); border-color: var(--ink); }
-  .refuse {
-    margin-top: 12px; background: var(--ink); color: var(--card); font-size: 12px;
-    font-weight: 800; padding: 10px 12px; text-transform: uppercase; letter-spacing: .6px;
-  }
-  .pending { margin-top: 9px; font-size: 12px; font-weight: 700; color: var(--amber); }
-  .verdbig { font-size: 24px; font-weight: 900; letter-spacing: -.3px; margin-top: 8px; }
-  .verdbig.g { color: var(--green); } .verdbig.r { color: var(--red); }
-  .verdbig.w { color: var(--amber); }
-  .body { margin-top: 8px; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
-          word-break: break-word; color: var(--ink); }
-  .rows { margin-top: 10px; }
-  .rows .rw { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line);
-              font-size: 13px; font-weight: 600; }
-  .rows .rw:last-child { border-bottom: 0; }
-  .empty { text-align: center; color: var(--faint); padding: 70px 20px; font-size: 13px;
-           font-weight: 700; text-transform: uppercase; letter-spacing: .5px; line-height: 2; }
-  .foot { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--faint);
-          padding: 18px 0 8px; text-transform: uppercase; letter-spacing: .5px; }
-  .toast {
-    position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
-    transform: translateX(-50%); background: var(--ink); color: var(--card); font-size: 12px;
-    font-weight: 800; padding: 10px 18px; z-index: 50; opacity: 0; transition: opacity .2s;
-    text-transform: uppercase; letter-spacing: .6px; white-space: nowrap;
-  }
-  .toast.show { opacity: 1; }
-  input.setup {
-    width: 100%; padding: 12px; border: 2px solid var(--ink); background: var(--card);
-    color: var(--ink); font: inherit; font-size: 15px; margin: 10px 0;
-  }
+:root {
+--bg: #F3F2F2; --card: #FFFFFF; --ink: #201E1D; --muted: #6B6663; --faint: #9B9591;
+--line: #E4E1DF; --red: #EC3013; --red-tint: #FDEBE7; --green: #157F3D;
+--green-tint: #EAF4EC; --blue: #1D4ED8; --blue-tint: #EBF0FB; --amber: #B45309;
+--amber-tint: #FBF3E4; --band: #F5F3F2; --track: #E4E1DF;
+}
+[data-theme="dark"] {
+--bg: #14120F; --card: #1E1B18; --ink: #F3F1EF; --muted: #A8A29D; --faint: #6E6963;
+--line: #322E2A; --red: #FF4D2E; --red-tint: #3A1B14; --green: #4CC38A;
+--green-tint: #15291D; --blue: #6C9BFF; --blue-tint: #172032; --amber: #F5A623;
+--amber-tint: #322710; --band: #262220; --track: #3A3530;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+background: var(--bg); color: var(--ink); min-height: 100vh;
+font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+.up { text-transform: uppercase; letter-spacing: .8px; }
+header { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 2px solid var(--ink); }
+.status {
+display: flex; justify-content: space-between; align-items: center;
+padding: 10px 16px 0; font-size: 11px; font-weight: 800; color: var(--muted);
+}
+.status .live { color: var(--green); }
+.status .closed { color: var(--muted); }
+.themebtn { background: none; border: 1px solid var(--line); border-radius: 6px;
+font-size: 12px; padding: 3px 8px; color: var(--muted); }
+.hrow { display: flex; align-items: center; justify-content: space-between; padding: 2px 16px 8px; }
+h1 { font-size: 26px; font-weight: 900; letter-spacing: -.5px; }
+h1 em { font-style: normal; color: var(--red); }
+.sync { font-size: 11px; font-weight: 700; color: var(--muted); display: flex;
+align-items: center; gap: 6px; cursor: pointer; }
+.dot { width: 8px; height: 8px; background: var(--green); }
+.dot.err { background: var(--red); }
+.dot.pulse { animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+.tabs { display: flex; border-top: 1px solid var(--line); }
+.tab {
+flex: 1; background: var(--band); border: 0; border-right: 1px solid var(--line);
+font: inherit; font-size: 11.5px; font-weight: 800; padding: 11px 4px; color: var(--muted);
+text-transform: uppercase; letter-spacing: .5px; position: relative;
+}
+.tab:last-child { border-right: 0; }
+.tab b { color: var(--red); margin-left: 4px; }
+.tab.on { background: var(--card); color: var(--ink); }
+.tab.on::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--red); }
+.ribbon {
+display: flex; align-items: center; justify-content: space-between; gap: 10px;
+background: var(--red); color: #fff; padding: 11px 16px; font-size: 13px; font-weight: 800;
+}
+.ribbon span { text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+overflow: hidden; text-overflow: ellipsis; }
+main { max-width: 560px; margin: 0 auto; padding: 12px 12px 40px; }
+.banner {
+background: var(--amber-tint); color: var(--amber); border: 1px solid var(--amber);
+font-size: 12px; font-weight: 700; padding: 8px 12px; margin-bottom: 10px;
+}
+.card { background: var(--card); border: 1px solid var(--line); margin-bottom: 12px;
+box-shadow: 0 1px 0 var(--line); }
+.pad { padding: 13px 14px; }
+.top { display: flex; align-items: baseline; gap: 8px; }
+.sym { font-size: 21px; font-weight: 900; letter-spacing: -.3px; }
+.chipst {
+font-size: 10px; font-weight: 800; padding: 3px 7px; text-transform: uppercase;
+letter-spacing: .6px; align-self: center;
+}
+.st-star { background: var(--red-tint); color: var(--red); }
+.st-ref { background: var(--band); color: var(--muted); }
+.st-held { background: var(--green-tint); color: var(--green); }
+.st-fail { background: var(--red-tint); color: var(--red); }
+.st-warn { background: var(--amber-tint); color: var(--amber); }
+.px { margin-left: auto; text-align: right; }
+.px .v { font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.px .a { font-size: 11px; color: var(--faint); font-weight: 700; }
+.cond { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase;
+letter-spacing: .5px; margin-top: 3px; }
+.agoline { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.agoline .t { font-size: 11px; font-weight: 700; color: var(--faint); flex: 0 0 auto; }
+.bar { flex: 1; height: 4px; background: var(--track); position: relative; }
+.bar i { position: absolute; inset: 0; right: 30%; background: var(--red); }
+.meter { margin-top: 12px; }
+.meter .trk { position: relative; height: 4px; background: var(--track); margin: 14px 6px 4px; }
+.mk { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px;
+border-radius: 50%; border: 2px solid var(--card); }
+.mk.stop { background: var(--red); } .mk.entry { background: var(--ink); }
+.mk.now { background: var(--blue); width: 14px; height: 14px; z-index: 2; }
+.mk.tgt { background: var(--green); }
+.mlbl { display: flex; justify-content: space-between; font-size: 10px; font-weight: 800;
+color: var(--faint); text-transform: uppercase; letter-spacing: .4px; padding: 0 2px; }
+.tri { display: flex; margin-top: 12px; border: 1px solid var(--line); }
+.tri > div { flex: 1; padding: 9px 8px; }
+.tri > div + div { border-left: 1px solid var(--line); }
+.tri .k { font-size: 10px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+.tri .v { font-size: 17px; font-weight: 900; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tri .p { font-size: 11px; font-weight: 700; margin-top: 1px; }
+.t-entry { background: var(--blue-tint); } .t-entry .k, .t-entry .p { color: var(--blue); }
+.t-stop { background: var(--red-tint); } .t-stop .k, .t-stop .p { color: var(--red); }
+.t-tgt { background: var(--green-tint); } .t-tgt .k, .t-tgt .p { color: var(--green); }
+.band { display: flex; gap: 12px; margin-top: 12px; padding: 10px 12px;
+border-left: 4px solid var(--green); background: var(--green-tint); }
+.band .big { font-size: 16px; font-weight: 900; align-self: center; color: var(--green);
+font-variant-numeric: tabular-nums; white-space: nowrap; }
+.band .k { font-size: 9.5px; font-weight: 800; letter-spacing: .6px;
+text-transform: uppercase; color: var(--muted); }
+.band .t { font-size: 12px; font-weight: 700; margin-top: 2px; }
+.band.b { border-left-color: var(--blue); background: var(--blue-tint); }
+.band.b .big { color: var(--blue); }
+.band.r { border-left-color: var(--red); background: var(--red-tint); }
+.band.r .big { color: var(--red); }
+.chain { margin-top: 12px; border: 1px solid var(--line); }
+.crow { display: flex; align-items: center; gap: 8px; padding: 7px 10px; font-size: 12.5px;
+font-weight: 600; border-bottom: 1px solid var(--line); }
+.crow:last-child { border-bottom: 0; }
+.crow.g { background: var(--green-tint); } .crow.r { background: var(--red-tint); }
+.crow.w { background: var(--amber-tint); }
+.crow .ic { flex: 0 0 18px; text-align: center; }
+.btns { display: flex; gap: 8px; margin-top: 12px; }
+.bigbtn {
+flex: 1; border: 2px solid var(--red); background: var(--red);
+color: #fff; font: inherit; font-size: 13px; font-weight: 900; padding: 13px 8px;
+text-transform: uppercase; letter-spacing: .8px;
+}
+.bigbtn.ghost { background: var(--card); color: var(--ink); border-color: var(--ink); flex: 0 0 32%; }
+.bigbtn.armed { background: var(--ink); border-color: var(--ink); }
+a.bigbtn { display: block; text-align: center; text-decoration: none; margin-top: 12px;
+background: var(--blue); border-color: var(--blue); }
+.attnote { margin-top: 10px; font-size: 12px; font-weight: 700; color: var(--faint); }
+.refuse {
+margin-top: 12px; background: var(--ink); color: var(--card); font-size: 12px;
+font-weight: 800; padding: 10px 12px; text-transform: uppercase; letter-spacing: .6px;
+}
+.pending { margin-top: 9px; font-size: 12px; font-weight: 700; color: var(--amber); }
+.verdbig { font-size: 24px; font-weight: 900; letter-spacing: -.3px; margin-top: 8px; }
+.verdbig.g { color: var(--green); } .verdbig.r { color: var(--red); }
+.verdbig.w { color: var(--amber); }
+.body { margin-top: 8px; font-size: 13px; line-height: 1.6; white-space: pre-wrap;
+word-break: break-word; color: var(--ink); }
+.rows { margin-top: 10px; }
+.rows .rw { display: flex; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line);
+font-size: 13px; font-weight: 600; }
+.rows .rw:last-child { border-bottom: 0; }
+pre.tbl { margin-top: 10px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+font-size: 11px; line-height: 1.7; overflow-x: auto; padding: 10px;
+background: var(--band); border: 1px solid var(--line); -webkit-overflow-scrolling: touch; }
+.band.w { border-left-color: var(--amber); background: var(--amber-tint); }
+.band.w .big { color: var(--amber); }
+.dprow { display: flex; align-items: center; gap: 7px; padding: 8px 0;
+border-bottom: 1px solid var(--line); font-size: 12.5px; font-weight: 700;
+font-variant-numeric: tabular-nums; }
+.dprow:last-child { border-bottom: 0; }
+.dprow .ic { flex: 0 0 20px; text-align: center; }
+.dprow .nm { font-weight: 900; flex: 0 0 44px; }
+.dprow .dv { flex: 0 0 46px; }
+.dprow .dv.g { color: var(--green); } .dprow .dv.r { color: var(--red); }
+.dprow .bk { font-size: 9.5px; font-weight: 800; padding: 2px 5px; letter-spacing: .4px; }
+.dprow .bk.big { background: var(--blue-tint); color: var(--blue); }
+.dprow .bk.small { background: var(--band); color: var(--muted); }
+.dprow .dt { font-size: 10.5px; color: var(--faint); flex: 0 0 38px; }
+.dprow .ocs { margin-left: auto; display: flex; gap: 8px; }
+.oc { font-size: 12px; font-weight: 800; }
+.oc.hit { color: var(--green); } .oc.miss { color: var(--red); }
+.oc.pend { color: var(--faint); font-weight: 700; }
+.dprow.back { opacity: .75; }
+.dprow.back .nm::after { content: "backfilled"; font-size: 8.5px; font-weight: 800;
+color: var(--amber); background: var(--amber-tint); padding: 1px 4px; margin-left: 5px;
+text-transform: uppercase; letter-spacing: .4px; vertical-align: middle; }
+.empty { text-align: center; color: var(--faint); padding: 70px 20px; font-size: 13px;
+font-weight: 700; text-transform: uppercase; letter-spacing: .5px; line-height: 2; }
+.foot { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--faint);
+padding: 18px 0 8px; text-transform: uppercase; letter-spacing: .5px; }
+.foot .lnk { text-decoration: underline; cursor: pointer; }
+.toast {
+position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom));
+transform: translateX(-50%); background: var(--ink); color: var(--card); font-size: 12px;
+font-weight: 800; padding: 10px 18px; z-index: 50; opacity: 0; transition: opacity .2s;
+text-transform: uppercase; letter-spacing: .6px; white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+input.setup {
+width: 100%; padding: 12px; border: 2px solid var(--ink); background: var(--card);
+color: var(--ink); font: inherit; font-size: 15px; margin: 10px 0;
+}
+.dbgbar { display: flex; gap: 8px; margin: 18px 0 0; }
+input.dbg { flex: 1; min-width: 0; padding: 11px 12px; border: 2px solid var(--line);
+background: var(--card); color: var(--ink); font: inherit; font-size: 14px;
+font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
+input.dbg:focus { border-color: var(--ink); outline: none; }
+.bigbtn.dbg { flex: 0 0 30%; background: var(--ink); border-color: var(--ink); }
 </style>
 </head>
 <body>
 <header>
-  <div class="status">
-    <span id="mkt" class="up">—</span>
-    <button class="themebtn" id="theme">◐</button>
-  </div>
-  <div class="hrow">
-    <h1>PARABOLIC <em>HUNTER</em></h1>
-    <div class="sync" id="syncbtn"><div class="dot pulse" id="dot"></div><span id="sync" class="up">connecting</span></div>
-  </div>
-  <div class="tabs" id="tabs"></div>
-  <div id="ribbon"></div>
+<div class="status">
+<span id="mkt" class="up">—</span>
+<button class="themebtn" id="theme">◐</button>
+</div>
+<div class="hrow">
+<h1>PARABOLIC <em>HUNTER</em></h1>
+<div class="sync" id="syncbtn"><div class="dot pulse" id="dot"></div><span id="sync" class="up">connecting</span></div>
+</div>
+<div class="tabs" id="tabs"></div>
+<div id="ribbon"></div>
 </header>
 <main id="main"><div class="empty">Loading the tape…</div></main>
 <div class="toast" id="toast"></div>
-
 <script>
 "use strict";
-/* Parabolic Hunter — standalone board for the options-structure system.
-   Reads the ntfy topic history (the same feed the phone pushes ride).
-   The scan_log/CSVs remain the record; this is a window, not a store.
-   No trade buttons by design: paper system, frozen rules — the one-tap
-   action is COPY LOG, and the chain still admits only through the human. */
 const HASH_TOPIC = decodeURIComponent(location.hash.slice(1) || "").trim();
 if (HASH_TOPIC) { try { localStorage.setItem("walls_topic", HASH_TOPIC); } catch {} }
 let TOPIC = HASH_TOPIC;
 if (!TOPIC) { try { TOPIC = localStorage.getItem("walls_topic") || ""; } catch {} }
-const SINCE = "12h";            // ntfy.sh caches messages for 12h max
+const SINCE = "12h";
 const REFRESH_MS = 60_000;
 const DEMO = new URLSearchParams(location.search).has("demo");
-
 const TABS = [
-  { id: "all", label: "All" }, { id: "star", label: "Stars" }, { id: "e2", label: "E2" },
-  { id: "dp", label: "Dark pool" }, { id: "eve", label: "Evening" },
+{ id: "all", label: "All" }, { id: "star", label: "Stars" }, { id: "e2", label: "E2" },
+{ id: "dp", label: "Dark pool" }, { id: "eve", label: "Evening" },
 ];
 let tab = "all", msgs = [], failedOnce = false;
-
-// ---------- theme ----------
 let theme = "light";
 try { theme = localStorage.getItem("walls_theme") || "light"; } catch {}
 document.documentElement.dataset.theme = theme;
 document.getElementById("theme").onclick = () => {
-  theme = theme === "light" ? "dark" : "light";
-  document.documentElement.dataset.theme = theme;
-  try { localStorage.setItem("walls_theme", theme); } catch {}
+theme = theme === "light" ? "dark" : "light";
+document.documentElement.dataset.theme = theme;
+try { localStorage.setItem("walls_theme", theme); } catch {}
 };
-
-// ---------- market clock (ET, RTH weekdays 9:30-16:00; holidays not known) ----------
 function marketStatus() {
-  const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York",
-    hour12: false, weekday: "short", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date());
-  const get = (t) => parts.find((p) => p.type === t)?.value || "";
-  const wd = get("weekday"), mins = (+get("hour")) * 60 + (+get("minute"));
-  const open = !["Sat", "Sun"].includes(wd) && mins >= 570 && mins <= 960;
-  return `<span class="${open ? "live" : "closed"}">MARKET ${open ? "OPEN" : "CLOSED"}</span> · ${wd.toUpperCase()} ${get("hour")}:${get("minute")} ET`;
+const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York",
+hour12: false, weekday: "short", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date());
+const get = (t) => parts.find((p) => p.type === t)?.value || "";
+const wd = get("weekday"), mins = (+get("hour")) * 60 + (+get("minute"));
+const open = !["Sat", "Sun"].includes(wd) && mins >= 570 && mins <= 960;
+return `<span class="${open ? "live" : "closed"}">MARKET ${open ? "OPEN" : "CLOSED"}</span> · ${wd.toUpperCase()} ${get("hour")}:${get("minute")} ET`;
 }
 setInterval(() => { document.getElementById("mkt").innerHTML = marketStatus(); }, 30000);
 document.getElementById("mkt").innerHTML = marketStatus();
-
-// ---------- helpers ----------
 function classify(m) {
-  const t = (m.title || "").toLowerCase(); const tags = m.tags || [];
-  if (t.includes("entry candidate")) return "star";
-  if (t.includes("e2")) return "e2";
-  if (t.includes("divergence")) return "dp";
-  if (t.includes("evening")) return "eve";
-  if (t.includes("fuel")) return "fuel";
-  if (t.includes("book")) return "book";
-  if (tags.includes("star")) return "star";
-  return "other";
+const t = (m.title || "").toLowerCase(); const tags = m.tags || [];
+if (t.includes("entry candidate")) return "star";
+if (t.includes("e2")) return "e2";
+if (t.includes("divergence")) return "dp";
+if (t.includes("evening")) return "eve";
+if (t.includes("fuel")) return "fuel";
+if (t.includes("book")) return "book";
+if (tags.includes("star")) return "star";
+return "other";
 }
 function ago(ts) {
-  const s = Math.max(0, Date.now() / 1000 - ts);
-  if (s < 90) return "just now";
-  if (s < 3600) return Math.round(s / 60) + "m ago";
-  if (s < 86400) return Math.round(s / 3600) + "h ago";
-  return Math.round(s / 86400) + "d ago";
+const s = Math.max(0, Date.now() / 1000 - ts);
+if (s < 90) return "just now";
+if (s < 3600) return Math.round(s / 60) + "m ago";
+if (s < 86400) return Math.round(s / 3600) + "h ago";
+return Math.round(s / 86400) + "d ago";
 }
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const pct = (a, b) => ((a - b) / b * 100);
 const fpct = (x) => (x > 0 ? "+" : "") + x.toFixed(1) + "%";
 function chipTone(l) {
-  if (l.includes("❌") || l.includes("🚫")) return "r";
-  if (l.includes("⛔") || l.includes("⚠️")) return "w";
-  if (l.includes("✅")) return "g";
-  return "";
+if (l.includes("❌") || l.includes("🚫")) return "r";
+if (l.includes("⛔") || l.includes("⚠️")) return "w";
+if (l.includes("✅")) return "g";
+return "";
 }
-
-// ---------- evidence bands (structure = gamma, money = dark pool) ----------
 const fmMass = (x) => x >= 1e6 ? (x / 1e6).toFixed(1) + "M" : x >= 1e3 ? Math.round(x / 1e3) + "K" : String(Math.round(x));
 const clean = (l) => l ? l.replace(/^..\s*/u, "").trim() : "";
+// A message body that is really a fixed-width table (the dp grader, receipts)
+// reads as soup when line-wrapped on a phone. Detect it and render monospace.
+const looksTabular = (s) => (s || "").split("\n").filter((l) => /\S\s{2,}\S/.test(l)).length >= 3;
+// The evening report now arrives as a FILE (ntfy attachment). ntfy keeps
+// attachments ~3h, far less than the 12h message window, so an expired link
+// must say so rather than 404 in the user's face.
+function attBlock(m) {
+const a = m.attachment;
+if (!a || !a.url) return "";
+const expired = a.expires && (Date.now() / 1000) > a.expires;
+if (expired) return `<div class="attnote">📎 ${esc(a.name || "attachment")} — expired (ntfy keeps files ~3h)</div>`;
+return `<a class="bigbtn" href="${esc(a.url)}" target="_blank" rel="noopener">View full report</a>`;
+}
+// Backfilled content is honest data but was computed after the fact — it must
+// never be visually identical to a signal someone could have acted on live.
+const backChip = (m) => ((m.message || "") + (m.title || "")).toLowerCase().includes("[backfilled")
+? `<span class="chipst st-warn">Backfilled</span>` : "";
 function structureBand(chain) {
-  const e0 = chain.find((l) => l.startsWith("🧱"));
-  const tg = chain.find((l) => l.startsWith("🎯"));
-  const fl = chain.find((l) => l.startsWith("🛡"));
-  if (!e0 && !tg && !fl) return "";
-  const mm = (e0 || "").match(/E0 ([\d,]+)/);
-  const big = mm ? fmMass(parseFloat(mm[1].replace(/,/g, ""))) : "—";
-  const dust = (e0 || "").includes("❌") || (tg || "").includes("DUST");
-  const t = [clean(tg), clean(fl)].filter(Boolean).join(" · ") || clean(e0);
-  return `<div class="band${dust ? " r" : ""}"><div class="big">${big}</div>
-    <div class="lbl"><div class="k">Structure — gamma at the broken wall</div>
-    <div class="t">${esc(t)}</div></div></div>`;
+const e0 = chain.find((l) => l.startsWith("🧱"));
+const tg = chain.find((l) => l.startsWith("🎯"));
+const fl = chain.find((l) => l.startsWith("🛡"));
+if (!e0 && !tg && !fl) return "";
+const mm = (e0 || "").match(/E0 ([\d,]+)/);
+const big = mm ? fmMass(parseFloat(mm[1].replace(/,/g, ""))) : "—";
+const dust = (e0 || "").includes("❌") || (tg || "").includes("DUST");
+const t = [clean(tg), clean(fl)].filter(Boolean).join(" · ") || clean(e0);
+return `<div class="band${dust ? " r" : ""}"><div class="big">${big}</div>
+<div class="lbl"><div class="k">Structure — gamma at the broken wall</div>
+<div class="t">${esc(t)}</div></div></div>`;
 }
 function moneyBand(chain) {
-  const dp = chain.find((l) => l.startsWith("🕶"));
-  if (!dp) return "";
-  const mm = dp.match(/DP\(([^)]+)\)\s+\$([\d,]+)M(.*)$/u);
-  if (!mm) return "";
-  const dollars = parseFloat(mm[2].replace(/,/g, "")) * 1e6;
-  const big = dollars >= 1e9 ? "$" + (dollars / 1e9).toFixed(2) + "B" : "$" + Math.round(dollars / 1e6) + "M";
-  const rest = mm[3].replace(/^\s*·\s*/, "").trim();
-  return `<div class="band b"><div class="big">${big}</div>
-    <div class="lbl"><div class="k">Real money — dark pool ${esc(mm[1])}</div>
-    <div class="t">${esc(rest || "no prints recorded")}</div></div></div>`;
+const dp = chain.find((l) => l.startsWith("🕶"));
+if (!dp) return "";
+const mm = dp.match(/DP\(([^)]+)\)\s+\$([\d,]+)M(.*)$/u);
+if (!mm) return "";
+const dollars = parseFloat(mm[2].replace(/,/g, "")) * 1e6;
+const big = dollars >= 1e9 ? "$" + (dollars / 1e9).toFixed(2) + "B" : "$" + Math.round(dollars / 1e6) + "M";
+const rest = mm[3].replace(/^\s*·\s*/, "").trim();
+return `<div class="band b"><div class="big">${big}</div>
+<div class="lbl"><div class="k">Real money — dark pool ${esc(mm[1])}</div>
+<div class="t">${esc(rest || "no prints recorded")}</div></div></div>`;
 }
-
-// ---------- star card ----------
 function starCard(m) {
-  const sym = (m.title || "").split(" - ")[0] || "?";
-  const lines = (m.message || "").split("\n").filter((l) => l && !l.startsWith("───"));
-  const head = lines.find((l) => l.startsWith("⭐")) || "";
-  const cond = (head.match(/crossed [\d.]+ at RVOL [\d.]+/i) || [head.replace(/^⭐ \w+: /, "")])[0];
-  const nowPx = parseFloat((head.match(/now ([\d.]+)/) || [])[1] || "");
-  const chain = lines.filter((l) => /^[🧱🎯📏📈🗓🕶📚🛡]/u.test(l));
-  const tk = (lines.find((l) => l.startsWith("🎫")) || "")
-    .match(/entry ([\d.]+).*?🎯 ([\d.]+).*?🛑 ([\d.]+)/u);
-  const log = lines.find((l) => l.startsWith("📋"));
-  const refused = lines.find((l) => l.startsWith("🚫"));
-  const pending = lines.find((l) => l.startsWith("⏳"));
-  let meter = "", tri = "";
-  if (tk) {
-    const entry = +tk[1], tgt = +tk[2], stop = +tk[3];
-    const cur = Number.isFinite(nowPx) ? nowPx : entry;
-    const lo = Math.min(stop, entry, cur), hi = Math.max(tgt, cur);
-    const span = (hi - lo) || 1, pos = (v) => (((v - lo) / span) * 100).toFixed(1) + "%";
-    meter = `<div class="meter"><div class="trk">
-        <div class="mk stop" style="left:${pos(stop)}"></div>
-        <div class="mk entry" style="left:${pos(entry)}"></div>
-        <div class="mk now" style="left:${pos(cur)}"></div>
-        <div class="mk tgt" style="left:${pos(tgt)}"></div>
-      </div><div class="mlbl"><span>Stop ${stop}</span><span>Now ${cur}</span><span>Target ${tgt}</span></div></div>`;
-    tri = `<div class="tri">
-      <div class="t-entry"><div class="k">Entry</div><div class="v">${entry.toFixed(2)}</div>
-        <div class="p">at star</div></div>
-      <div class="t-stop"><div class="k">Stop loss</div><div class="v">${stop.toFixed(2)}</div>
-        <div class="p">${fpct(pct(stop, entry))}</div></div>
-      <div class="t-tgt"><div class="k">Sell target</div><div class="v">${tgt.toFixed(2)}</div>
-        <div class="p">${fpct(pct(tgt, entry))}</div></div>
-    </div>`;
-  }
-  return `<div class="card"><div class="pad">
-    <div class="top">
-      <span class="sym">${esc(sym)}</span>
-      <span class="chipst ${refused ? "st-ref" : "st-star"}">${refused ? "Refused" : "Starred"}</span>
-      <div class="px">${Number.isFinite(nowPx) ? `<div class="v">${nowPx.toFixed(2)}</div>` : ""}
-        <div class="a">${ago(m.time)}</div></div>
-    </div>
-    <div class="cond">${esc(cond)}</div>
-    <div class="agoline"><div class="bar"><i></i></div><span class="t up">Starred</span></div>
-    ${meter}${tri}
-    ${structureBand(chain)}${moneyBand(chain)}
-    <div class="chain">${chain.filter((l) => !/^[🧱🎯🛡🕶]/u.test(l)).map((l) =>
-      `<div class="crow ${chipTone(l)}"><span class="ic">${esc(l.slice(0, 2))}</span>${esc(l.slice(2).replace(/^ /, ""))}</div>`).join("")}
-    </div>
-    ${log ? `<div class="btns">
-      <button class="bigbtn" data-logcmd="${esc(log.replace("📋 ", ""))}">Log trade</button>
-      <button class="bigbtn ghost" data-copy="${esc(log.replace("📋 ", ""))}">Copy</button>
-    </div>` : ""}
-    ${refused ? `<div class="refuse">${esc(refused.replace("🚫 ", "")).replace("--", "·")}</div>` : ""}
-    ${pending ? `<div class="pending">${esc(pending)}</div>` : ""}
-  </div></div>`;
+const sym = (m.title || "").split(" - ")[0] || "?";
+const lines = (m.message || "").split("\n").filter((l) => l && !l.startsWith("───"));
+const head = lines.find((l) => l.startsWith("⭐")) || "";
+const cond = (head.match(/crossed [\d.]+ at RVOL [\d.]+/i) || [head.replace(/^⭐ \w+: /, "")])[0];
+const nowPx = parseFloat((head.match(/now ([\d.]+)/) || [])[1] || "");
+const chain = lines.filter((l) => /^[🧱🎯📏📈🗓🕶📚🛡]/u.test(l));
+const tk = (lines.find((l) => l.startsWith("🎫")) || "")
+.match(/entry ([\d.]+).*?🎯 ([\d.]+).*?🛑 ([\d.]+)/u);
+const log = lines.find((l) => l.startsWith("📋"));
+const refused = lines.find((l) => l.startsWith("🚫"));
+const pending = lines.find((l) => l.startsWith("⏳"));
+let meter = "", tri = "";
+if (tk) {
+const entry = +tk[1], tgt = +tk[2], stop = +tk[3];
+const cur = Number.isFinite(nowPx) ? nowPx : entry;
+const lo = Math.min(stop, entry, cur), hi = Math.max(tgt, cur);
+const span = (hi - lo) || 1, pos = (v) => (((v - lo) / span) * 100).toFixed(1) + "%";
+meter = `<div class="meter"><div class="trk">
+<div class="mk stop" style="left:${pos(stop)}"></div>
+<div class="mk entry" style="left:${pos(entry)}"></div>
+<div class="mk now" style="left:${pos(cur)}"></div>
+<div class="mk tgt" style="left:${pos(tgt)}"></div>
+</div><div class="mlbl"><span>Stop ${stop}</span><span>Now ${cur}</span><span>Target ${tgt}</span></div></div>`;
+tri = `<div class="tri">
+<div class="t-entry"><div class="k">Entry</div><div class="v">${entry.toFixed(2)}</div>
+<div class="p">at star</div></div>
+<div class="t-stop"><div class="k">Stop loss</div><div class="v">${stop.toFixed(2)}</div>
+<div class="p">${fpct(pct(stop, entry))}</div></div>
+<div class="t-tgt"><div class="k">Sell target</div><div class="v">${tgt.toFixed(2)}</div>
+<div class="p">${fpct(pct(tgt, entry))}</div></div>
+</div>`;
 }
-
-// ---------- other cards ----------
+return `<div class="card"><div class="pad">
+<div class="top">
+<span class="sym">${esc(sym)}</span>
+<span class="chipst ${refused ? "st-ref" : "st-star"}">${refused ? "Refused" : "Starred"}</span>
+<div class="px">${Number.isFinite(nowPx) ? `<div class="v">${nowPx.toFixed(2)}</div>` : ""}
+<div class="a">${ago(m.time)}</div></div>
+</div>
+<div class="cond">${esc(cond)}</div>
+<div class="agoline"><div class="bar"><i></i></div><span class="t up">Starred</span></div>
+${meter}${tri}
+${structureBand(chain)}${moneyBand(chain)}
+<div class="chain">${chain.filter((l) => !/^[🧱🎯🛡🕶]/u.test(l)).map((l) =>
+`<div class="crow ${chipTone(l)}"><span class="ic">${esc(l.slice(0, 2))}</span>${esc(l.slice(2).replace(/^ /, ""))}</div>`).join("")}
+</div>
+${log ? `<div class="btns">
+<button class="bigbtn" data-logcmd="${esc(log.replace("📋 ", ""))}">Log trade</button>
+<button class="bigbtn ghost" data-copy="${esc(log.replace("📋 ", ""))}">Copy</button>
+</div>` : ""}
+${refused ? `<div class="refuse">${esc(refused.replace("🚫 ", "")).replace("--", "·")}</div>` : ""}
+${pending ? `<div class="pending">${esc(pending)}</div>` : ""}
+</div></div>`;
+}
 function e2Card(m) {
-  const sym = (m.title || "").split(" - ")[0] || "?";
-  const s = m.message || "";
-  const kind = s.includes("HELD") ? "g" : s.includes("FAILED") ? "r" : "w";
-  const label = kind === "g" ? "HELD ABOVE THE WALL" : kind === "r" ? "FAILED THE HOLD" : "UNVERIFIABLE";
-  const lines = s.split("\n").filter((l) => l && !l.startsWith("───"));
-  return `<div class="card"><div class="pad">
-    <div class="top"><span class="sym">${esc(sym)}</span>
-      <span class="chipst ${kind === "g" ? "st-held" : kind === "r" ? "st-fail" : "st-warn"}">E2 verdict</span>
-      <div class="px"><div class="a">${ago(m.time)}</div></div></div>
-    <div class="verdbig ${kind}">${label}</div>
-    <div class="body">${lines.map(esc).join("\n")}</div>
-  </div></div>`;
+const sym = (m.title || "").split(" - ")[0] || "?";
+const s = m.message || "";
+const kind = s.includes("HELD") ? "g" : s.includes("FAILED") ? "r" : "w";
+const label = kind === "g" ? "HELD ABOVE THE WALL" : kind === "r" ? "FAILED THE HOLD" : "UNVERIFIABLE";
+const lines = s.split("\n").filter((l) => l && !l.startsWith("───"));
+return `<div class="card"><div class="pad">
+<div class="top"><span class="sym">${esc(sym)}</span>
+<span class="chipst ${kind === "g" ? "st-held" : kind === "r" ? "st-fail" : "st-warn"}">E2 verdict</span>
+<div class="px"><div class="a">${ago(m.time)}</div></div></div>
+<div class="verdbig ${kind}">${label}</div>
+<div class="body">${lines.map(esc).join("\n")}</div>
+</div></div>`;
+}
+// The grader table is data the rest of the app speaks in icons — so parse it
+// back into the app's own language: a whale per flag, green/red outcomes
+// (hit = forward return matched the divergence sign), bucket chips, and the
+// hit-rate summary as money bands. Anything unparseable falls back to a
+// monospace table rather than wrapped soup.
+function dpGraderView(body) {
+const flagRe = /^\s*(\d{4}-\d{2}-\d{2})\s+(\S+)\s+([+-]?[\d.]+)\s+(>=100M|<100M)\s+(.+)$/;
+const flags = [], rates = [];
+let inRates = false;
+for (const l of body.split("\n")) {
+if (/hit-rates/i.test(l)) { inRates = true; continue; }
+const m = l.match(flagRe);
+if (m && !inRates) { flags.push(m); continue; }
+if (inRates && /100M/.test(l)) rates.push(l.trim());
+}
+if (!flags.length && !rates.length) return "";
+const cell = (v, sign) => {
+v = v.trim();
+if (/pend/i.test(v)) return `<span class="oc pend">pend</span>`;
+const num = parseFloat(v);
+if (!Number.isFinite(num)) return "";
+const hit = (num >= 0) === (sign >= 0);
+return `<span class="oc ${hit ? "hit" : "miss"}">${esc(v)}</span>`;
+};
+const rows = flags.map((m) => {
+const [, d, name, div, bkt, rest] = m;
+const sign = parseFloat(div);
+const outs = rest.trim().split(/\s{2,}/).map((v) => cell(v, sign)).filter(Boolean).join("");
+const back = /\[backfilled/i.test(rest);
+return `<div class="dprow${back ? " back" : ""}">
+<span class="ic">🐳</span><span class="nm">${esc(name)}</span>
+<span class="dv ${sign >= 0 ? "g" : "r"}">${sign >= 0 ? "+" : "−"}${Math.abs(sign).toFixed(1)}%</span>
+<span class="bk ${bkt === ">=100M" ? "big" : "small"}">${bkt === ">=100M" ? "≥100M" : "&lt;100M"}</span>
+<span class="dt">${esc(d.slice(5))}</span>
+<span class="ocs">${outs}</span></div>`;
+}).join("");
+const bands = rates.map((r) => {
+const big = r.includes(">=100M");
+const i = r.indexOf(":");
+const k = r.slice(0, i).trim(), t = r.slice(i + 1).trim();
+return `<div class="band ${big ? "b" : "w"}" style="margin-top:8px"><div class="big">${big ? "💰" : "🔉"}</div>
+<div class="lbl"><div class="k">${big ? "Real money — " : "Small prints — "}${esc(k)}</div>
+<div class="t">${esc(t)}</div></div></div>`;
+}).join("");
+return `<div class="rows" style="border:0">${rows}</div>${bands}`;
 }
 function dpCard(m) {
-  const lines = (m.message || "").split("\n").filter(Boolean);
-  return `<div class="card"><div class="pad">
-    <div class="top"><span class="sym">DARK POOL</span>
-      <span class="chipst st-star">Divergence</span>
-      <div class="px"><div class="a">${ago(m.time)}</div></div></div>
-    <div class="cond">${esc(m.title || "sweep")}</div>
-    <div class="rows">${lines.map((l) =>
-      `<div class="rw"${l.startsWith("   ") ? ' style="color:var(--muted)"' : ""}>${esc(l.trim())}</div>`).join("")}</div>
-  </div></div>`;
+const body = m.message || "";
+const lines = body.split("\n").filter(Boolean);
+const grader = dpGraderView(body);
+const inner = grader ? grader : looksTabular(body)
+? `<pre class="tbl">${esc(body)}</pre>`
+: `<div class="rows">${lines.map((l) =>
+`<div class="rw"${l.startsWith(" ") ? ' style="color:var(--muted)"' : ""}>${esc(l.trim())}</div>`).join("")}</div>`;
+return `<div class="card"><div class="pad">
+<div class="top"><span class="sym">DARK POOL</span>
+<span class="chipst st-star">Divergence</span>${backChip(m)}
+<div class="px"><div class="a">${ago(m.time)}</div></div></div>
+<div class="cond">${esc(m.title || "sweep")}</div>
+${inner}${attBlock(m)}
+</div></div>`;
 }
 function eveCard(m) {
-  const lines = (m.message || "").split("\n").filter(Boolean);
-  const urgent = (m.message || "").includes("🚨");
-  return `<div class="card"><div class="pad">
-    <div class="top"><span class="sym">EVENING</span>
-      <span class="chipst ${urgent ? "st-fail" : "st-ref"}">${urgent ? "Exit due" : "Report"}</span>
-      <div class="px"><div class="a">${ago(m.time)}</div></div></div>
-    <div class="cond">${esc((m.title || "").replace("Evening - ", ""))}</div>
-    <div class="rows">${lines.map((l) => `<div class="rw">${esc(l)}</div>`).join("")}</div>
-  </div></div>`;
+const body = m.message || "";
+const lines = body.split("\n").filter(Boolean);
+const urgent = body.includes("🚨");
+const inner = looksTabular(body)
+? `<pre class="tbl">${esc(body)}</pre>`
+: `<div class="rows">${lines.map((l) => `<div class="rw">${esc(l)}</div>`).join("")}</div>`;
+return `<div class="card"><div class="pad">
+<div class="top"><span class="sym">EVENING</span>
+<span class="chipst ${urgent ? "st-fail" : "st-ref"}">${urgent ? "Exit due" : "Report"}</span>${backChip(m)}
+<div class="px"><div class="a">${ago(m.time)}</div></div></div>
+<div class="cond">${esc((m.title || "").replace("Evening - ", ""))}</div>
+${inner}${attBlock(m)}
+</div></div>`;
 }
 function plainCard(m) {
-  return `<div class="card"><div class="pad">
-    <div class="top"><span class="sym">${esc((m.title || "SCANNER").toUpperCase())}</span>
-      <div class="px"><div class="a">${ago(m.time)}</div></div></div>
-    <div class="body">${esc(m.message || "")}</div>
-  </div></div>`;
+const body = m.message || "";
+const inner = looksTabular(body)
+? `<pre class="tbl">${esc(body)}</pre>`
+: `<div class="body">${esc(body)}</div>`;
+return `<div class="card"><div class="pad">
+<div class="top"><span class="sym">${esc((m.title || "SCANNER").toUpperCase())}</span>${backChip(m)}
+<div class="px"><div class="a">${ago(m.time)}</div></div></div>
+${inner}${attBlock(m)}
+</div></div>`;
 }
-
-// ---------- render ----------
 function render() {
-  const el = document.getElementById("main");
-  const shown = msgs.filter((m) => tab === "all" || m.kind === tab);
-  let html = "";
-  if (DEMO || failedOnce) {
-    html += `<div class="banner">${DEMO ? "DEMO DATA — remove ?demo from the URL for the live feed."
-      : "FEED UNREACHABLE — showing last loaded messages."}</div>`;
-  }
-  if (!shown.length) {
-    html += `<div class="empty">No messages in the last ${SINCE}<br>Quiet tape is a valid tape</div>`;
-  } else {
-    html += shown.map((m) =>
-      m.kind === "star" ? starCard(m) : m.kind === "e2" ? e2Card(m)
-      : m.kind === "dp" ? dpCard(m) : m.kind === "eve" ? eveCard(m) : plainCard(m)).join("");
-  }
-  html += `<div class="foot">ntfy · live window ${SINCE} · auto-refresh 60s · tap status to refresh</div>`;
-  el.innerHTML = html;
-  // top ribbon: freshest star under 45 min old
-  const hot = msgs.find((m) => m.kind === "star" && Date.now() / 1000 - m.time < 2700);
-  document.getElementById("ribbon").innerHTML = hot
-    ? `<div class="ribbon"><span>■ ${esc((hot.title || "").split(" - ")[0])} STARRED — ${esc(((hot.message || "").match(/crossed [\d.]+/i) || [""])[0])}</span><span>${ago(hot.time)}</span></div>` : "";
+const el = document.getElementById("main");
+const shown = msgs.filter((m) => tab === "all" || m.kind === tab);
+let html = "";
+if (DEMO || failedOnce) {
+html += `<div class="banner">${DEMO ? "DEMO DATA — remove ?demo from URL for live feed." : "FEED UNREACHABLE — showing last loaded messages."}</div>`;
+}
+if (!shown.length) {
+html += `<div class="empty">No messages in last ${SINCE}<br>Quiet tape is valid</div>`;
+} else {
+html += shown.map((m) =>
+m.kind === "star" ? starCard(m) : m.kind === "e2" ? e2Card(m)
+: m.kind === "dp" ? dpCard(m) : m.kind === "eve" ? eveCard(m) : plainCard(m)).join("");
+}
+// Debug composer: asks the VM desk for one ticker's stored data. The input
+// must survive the 60s re-render, so its live value is carried across.
+const dv = document.getElementById("dbgIn")?.value || "";
+html += `<div class="dbgbar"><input id="dbgIn" class="dbg" placeholder="ticker · pull desk data" maxlength="6" autocapitalize="characters" autocorrect="off" value="${esc(dv)}"><button class="bigbtn dbg" id="dbgGo">Debug</button></div>`;
+html += `<div class="foot">ntfy · live window ${SINCE} · auto-refresh 60s · tap status to refresh<br><span class="lnk" id="deskset">desk topic</span></div>`;
+el.innerHTML = html;
+const hot = msgs.find((m) => m.kind === "star" && Date.now() / 1000 - m.time < 2700);
+document.getElementById("ribbon").innerHTML = hot
+? `<div class="ribbon"><span>■ ${esc((hot.title || "").split(" - ")[0])} STARRED — ${esc(((hot.message || "").match(/crossed [\d.]+/i) || [""])[0])}</span><span>${ago(hot.time)}</span></div>` : "";
 }
 function renderTabs() {
-  document.getElementById("tabs").innerHTML = TABS.map((t) => {
-    const n = t.id === "all" ? msgs.length : msgs.filter((m) => m.kind === t.id).length;
-    return `<button class="tab${tab === t.id ? " on" : ""}" data-tab="${t.id}">${t.label}${n ? `<b>${n}</b>` : ""}</button>`;
-  }).join("");
+document.getElementById("tabs").innerHTML = TABS.map((t) => {
+const n = t.id === "all" ? msgs.length : msgs.filter((m) => m.kind === t.id).length;
+return `<button class="tab${tab === t.id ? " on" : ""}" data-tab="${t.id}">${t.label}${n ? `<b>${n}</b>` : ""}</button>`;
+}).join("");
 }
 function renderSetup() {
-  document.getElementById("sync").textContent = "setup";
-  document.getElementById("main").innerHTML = `
-    <div class="card"><div class="pad">
-      <div class="sym">CONNECT YOUR FEED</div>
-      <div class="body">Enter your ntfy topic (the one the scanner pushes to). Stored only on this device.</div>
-      <input id="topicIn" class="setup" placeholder="your-ntfy-topic" autocapitalize="none" autocorrect="off">
-      <button class="bigbtn" style="width:100%" id="topicGo">Connect</button>
-    </div></div>`;
-  document.getElementById("topicGo").onclick = () => {
-    const v = document.getElementById("topicIn").value.trim();
-    if (!v) return;
-    try { localStorage.setItem("walls_topic", v); } catch {}
-    location.hash = v; location.reload();
-  };
+document.getElementById("sync").textContent = "setup";
+document.getElementById("main").innerHTML = `
+<div class="card"><div class="pad">
+<div class="sym">CONNECT YOUR FEED</div>
+<div class="body">Enter ntfy topic (scanner pushes to). Stored locally only.</div>
+<input id="topicIn" class="setup" placeholder="your-ntfy-topic" autocapitalize="none" autocorrect="off">
+<button class="bigbtn" style="width:100%" id="topicGo">Connect</button>
+</div></div>`;
+document.getElementById("topicGo").onclick = () => {
+const v = document.getElementById("topicIn").value.trim();
+if (!v) return;
+try { localStorage.setItem("walls_topic", v); } catch {}
+location.hash = v; location.reload();
+};
 }
-
-// ---------- data ----------
 async function refresh() {
-  const dot = document.getElementById("dot"), sync = document.getElementById("sync");
-  if (!TOPIC && !DEMO) { if (!document.getElementById("topicIn")) renderSetup(); return; }
-  dot.classList.add("pulse");
-  try {
-    let text;
-    if (DEMO) { text = demoNDJSON(); }
-    else {
-      const r = await fetch(`https://ntfy.sh/${TOPIC}/json?poll=1&since=${SINCE}`, { cache: "no-store" });
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      text = await r.text();
-    }
-    const seen = new Set();
-    msgs = text.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } })
-      .filter((m) => m && m.event === "message" && !seen.has(m.id) && seen.add(m.id))
-      .map((m) => ({ ...m, kind: classify(m) }))
-      .sort((a, b) => b.time - a.time);
-    failedOnce = false;
-    dot.classList.remove("err");
-    sync.textContent = "synced " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch (e) {
-    failedOnce = true; dot.classList.add("err"); sync.textContent = "offline";
-  }
-  dot.classList.remove("pulse");
-  renderTabs(); render();
+const dot = document.getElementById("dot"), sync = document.getElementById("sync");
+if (!TOPIC && !DEMO) { if (!document.getElementById("topicIn")) renderSetup(); return; }
+dot.classList.add("pulse");
+try {
+let text;
+if (DEMO) { text = demoNDJSON(); }
+else {
+const r = await fetch(`https://ntfy.sh/${TOPIC}/json?poll=1&since=${SINCE}`, { cache: "no-store" });
+if (!r.ok) throw new Error("HTTP " + r.status);
+text = await r.text();
 }
-
-// ---------- demo feed (design preview only) ----------
+const seen = new Set();
+msgs = text.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch { return null; } })
+.filter((m) => m && m.event === "message" && !seen.has(m.id) && seen.add(m.id))
+.map((m) => ({ ...m, kind: classify(m) }))
+.sort((a, b) => b.time - a.time);
+failedOnce = false;
+dot.classList.remove("err");
+sync.textContent = "synced " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+} catch (e) {
+failedOnce = true; dot.classList.add("err"); sync.textContent = "offline";
+}
+dot.classList.remove("pulse");
+renderTabs(); render();
+}
 function demoNDJSON() {
-  const now = Math.floor(Date.now() / 1000);
-  const mk = (o) => JSON.stringify({ event: "message", id: Math.random().toString(36).slice(2), ...o });
-  return [
-    mk({ time: now - 200, title: "NVDA - E2 verdict", tags: ["white_check_mark"],
-      message: "✅ HELD above 225\n📍 226.80 (starred 226.10)\n───\n⏳ you: confirm print direction → paste the LOG from the star" }),
-    mk({ time: now - 1500, title: "NVDA - entry candidate", tags: ["star"],
-      message: "⭐ NVDA: crossed 225.00 at RVOL 1.86 (gate ✅) - now 226.10.\n───\n🧱 E0 913,402 ✅\n🎯 tgt 230 (502k, held 6d)\n🛡 floor 220 (313k put)\n📏 brk 4.2% ✅\n📈 G1 ABOVE (ma200 187.44)\n🗓 next ER 2026-08-27 (13td, confirmed) ✅, last UP (+3.2% 1d)\n🕶 DP(2026-08-07) $1,338M · 4.2M sh at 224\n📚 13 breaks/60d\n───\n🎫 NVDA: entry 226.10  ·  🎯 230.00  ·  🛑 225.00 (R/sh 1.10)\n📋 python paper_log.py open NVDA 226.10 --wall 225 --target 230 --ma200 ABOVE\n⏳ [you: E2 hold + print direction]" }),
-    mk({ time: now - 5400, title: "KMB - E2 verdict", tags: ["x"],
-      message: "❌ FAILED hold\n📍 109.61 back under 110 (starred 110.35)\n───\n🚫 no entry" }),
-    mk({ time: now - 7500, title: "FICO - entry candidate", tags: ["star"],
-      message: "⭐ FICO: crossed 1100.00 at RVOL 3.58 (gate ✅) - now 1117.12.\n───\n🧱 E0 133 ❌ dust\n🎯 tgt 1150 (3.7k DUST)\n🛡 floor 1050 (2.1k put)\n📏 brk 35.5% ❌\n📈 G1 ABOVE (ma200 1082.59)\n🗓 next ER 2026-08-12 (2td, confirmed) ⛔ ER window\n🕶 DP(2026-08-07) $45M · 43k sh at 1040\n📚 8 breaks/60d\n───\n🎫 FICO: entry 1117.12  ·  🎯 1150.00  ·  🛑 1100.00 (R/sh 17.12)\n🚫 refused: CAL, E0, 📏 brk -- the chain refuses" }),
-    mk({ time: now - 12000, title: "3 divergences - 512 scanned", tags: ["ocean"],
-      message: "🐳 MSTR  +4.1%  lvl 104 · px 100.01\n   💰 $210M · 🧱 wall 102 (-1.9%)\n   📊 1/2 next-day hits · 🗓 ER 12td\n📌 SMCI  -3.5%  lvl 46 · px 47.70\n   💰 $38M (sub-100M)\n   📊 1st flag · 🗓 ER 4td" }),
-    mk({ time: now - 20000, title: "Evening - 2026-08-07", tags: ["crescent_moon"],
-      message: "💥 45 breaks over prior walls\n📒 book +8.78R · 0 open / 5 closed\n🗂 full report on disk" }),
-  ].join("\n");
+const now = Math.floor(Date.now() / 1000);
+const mk = (o) => JSON.stringify({ event: "message", id: Math.random().toString(36).slice(2), ...o });
+return [
+mk({ time: now - 200, title: "NVDA - E2 verdict", tags: ["white_check_mark"],
+message: "✅ HELD above 225\n📍 226.80 (starred 226.10)\n───\n⏳ you: confirm print direction" }),
+mk({ time: now - 1500, title: "NVDA - entry candidate", tags: ["star"],
+message: "⭐ NVDA: crossed 225.00 at RVOL 1.86\n📋 python paper_log.py open NVDA..." }),
+mk({ time: now - 5400, title: "KMB - E2 verdict", tags: ["x"],
+message: "❌ FAILED hold\n📍 109.61" }),
+mk({ time: now - 12000, title: "3 divergences - 512 scanned", tags: ["ocean"],
+message: "🐳 MSTR +4.1%" }),
+].join("\n");
 }
-
-// ---------- wiring ----------
+// The desk topic is the WRITE credential for the paper book. It is stored
+// once in localStorage and, before this control existed, could never be
+// changed — a stale value meant every Log press went to a dead topic with
+// no error. This link shows the current value and lets it be replaced.
+function setDeskTopic() {
+let cur = "";
+try { cur = localStorage.getItem("walls_cmd") || ""; } catch {}
+const v = (prompt("Desk command topic (current: " + (cur || "not set") + ")", cur) || "").trim();
+if (!v) return;
+try { localStorage.setItem("walls_cmd", v); } catch {}
+toast("Desk topic saved");
+}
+// "debug TICKER" rides the same desk command topic as the Log button. The
+// VM's cmd_listener answers by publishing that ticker's stored desk data
+// (walls, ladder, dark pools, board rows) back to the feed topic, so the
+// reply shows up here as a normal message within a minute.
+function sendDebug() {
+const inp = document.getElementById("dbgIn");
+const tk = (inp?.value || "").trim().toUpperCase();
+if (!/^[A-Z][A-Z.\-]{0,5}$/.test(tk)) { toast("Enter a ticker"); return; }
+let ct = "";
+try { ct = localStorage.getItem("walls_cmd") || ""; } catch {}
+if (!ct) {
+ct = (prompt("Command topic (from cmd_listener on the VM):") || "").trim();
+if (!ct) return;
+try { localStorage.setItem("walls_cmd", ct); } catch {}
+}
+fetch("https://ntfy.sh/" + encodeURIComponent(ct),
+{ method: "POST", body: "debug " + tk, headers: { "Title": "cmd" } })
+.then(() => { if (inp) inp.value = ""; toast("Debug " + tk + " sent — reply lands in feed"); })
+.catch(() => toast("Send failed"));
+}
+document.addEventListener("keydown", (e) => {
+if (e.key === "Enter" && e.target && e.target.id === "dbgIn") sendDebug();
+});
 document.addEventListener("click", (e) => {
-  const t = e.target.closest(".tab");
-  if (t) { tab = t.dataset.tab; renderTabs(); render(); return; }
-  const c = e.target.closest("[data-copy]");
-  if (c) { navigator.clipboard?.writeText(c.dataset.copy).then(() => toast("Log command copied")); return; }
-  // Phone-to-book: two-tap confirm, then publish the command to the secret
-  // command topic; the desk listener validates, executes, and pushes a receipt.
-  const g = e.target.closest("[data-logcmd]");
-  if (g) {
-    let ct = "";
-    try { ct = localStorage.getItem("walls_cmd") || ""; } catch {}
-    if (!ct) {
-      ct = (prompt("Command topic (from cmd_listener.py on the PC):") || "").trim();
-      if (!ct) return;
-      try { localStorage.setItem("walls_cmd", ct); } catch {}
-    }
-    if (g.dataset.armed !== "1") {
-      g.dataset.armed = "1"; g.classList.add("armed");
-      const orig = g.textContent; g.textContent = "Tap again to log";
-      setTimeout(() => { g.dataset.armed = "0"; g.classList.remove("armed");
-                         g.textContent = orig; }, 3500);
-      return;
-    }
-    g.dataset.armed = "0"; g.classList.remove("armed"); g.textContent = "Sent";
-    fetch("https://ntfy.sh/" + encodeURIComponent(ct),
-          { method: "POST", body: g.dataset.logcmd, headers: { "Title": "cmd" } })
-      .then(() => toast("Sent to the desk — watch for the receipt"))
-      .catch(() => { g.textContent = "Log trade"; toast("Send failed — check connection"); });
-  }
+if (e.target.closest("#dbgGo")) { sendDebug(); return; }
+if (e.target.closest("#deskset")) { setDeskTopic(); return; }
+const t = e.target.closest(".tab");
+if (t) { tab = t.dataset.tab; renderTabs(); render(); return; }
+const c = e.target.closest("[data-copy]");
+if (c) { navigator.clipboard?.writeText(c.dataset.copy).then(() => toast("Log command copied")); return; }
+const g = e.target.closest("[data-logcmd]");
+if (g) {
+let ct = "";
+try { ct = localStorage.getItem("walls_cmd") || ""; } catch {}
+if (!ct) {
+ct = (prompt("Command topic (from cmd_listener on the VM):") || "").trim();
+if (!ct) return;
+try { localStorage.setItem("walls_cmd", ct); } catch {}
+}
+if (g.dataset.armed !== "1") {
+g.dataset.armed = "1"; g.classList.add("armed");
+const orig = g.textContent; g.textContent = "Tap again to log";
+setTimeout(() => { g.dataset.armed = "0"; g.classList.remove("armed");
+g.textContent = orig; }, 3500);
+return;
+}
+g.dataset.armed = "0"; g.classList.remove("armed"); g.textContent = "Sent";
+fetch("https://ntfy.sh/" + encodeURIComponent(ct),
+{ method: "POST", body: g.dataset.logcmd, headers: { "Title": "cmd" } })
+.then(() => toast("Sent to desk — watch for receipt"))
+.catch(() => { g.textContent = "Log trade"; toast("Send failed"); });
+}
 });
 document.getElementById("syncbtn").addEventListener("click", refresh);
 function toast(txt) {
-  const el = document.getElementById("toast");
-  el.textContent = txt; el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 1600);
+const el = document.getElementById("toast");
+el.textContent = txt; el.classList.add("show");
+setTimeout(() => el.classList.remove("show"), 1600);
 }
 renderTabs();
 refresh();
