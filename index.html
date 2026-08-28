@@ -217,7 +217,22 @@ input.dbg:focus { border-color: var(--ink); outline: none; }
 <div class="toast" id="toast"></div>
 <script>
 "use strict";
-const HASH_TOPIC = decodeURIComponent(location.hash.slice(1) || "").trim();
+// The hash carries the feed topic — and optionally, after a comma, the desk
+// command topic: #feed-topic,ph-cmd-xxxx. Hand-typing the desk topic on a
+// phone keyboard failed twice (auto-capitalize, hex typos), so it can now be
+// installed by opening one link. The comma part is stored once and then
+// SCRUBBED from the address bar so the credential never sits in a bookmark
+// or screenshot.
+const RAW_HASH = decodeURIComponent(location.hash.slice(1) || "").trim();
+let HASH_TOPIC = RAW_HASH, deskInstalled = false;
+if (RAW_HASH.includes(",")) {
+const [f, c] = RAW_HASH.split(",", 2).map((s) => s.trim());
+HASH_TOPIC = f;
+if (c) {
+try { localStorage.setItem("walls_cmd", c); deskInstalled = true; } catch {}
+try { history.replaceState(null, "", location.pathname + location.search + (f ? "#" + f : "")); } catch {}
+}
+}
 if (HASH_TOPIC) { try { localStorage.setItem("walls_topic", HASH_TOPIC); } catch {} }
 let TOPIC = HASH_TOPIC;
 if (!TOPIC) { try { TOPIC = localStorage.getItem("walls_topic") || ""; } catch {} }
@@ -635,6 +650,7 @@ setTimeout(() => el.classList.remove("show"), 1600);
 renderTabs();
 refresh();
 setInterval(refresh, REFRESH_MS);
+if (deskInstalled) toast("Desk topic installed ✓");
 </script>
 </body>
 </html>
