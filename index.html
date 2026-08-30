@@ -192,6 +192,9 @@ input.setup {
 width: 100%; padding: 12px; border: 2px solid var(--ink); background: var(--card);
 color: var(--ink); font: inherit; font-size: 15px; margin: 10px 0;
 }
+.agenote { margin-top: 10px; font-size: 11.5px; font-weight: 800; color: var(--amber);
+background: var(--amber-tint); padding: 8px 10px; text-transform: uppercase;
+letter-spacing: .5px; }
 .dbgbar { display: flex; gap: 8px; margin: 18px 0 0; }
 input.dbg { flex: 1; min-width: 0; padding: 11px 12px; border: 2px solid var(--line);
 background: var(--card); color: var(--ink); font: inherit; font-size: 14px;
@@ -281,6 +284,16 @@ if (s < 86400) return Math.round(s / 3600) + "h ago";
 return Math.round(s / 86400) + "d ago";
 }
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// Cards live ~12h in the feed, so a Friday star can greet a Monday reader.
+// Past AGE_NOTE_S, actionable cards carry an explicit "the market has moved"
+// note — an old price presented without a warning is a quiet lie.
+const AGE_NOTE_S = 2 * 3600;
+function ageNote(m) {
+const s = Date.now() / 1000 - m.time;
+if (s < AGE_NOTE_S) return "";
+const h = s < 86400 ? Math.round(s / 3600) + "h" : Math.round(s / 86400) + "d";
+return `<div class="agenote">⏳ ${h} old — prices have moved, check the tape before acting</div>`;
+}
 const pct = (a, b) => ((a - b) / b * 100);
 const fpct = (x) => (x > 0 ? "+" : "") + x.toFixed(1) + "%";
 function chipTone(l) {
@@ -374,6 +387,7 @@ return `<div class="card"><div class="pad">
 <div class="a">${ago(m.time)}</div></div>
 </div>
 <div class="cond">${esc(cond)}</div>
+${ageNote(m)}
 <div class="agoline"><div class="bar"><i></i></div><span class="t up">Starred</span></div>
 ${meter}${tri}
 ${structureBand(chain)}${moneyBand(chain)}
@@ -399,6 +413,7 @@ return `<div class="card"><div class="pad">
 <span class="chipst ${kind === "g" ? "st-held" : kind === "r" ? "st-fail" : "st-warn"}">E2 verdict</span>
 <div class="px"><div class="a">${ago(m.time)}</div></div></div>
 <div class="verdbig ${kind}">${label}</div>
+${ageNote(m)}
 <div class="body">${lines.map(esc).join("\n")}</div>
 </div></div>`;
 }
