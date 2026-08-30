@@ -200,7 +200,8 @@ input.dbg { flex: 1; min-width: 0; padding: 11px 12px; border: 2px solid var(--l
 background: var(--card); color: var(--ink); font: inherit; font-size: 14px;
 font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
 input.dbg:focus { border-color: var(--ink); outline: none; }
-.bigbtn.dbg { flex: 0 0 30%; background: var(--ink); border-color: var(--ink); }
+.bigbtn.dbg { flex: 0 0 26%; background: var(--ink); border-color: var(--ink); }
+.bigbtn.dbg.alt { background: var(--blue); border-color: var(--blue); flex: 0 0 24%; }
 </style>
 </head>
 <body>
@@ -522,7 +523,7 @@ m.kind === "star" ? starCard(m) : m.kind === "e2" ? e2Card(m)
 // Debug composer: asks the VM desk for one ticker's stored data. The input
 // must survive the 60s re-render, so its live value is carried across.
 const dv = document.getElementById("dbgIn")?.value || "";
-html += `<div class="dbgbar"><input id="dbgIn" class="dbg" placeholder="ticker · pull desk data" maxlength="6" autocapitalize="characters" autocorrect="off" value="${esc(dv)}"><button class="bigbtn dbg" id="dbgGo">Debug</button></div>`;
+html += `<div class="dbgbar"><input id="dbgIn" class="dbg" placeholder="ticker · pull desk data" maxlength="6" autocapitalize="characters" autocorrect="off" value="${esc(dv)}"><button class="bigbtn dbg" id="dbgGo">Debug</button><button class="bigbtn dbg alt" id="storyGo">Story</button></div>`;
 html += `<div class="foot">ntfy · live window ${SINCE} · auto-refresh 60s · tap status to refresh<br><span class="lnk" id="deskset">desk topic</span></div>`;
 el.innerHTML = html;
 const hot = msgs.find((m) => m.kind === "star" && Date.now() / 1000 - m.time < 2700);
@@ -607,7 +608,7 @@ toast("Desk topic saved");
 // VM's cmd_listener answers by publishing that ticker's stored desk data
 // (walls, ladder, dark pools, board rows) back to the feed topic, so the
 // reply shows up here as a normal message within a minute.
-function sendDebug() {
+function sendDesk(verb) {
 const inp = document.getElementById("dbgIn");
 const tk = (inp?.value || "").trim().toUpperCase();
 if (!/^[A-Z][A-Z.\-]{0,5}$/.test(tk)) { toast("Enter a ticker"); return; }
@@ -618,16 +619,19 @@ ct = (prompt("Command topic (from cmd_listener on the VM):") || "").trim();
 if (!ct) return;
 try { localStorage.setItem("walls_cmd", ct); } catch {}
 }
+const label = verb[0].toUpperCase() + verb.slice(1);
 fetch("https://ntfy.sh/" + encodeURIComponent(ct),
-{ method: "POST", body: "debug " + tk, headers: { "Title": "cmd" } })
-.then(() => { if (inp) inp.value = ""; toast("Debug " + tk + " sent — reply lands in feed"); })
+{ method: "POST", body: verb + " " + tk, headers: { "Title": "cmd" } })
+.then(() => { if (inp) inp.value = ""; toast(label + " " + tk + " sent — reply lands in feed"); })
 .catch(() => toast("Send failed"));
 }
+const sendDebug = () => sendDesk("debug");
 document.addEventListener("keydown", (e) => {
 if (e.key === "Enter" && e.target && e.target.id === "dbgIn") sendDebug();
 });
 document.addEventListener("click", (e) => {
-if (e.target.closest("#dbgGo")) { sendDebug(); return; }
+if (e.target.closest("#dbgGo")) { sendDesk("debug"); return; }
+if (e.target.closest("#storyGo")) { sendDesk("story"); return; }
 if (e.target.closest("#deskset")) { setDeskTopic(); return; }
 const t = e.target.closest(".tab");
 if (t) { tab = t.dataset.tab; renderTabs(); render(); return; }
