@@ -7,18 +7,21 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F3F2F2">
 <title>Parabolic Hunter</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap">
 <style>
 :root {
 --bg: #F3F2F2; --card: #FFFFFF; --ink: #201E1D; --muted: #6B6663; --faint: #9B9591;
 --line: #E4E1DF; --red: #EC3013; --red-tint: #FDEBE7; --green: #157F3D;
 --green-tint: #EAF4EC; --blue: #1D4ED8; --blue-tint: #EBF0FB; --amber: #B45309;
 --amber-tint: #FBF3E4; --band: #F5F3F2; --track: #E4E1DF;
+--paper: #F7F3EC; --paper-k: #8A4B23; --paper-ink: #26211B;
 }
 [data-theme="dark"] {
 --bg: #14120F; --card: #1E1B18; --ink: #F3F1EF; --muted: #A8A29D; --faint: #6E6963;
 --line: #322E2A; --red: #FF4D2E; --red-tint: #3A1B14; --green: #4CC38A;
 --green-tint: #15291D; --blue: #6C9BFF; --blue-tint: #172032; --amber: #F5A623;
 --amber-tint: #322710; --band: #262220; --track: #3A3530;
+--paper: #262220; --paper-k: #F5A623; --paper-ink: #F3F1EF;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html { -webkit-text-size-adjust: 100%; }
@@ -49,7 +52,7 @@ align-items: center; gap: 6px; cursor: pointer; }
 .tabs { display: flex; border-top: 1px solid var(--line); }
 .tab {
 flex: 1; background: var(--band); border: 0; border-right: 1px solid var(--line);
-font: inherit; font-size: 11.5px; font-weight: 800; padding: 11px 4px; color: var(--muted);
+font: inherit; font-size: 11.5px; font-weight: 800; padding: 14px 4px; min-height: 44px; color: var(--muted);
 text-transform: uppercase; letter-spacing: .5px; position: relative;
 }
 .tab:last-child { border-right: 0; }
@@ -192,6 +195,12 @@ input.setup {
 width: 100%; padding: 12px; border: 2px solid var(--ink); background: var(--card);
 color: var(--ink); font: inherit; font-size: 15px; margin: 10px 0;
 }
+.why { margin-top: 12px; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); }
+.why .k { font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: var(--paper-k); }
+.prose { font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: 14.5px;
+line-height: 1.65; color: var(--paper-ink); margin-top: 6px; white-space: pre-wrap; word-break: break-word; }
+.prose.story { margin-top: 10px; color: var(--ink); }
+.st-story { background: var(--blue-tint); color: var(--blue); }
 .agenote { margin-top: 10px; font-size: 11.5px; font-weight: 800; color: var(--amber);
 background: var(--amber-tint); padding: 8px 10px; text-transform: uppercase;
 letter-spacing: .5px; }
@@ -272,6 +281,7 @@ if (t.includes("entry candidate")) return "star";
 if (t.includes("e2")) return "e2";
 if (t.includes("divergence")) return "dp";
 if (t.includes("evening")) return "eve";
+if (t.startsWith("story ")) return "story";
 if (t.includes("fuel")) return "fuel";
 if (t.includes("book")) return "book";
 if (tags.includes("star")) return "star";
@@ -322,6 +332,38 @@ return `<a class="bigbtn" href="${esc(a.url)}" target="_blank" rel="noopener">Vi
 // never be visually identical to a signal someone could have acted on live.
 const backChip = (m) => ((m.message || "") + (m.title || "")).toLowerCase().includes("[backfilled")
 ? `<span class="chipst st-warn">Backfilled</span>` : "";
+// "Why this trade": the star card's chain lines spoken as one paragraph.
+// Every clause is derived from a field on the card; a clause whose field is
+// missing is dropped, never guessed (the story verb's rule). For a refusal
+// the block says why not, in the chain's own words.
+function whyBlock(sym, cond, chain, tk, refused) {
+if (refused) {
+const r = refused.replace(/^🚫\s*/u, "").trim();
+return r ? `<div class="why"><div class="k">Why not</div><div class="prose">The chain refused ${esc(sym)}: ${esc(r)}.</div></div>` : "";
+}
+const get = (re) => { for (const l of chain) { const x = l.match(re); if (x) return x; } return null; };
+const cross = (cond || "").match(/crossed ([\d.]+) at RVOL ([\d.]+)/i);
+const mass = get(/E0 ([\d,]+)/);
+const dp = get(/DP\([^)]*\)\s*\$?([\d.]+[MBK]?)[^·]*·[^,]*,\s*vs_trail ([\d.]+)/);
+const brk = get(/brk ([\d.]+%)/);
+const g1 = get(/G1 (ABOVE|BELOW)/);
+const er = get(/next ER \S+ \((\d+)td/);
+const parts = [];
+if (cross) {
+let s = `${esc(sym)} crossed its ${cross[1]} wall at ${cross[2]}× normal volume`;
+if (mass) s += ` — a witnessed break of a strike holding ${mass[1]} in mass`;
+if (dp) s += `, with $${dp[1]} of dark-pool business behind the approach (${dp[2]}× its trail)`;
+parts.push(s + ".");
+}
+const gates = [];
+if (brk) gates.push(`the breaker passes at ${brk[1]}`);
+if (g1) gates.push(`price is ${g1[1].toLowerCase()} its 200-day`);
+if (er) gates.push(`the next earnings print is ${er[1]} sessions away`);
+if (gates.length) parts.push(gates.join(", ").replace(/^./, (c) => c.toUpperCase()) + ". Every gate passed.");
+if (tk) parts.push(`Stop at ${(+tk[3]).toFixed(2)}; sell into ${(+tk[2]).toFixed(2)}.`);
+if (!parts.length) return "";
+return `<div class="why"><div class="k">Why this trade</div><div class="prose">${parts.join(" ")}</div></div>`;
+}
 function structureBand(chain) {
 const e0 = chain.find((l) => l.startsWith("🧱"));
 const tg = chain.find((l) => l.startsWith("🎯"));
@@ -391,6 +433,7 @@ return `<div class="card"><div class="pad">
 ${ageNote(m)}
 <div class="agoline"><div class="bar"><i></i></div><span class="t up">Starred</span></div>
 ${meter}${tri}
+${whyBlock(sym, cond, chain, tk, refused)}
 ${structureBand(chain)}${moneyBand(chain)}
 <div class="chain">${chain.filter((l) => !/^[🧱🎯🛡🕶]/u.test(l)).map((l) =>
 `<div class="crow ${chipTone(l)}"><span class="ic">${esc(l.slice(0, 2))}</span>${esc(l.slice(2).replace(/^ /, ""))}</div>`).join("")}
@@ -495,6 +538,22 @@ return `<div class="card"><div class="pad">
 ${inner}${attBlock(m)}
 </div></div>`;
 }
+// Story cards: the desk's plain-language paragraph, set in the reading face so
+// prose reads as prose and numbers stay numbers. The stale tag, when present,
+// is lifted out of the paragraph into its own amber line.
+function storyCard(m) {
+const sym = (m.title || "").replace(/^story\s+/i, "").split(" - ")[0].trim() || "?";
+let body = (m.message || "").trim();
+let stale = "";
+const st = body.match(/\[STALE[^\]]*\]/);
+if (st) { stale = st[0].slice(1, -1); body = body.replace(st[0], "").trim(); }
+return `<div class="card"><div class="pad">
+<div class="top"><span class="sym">${esc(sym)}</span><span class="chipst st-story">Story</span>
+<div class="px"><div class="a">${ago(m.time)}</div></div></div>
+<div class="prose story">${esc(body)}</div>
+${stale ? `<div class="agenote">⏳ ${esc(stale)}</div>` : ""}
+</div></div>`;
+}
 function plainCard(m) {
 const body = m.message || "";
 const inner = looksTabular(body)
@@ -518,7 +577,7 @@ html += `<div class="empty">No messages in last ${SINCE}<br>Quiet tape is valid<
 } else {
 html += shown.map((m) =>
 m.kind === "star" ? starCard(m) : m.kind === "e2" ? e2Card(m)
-: m.kind === "dp" ? dpCard(m) : m.kind === "eve" ? eveCard(m) : plainCard(m)).join("");
+: m.kind === "dp" ? dpCard(m) : m.kind === "eve" ? eveCard(m) : m.kind === "story" ? storyCard(m) : plainCard(m)).join("");
 }
 // Debug composer: asks the VM desk for one ticker's stored data. The input
 // must survive the 60s re-render, so its live value is carried across.
@@ -526,7 +585,7 @@ const dv = document.getElementById("dbgIn")?.value || "";
 html += `<div class="dbgbar"><input id="dbgIn" class="dbg" placeholder="ticker · pull desk data" maxlength="6" autocapitalize="characters" autocorrect="off" value="${esc(dv)}"><button class="bigbtn dbg" id="dbgGo">Debug</button><button class="bigbtn dbg alt" id="storyGo">Story</button></div>`;
 html += `<div class="foot">ntfy · live window ${SINCE} · auto-refresh 60s · tap status to refresh<br><span class="lnk" id="deskset">desk topic</span></div>`;
 el.innerHTML = html;
-const hot = msgs.find((m) => m.kind === "star" && Date.now() / 1000 - m.time < 2700);
+const hot = msgs.find((m) => m.kind === "star" && !(m.message || "").includes("🚫") && Date.now() / 1000 - m.time < 2700);
 document.getElementById("ribbon").innerHTML = hot
 ? `<div class="ribbon"><span>■ ${esc((hot.title || "").split(" - ")[0])} STARRED — ${esc(((hot.message || "").match(/crossed [\d.]+/i) || [""])[0])}</span><span>${ago(hot.time)}</span></div>` : "";
 }
