@@ -338,7 +338,12 @@ const backChip = (m) => ((m.message || "") + (m.title || "")).toLowerCase().incl
 // the block says why not, in the chain's own words.
 function whyBlock(sym, cond, chain, tk, refused) {
 if (refused) {
-const r = refused.replace(/^🚫\s*/u, "").trim();
+// The wire already says "refused:" and restates "the chain refuses" at the
+// end; the wrapper below says both. Strip the wire's redundancy so the
+// sentence reads once, keeping the gate emoji (the app speaks in those).
+const r = refused.replace(/^🚫\s*/u, "").trim()
+.replace(/^refused:\s*/i, "")
+.replace(/\s*[-–—·|]*\s*the chain refuses\.?\s*$/i, "").trim();
 return r ? `<div class="why"><div class="k">Why not</div><div class="prose">The chain refused ${esc(sym)}: ${esc(r)}.</div></div>` : "";
 }
 const get = (re) => { for (const l of chain) { const x = l.match(re); if (x) return x; } return null; };
