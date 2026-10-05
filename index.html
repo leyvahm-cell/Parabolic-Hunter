@@ -211,6 +211,177 @@ font-weight: 800; text-transform: uppercase; letter-spacing: .5px; }
 input.dbg:focus { border-color: var(--ink); outline: none; }
 .bigbtn.dbg { flex: 0 0 26%; background: var(--ink); border-color: var(--ink); }
 .bigbtn.dbg.alt { background: var(--blue); border-color: var(--blue); flex: 0 0 24%; }
+
+/* ─── STATES tab (added 2026-10-04) ───────────────────────────────────────
+   Read-only. Renders monitor/states.json, which rides the feed topic as its
+   own message titled "states.json". Nothing here writes, logs or buttons.
+
+   The state and MA colours are declared as their own tokens rather than
+   reusing --red/--green/--blue, because the state palette is fixed by the
+   desk (good #157F3D, warning #B45309, bad #D22B12, info #1D4ED8, muted
+   #6B6560) and the page's own accent values differ slightly. Dark mode
+   REDEFINES them below -- nothing is inverted.                            */
+:root {
+--s-good: #157F3D; --s-warn: #B45309; --s-bad: #D22B12; --s-info: #1D4ED8;
+--s-muted: #6B6560;
+--ma20: #7A7268; --ma50: #1F6FEB; --ma200: #C9930A;
+}
+/* Dark: lightened to the same degree the page lightens its own accents.
+   Measured against the dark card (#1E1B18): MA50 #6C9BFF = 6.3:1 and
+   MA200 #E0A82E = 8.0:1, both well clear of 3:1. The light values would
+   have been 3.7:1 (MA50) and 6.3:1 (MA200) -- MA50 only just passing,
+   which is why it is lifted here rather than left alone.                  */
+[data-theme="dark"] {
+--s-good: #4CC38A; --s-warn: #F5A623; --s-bad: #FF6A4D; --s-info: #6C9BFF;
+--s-muted: #A8A29D;
+--ma20: #9A9289; --ma50: #6C9BFF; --ma200: #E0A82E;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip {
+display: flex; align-items: center; gap: 5px; border: 1px solid var(--line);
+background: var(--card); padding: 6px 9px; font-size: 11px; font-weight: 800;
+text-transform: uppercase; letter-spacing: .4px;
+}
+.chip .g { font-size: 13px; line-height: 1; }
+.chip .n { font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 900; }
+.chip.zero { opacity: .42; }
+.chip.s-BROKEN { color: var(--s-bad); border-color: var(--s-bad); }
+.chip.s-STRESSED { color: var(--s-warn); border-color: var(--s-warn); }
+.chip.s-EARLY { color: var(--s-info); border-color: var(--s-info); }
+.chip.s-HEALTHY { color: var(--s-good); border-color: var(--s-good); }
+.chip.s-NONE, .chip.s-NOBARS { color: var(--s-muted); }
+.alerts { border: 1px solid var(--line); margin-bottom: 12px; background: var(--card); }
+.alerts .hd {
+font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase;
+color: var(--muted); padding: 8px 12px 6px; border-bottom: 1px solid var(--line);
+}
+.arow {
+display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+border-bottom: 1px solid var(--line); font-size: 12.5px; font-weight: 700;
+text-decoration: none; color: var(--ink);
+}
+.aitem { border-bottom: 1px solid var(--line); }
+.aitem:last-child { border-bottom: 0; }
+.arow { border-bottom: 0; }
+.arow .g { flex: 0 0 16px; text-align: center; font-size: 14px; }
+.arow .nm { font-weight: 900; flex: 0 0 52px; }
+.arow .mv { color: var(--muted); }
+.arow .tm { margin-left: auto; font-size: 11px; color: var(--faint);
+font-variant-numeric: tabular-nums; }
+.arow .pin { font-size: 10px; font-weight: 800; color: var(--s-info); margin-left: 6px; }
+/* The three-line fallback is a SIBLING of its row inside .aitem, not a
+   child of it: the row is an <a> when a card image exists, and nesting a
+   paragraph inside that link would make the whole thing a tap target. */
+.three { font-size: 11px; color: var(--faint); font-weight: 600;
+white-space: pre-wrap; padding: 0 12px 9px; margin-top: -4px; }
+.cohhd {
+display: flex; align-items: center; gap: 10px; background: var(--band);
+border: 1px solid var(--line); border-bottom: 0; padding: 9px 12px;
+}
+.cohhd .lb { font-size: 12.5px; font-weight: 900; text-transform: uppercase;
+letter-spacing: .5px; }
+.cohhd .live { font-size: 10.5px; font-weight: 700; color: var(--faint);
+font-variant-numeric: tabular-nums; }
+.cohhd .rs { margin-left: auto; font-size: 14px; font-weight: 900;
+font-variant-numeric: tabular-nums; }
+.cohhd .rs.g { color: var(--s-good); } .cohhd .rs.r { color: var(--s-bad); }
+.bbar { flex: 0 0 86px; height: 6px; background: var(--track); position: relative; }
+.bbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s-good); }
+.bbar i.lo { background: var(--s-warn); }
+.cohnote { font-size: 10.5px; font-weight: 800; color: var(--s-warn);
+background: var(--amber-tint); padding: 4px 12px; border: 1px solid var(--line);
+border-top: 0; border-bottom: 0; text-transform: uppercase; letter-spacing: .4px; }
+.mcard { border: 1px solid var(--line); border-bottom: 0; background: var(--card);
+padding: 11px 12px; }
+.coh .mcard:last-child { border-bottom: 1px solid var(--line); }
+.mtop { display: flex; align-items: baseline; gap: 7px; }
+.mtop .sy { font-size: 17px; font-weight: 900; letter-spacing: -.2px; }
+.mtop .ro { font-size: 10px; font-weight: 800; color: var(--faint);
+text-transform: uppercase; letter-spacing: .5px; }
+.pill {
+margin-left: auto; font-size: 10px; font-weight: 800; padding: 3px 7px;
+text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
+border: 1px solid currentColor;
+}
+.pill.s-BROKEN { color: var(--s-bad); background: var(--red-tint); }
+.pill.s-STRESSED { color: var(--s-warn); background: var(--amber-tint); }
+.pill.s-EARLY { color: var(--s-info); background: var(--blue-tint); }
+.pill.s-HEALTHY { color: var(--s-good); background: var(--green-tint); }
+.pill.s-NONE, .pill.s-NOBARS { color: var(--s-muted); background: var(--band); }
+.quad { display: flex; margin-top: 10px; border: 1px solid var(--line); }
+.quad > div { flex: 1; padding: 7px 6px; }
+.quad > div + div { border-left: 1px solid var(--line); }
+.quad .k { font-size: 8.5px; font-weight: 800; letter-spacing: .5px;
+text-transform: uppercase; color: var(--muted); }
+.quad .v { font-size: 14px; font-weight: 900; margin-top: 2px;
+font-variant-numeric: tabular-nums; }
+/* The tile that DEFINES the state is tinted in that state's own colour, so
+   the number doing the work is the one the eye lands on. A plain grey wash
+   was invisible against the white card. */
+.quad > div.def { background: var(--band); }
+.quad > div.def .k { color: inherit; }
+.quad > div.def.s-BROKEN { background: var(--red-tint); }
+.quad > div.def.s-BROKEN .k, .quad > div.def.s-BROKEN .v { color: var(--s-bad); }
+.quad > div.def.s-STRESSED { background: var(--amber-tint); }
+.quad > div.def.s-STRESSED .k, .quad > div.def.s-STRESSED .v { color: var(--s-warn); }
+.quad > div.def.s-EARLY { background: var(--blue-tint); }
+.quad > div.def.s-EARLY .k, .quad > div.def.s-EARLY .v { color: var(--s-info); }
+.quad > div.def.s-NONE .k, .quad > div.def.s-NONE .v { color: var(--s-muted); }
+/* The tag sits ABOVE the panel, not on it: at the top-right of the plot it
+   collided with the 10-session-high dotted line on every name whose high was
+   near the top of the range, which was most of them. */
+.spark { margin-top: 10px; position: relative; padding-top: 13px; }
+.spark svg { display: block; width: 100%; height: 72px; }
+.spark .tag { position: absolute; right: 2px; top: 0; font-size: 9px;
+font-weight: 800; color: var(--ma200); letter-spacing: .3px; }
+/* Top-left, beside the MA200 tag. Below the panel it sat on top of the
+   legend row, which is a sibling and not part of this box. */
+.spark .n40 { position: absolute; left: 2px; top: 0; font-size: 9px;
+font-weight: 700; color: var(--faint); }
+.leg { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 4px; }
+.leg span { font-size: 9px; font-weight: 800; color: var(--muted);
+display: flex; align-items: center; gap: 3px; text-transform: uppercase;
+letter-spacing: .3px; }
+.leg i { width: 13px; height: 2px; display: inline-block; }
+.mline { margin-top: 7px; font-size: 11.5px; font-weight: 700; color: var(--muted);
+font-variant-numeric: tabular-nums; }
+.mline.str { color: var(--s-good); }
+.mline.last { font-size: 10.5px; color: var(--faint); font-weight: 700; }
+.nobars { font-size: 12px; font-weight: 800; color: var(--s-warn);
+text-transform: uppercase; letter-spacing: .5px; }
+.howto { border: 1px solid var(--line); background: var(--card); margin-bottom: 12px; }
+.howto summary { font-size: 10.5px; font-weight: 800; letter-spacing: .8px;
+text-transform: uppercase; color: var(--muted); padding: 10px 12px; cursor: pointer; }
+.howto .bodyp { padding: 0 12px 12px; font-size: 11.5px; line-height: 1.65;
+color: var(--muted); }
+.howto .bodyp b { color: var(--ink); }
+.sync.warn { color: var(--s-warn); }
+.sync.warn .dot { background: var(--s-warn); }
+.quad .cap { font-size: 8.5px; font-weight: 700; color: var(--muted);
+margin-top: 1px; letter-spacing: .2px; }
+.quad > div.def .cap { color: inherit; }
+.mrule { margin-top: 5px; font-size: 10.5px; font-weight: 700;
+color: var(--muted); font-variant-numeric: tabular-nums; }
+.mrule.none { color: var(--faint); font-style: italic; }
+.d200 { margin-top: 6px; font-size: 10.5px; font-weight: 700;
+color: var(--muted); font-variant-numeric: tabular-nums;
+display: flex; gap: 8px; align-items: baseline; }
+.d200 .bandleg { margin-left: auto; font-size: 8.5px; color: var(--faint);
+font-weight: 700; text-align: right; }
+/* The crosshair. The readout sits ABOVE the chart and its height is
+   reserved, so grabbing the chart never makes the card jump. The touch
+   target is the whole panel, which is 72px of SVG plus padding -- well past
+   the 24px minimum. */
+.spark { touch-action: pan-y; }
+.spark .xhread { height: 15px; font-size: 10px; font-weight: 700;
+color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap;
+overflow: hidden; text-overflow: ellipsis; }
+.spark .xhread:empty::before { content: "drag the chart to read a session";
+color: var(--faint); font-weight: 600; }
+.spark .lastlbl { position: absolute; right: 2px; bottom: -2px;
+font-size: 9px; font-weight: 800; color: var(--ink);
+font-variant-numeric: tabular-nums; }
+.spark .n40 { left: 2px; right: auto; }
 </style>
 </head>
 <body>
@@ -254,8 +425,73 @@ const REFRESH_MS = 60_000;
 const DEMO = new URLSearchParams(location.search).has("demo");
 const TABS = [
 { id: "all", label: "All" }, { id: "star", label: "Stars" }, { id: "e2", label: "E2" },
+{ id: "states", label: "States" },
 { id: "dp", label: "Dark pool" }, { id: "eve", label: "Evening" },
 ];
+// ─── STATES (added 2026-10-04) ──────────────────────────────────────────────
+// The desk publishes monitor/states.json to this same feed topic as its own
+// message, title exactly "states.json", Filename header set, priority min.
+// The document is the message's ATTACHMENT, so the body is empty and the
+// payload has to be fetched from attachment.url.
+//
+// ntfy deletes attachments after about 3 hours while the message window here
+// is 12, so for most of the day the newest states message points at a URL
+// that is already gone. That is why the last good copy is kept in
+// localStorage with its own as_of and shown when the poll turns up nothing
+// newer -- the cache is not an optimisation, it is the only thing that makes
+// this tab work outside a three-hour window.
+const STATES_TITLE = "states.json";
+const STATES_CACHE = "walls_states";
+const STALE_MIN = 20;                  // SYNCED goes amber past this, in RTH
+let statesDoc = null, statesFrom = "", statesFetching = false;
+try {
+const raw = localStorage.getItem(STATES_CACHE);
+if (raw) { statesDoc = JSON.parse(raw); statesFrom = "cache"; }
+} catch {}
+function statesAgeMin(d) {
+if (!d || !d.as_of) return null;
+const t = Date.parse(d.as_of);
+if (!Number.isFinite(t)) return null;
+return (Date.now() - t) / 60000;
+}
+function inRTH() {
+const p = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York",
+hour12: false, weekday: "short", hour: "2-digit", minute: "2-digit" })
+.formatToParts(new Date());
+const g = (t) => p.find((x) => x.type === t)?.value || "";
+const mins = (+g("hour")) * 60 + (+g("minute"));
+return !["Sat", "Sun"].includes(g("weekday")) && mins >= 570 && mins <= 960;
+}
+// Three ways in, in order of trust: the attachment on the newest states
+// message, a JSON body (demo mode carries it inline), then the cache. A
+// document is only accepted if it is NEWER than what is already held, so a
+// stale attachment can never overwrite a fresher cached copy.
+async function loadStates() {
+const m = msgs.find((x) => (x.title || "").trim().toLowerCase() === STATES_TITLE);
+const accept = (doc, from) => {
+if (!doc || !doc.as_of) return false;
+const cur = statesDoc ? Date.parse(statesDoc.as_of || 0) : 0;
+if (Date.parse(doc.as_of) < cur) return false;
+statesDoc = doc; statesFrom = from;
+try { localStorage.setItem(STATES_CACHE, JSON.stringify(doc)); } catch {}
+return true;
+};
+if (m && m.message && m.message.trim().startsWith("{")) {
+try { if (accept(JSON.parse(m.message), "body")) return true; } catch {}
+}
+const a = m && m.attachment;
+if (a && a.url && !statesFetching) {
+const expired = a.expires && (Date.now() / 1000) > a.expires;
+if (!expired) {
+statesFetching = true;
+try {
+const r = await fetch(a.url, { cache: "no-store" });
+if (r.ok) { if (accept(await r.json(), "feed")) return true; }
+} catch {} finally { statesFetching = false; }
+}
+}
+return false;
+}
 let tab = "all", msgs = [], failedOnce = false;
 let theme = "light";
 try { theme = localStorage.getItem("walls_theme") || "light"; } catch {}
@@ -277,6 +513,11 @@ setInterval(() => { document.getElementById("mkt").innerHTML = marketStatus(); }
 document.getElementById("mkt").innerHTML = marketStatus();
 function classify(m) {
 const t = (m.title || "").toLowerCase(); const tags = m.tags || [];
+// The data message and the on-demand state reply, both matched on title
+// alone -- never on the body, so neither has to be parsed to find out what
+// it is. Checked first so no later rule can claim them.
+if (t.trim() === STATES_TITLE) return "statesdoc";
+if (/^state /.test(t)) return "stateq";
 if (t.includes("entry candidate")) return "star";
 if (t.includes("e2")) return "e2";
 if (t.includes("divergence")) return "dp";
@@ -559,6 +800,331 @@ return `<div class="card"><div class="pad">
 ${stale ? `<div class="agenote">⏳ ${esc(stale)}</div>` : ""}
 </div></div>`;
 }
+// ─── STATES rendering ───────────────────────────────────────────────────────
+// Every number drawn below comes from states.json. This tab computes no
+// state, reads no bars, walls, chain or dark pool, and calls no vendor.
+// Units in the document are FRACTIONS; the only arithmetic here is x100.
+const SGLYPH = { HEALTHY: "●", STRESSED: "▲", BROKEN: "■", EARLY: "◆",
+NONE: "–", "NO BARS": "–" };
+const SORDER = ["BROKEN", "STRESSED", "EARLY", "HEALTHY", "NONE", "NO BARS"];
+const STRETCH_TXT = {
+S1: "5-10% over MA20 · 19% go on to a further -10%",
+S2: "10-15% over MA20 · 36% go on to a further -10%",
+S3: "over 15% over MA20 · 48-65% go on to a further -10%",
+};
+const fp1 = (x) => (x === null || x === undefined || !Number.isFinite(x))
+? "—" : (x > 0 ? "+" : "") + (x * 100).toFixed(1) + "%";
+const sKey = (s) => "s-" + String(s).replace(/\s+/g, "");
+// CAPTION BANDS, the same boundaries the PNG card uses. A value exactly on a
+// boundary reads as the CALMER word, so a rounding difference cannot change
+// the verb under a number.
+const BAND_TESTING = 0.01, BAND_NEAR = 0.05;
+const BAND_LEGEND = "within 1% testing it · 1-5% above/below · beyond 5% well above/below";
+function caption(frac) {
+if (frac === null || frac === undefined || !Number.isFinite(frac)) return "";
+if (Math.abs(frac) <= BAND_TESTING) return "testing it";
+if (frac > 0) return frac <= BAND_NEAR ? "above" : "well above";
+return frac >= -BAND_NEAR ? "below" : "well below";
+}
+// The desk's universe rates, quoted when a name's own n is under 3.
+const UNIVERSE_DEEP = { STRESSED: 35, BROKEN: 40 };
+const MA200_NEAR = 0.15;
+const DEFAULT_STRESS = -0.05, DEFAULT_BROKEN = -0.08;
+// THE THRESHOLD LINE. states.json does NOT currently carry pull_stress /
+// pull_broken per name -- the contract in dash/monitor_json.py stops at the
+// measured figures. Rather than print the desk default under every name,
+// which would state MU's rule wrongly (it runs -8 / -13), the line says the
+// rule is not published. One field each in monitor_json.build() fixes it;
+// that is a VM change and this pass does not touch the VM.
+function thresholdLine(r) {
+const ps = r.pull_stress, pb = r.pull_broken;
+if (!Number.isFinite(ps) || !Number.isFinite(pb)) {
+return `<div class="mrule none">rule: not published in states.json</div>`;
+}
+const own = (ps !== DEFAULT_STRESS || pb !== DEFAULT_BROKEN);
+const head = own ? esc(r.name) + " rule" : "Rule";
+return `<div class="mrule">${head}: stressed ${(ps * 100).toFixed(0)}% · broken ${(pb * 100).toFixed(0)}%</div>`;
+}
+// The per-point pull, computed from the close series the document already
+// carries. This is EXACTLY the desk's definition -- close over the highest
+// of the previous 10 CLOSES -- so it is a recomputation, not an estimate.
+// The first 10 points of the window have no 10 predecessors inside it and
+// read "—" rather than a number computed from fewer.
+function pullSeries(close) {
+const out = [];
+for (let i = 0; i < close.length; i++) {
+if (i < 10) { out.push(null); continue; }
+let hi = -Infinity;
+for (let j = i - 10; j < i; j++) if (Number.isFinite(close[j])) hi = Math.max(hi, close[j]);
+out.push(hi > 0 && Number.isFinite(close[i]) ? close[i] / hi - 1 : null);
+}
+return out;
+}
+function sparkSvg(sp, asOf) {
+if (!sp || !Array.isArray(sp.close)) return "";
+const pts = sp.close.filter((v) => Number.isFinite(v));
+if (pts.length < 2) return "";
+const px = pts[pts.length - 1];
+// THE 200-DAY is drawn only while within MA200_NEAR of the price, and when
+// it is drawn it is IN THE SCALE. Drawing it outside the scale pinned it to
+// the panel floor, which reads as a line rather than a level; excluding it
+// from the chart entirely and stating the distance in the legend is the
+// whole of what that line could have said.
+const m2 = Array.isArray(sp.ma200) ? sp.ma200.filter((v) => Number.isFinite(v)) : [];
+let draw200 = false, tag200 = "";
+if (m2.length) {
+const off = px / m2[m2.length - 1] - 1;
+if (Math.abs(off) <= MA200_NEAR) draw200 = true;
+else tag200 = `200-day ${off > 0 ? "below" : "above"} (${fp1(-off)})`;
+}
+const series = [["20-day", sp.ma20, "var(--ma20)", 1.4],
+["50-day", sp.ma50, "var(--ma50)", 1.4]];
+if (draw200) series.push(["200-day", sp.ma200, "var(--ma200)", 1.4]);
+let lo = Math.min(...pts), hi = Math.max(...pts);
+const live = [];
+for (const [nm, arr, col, w] of series) {
+if (!Array.isArray(arr)) continue;
+const f = arr.filter((v) => Number.isFinite(v));
+if (!f.length) continue;
+lo = Math.min(lo, ...f); hi = Math.max(hi, ...f);
+live.push([nm, arr, col, w]);
+}
+if (Number.isFinite(sp.hi10)) { lo = Math.min(lo, sp.hi10); hi = Math.max(hi, sp.hi10); }
+if (!(hi > lo)) hi = lo + 1;
+const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+const W = 320, H = 72, n = sp.close.length;
+const X = (i) => (n < 2 ? 0 : (i * W / (n - 1)));
+const Y = (v) => (H - (v - lo) / (hi - lo) * H);
+const path = (arr) => {
+let d = "", open = false;
+arr.forEach((v, i) => {
+if (!Number.isFinite(v)) { open = false; return; }
+d += (open ? "L" : "M") + X(i).toFixed(1) + " " + Y(v).toFixed(1) + " ";
+open = true;
+});
+return d.trim();
+};
+let g = "";
+if (Number.isFinite(sp.hi10)) {
+g += `<line x1="0" y1="${Y(sp.hi10).toFixed(1)}" x2="${W}" y2="${Y(sp.hi10).toFixed(1)}" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 3" opacity=".55"/>`;
+}
+for (const [, arr, col, w] of live) {
+const d = path(arr);
+if (d) g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`;
+}
+const dc = path(sp.close);
+if (dc) g += `<path d="${dc}" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/>`;
+// The last point is the latest cycle price. It gets a dot and the clock
+// from as_of, so the newest reading on the chart is identifiable as the
+// one the rest of the card is describing.
+const hhmm = (asOf || "").slice(11, 16);
+g += `<circle cx="${X(n - 1).toFixed(1)}" cy="${Y(px).toFixed(1)}" r="2.6" fill="var(--ink)"/>`;
+// the crosshair, hidden until a drag
+g += `<g class="xh" style="display:none"><line class="xhl" y1="0" y2="${H}" stroke="var(--ink)" stroke-width="1" opacity=".5"/><circle class="xhd" r="3" fill="var(--ink)"/></g>`;
+const leg = live.map(([nm, , col]) =>
+`<span><i style="background:${col}"></i>${nm.toUpperCase()}</span>`).join("")
++ `<span><i style="background:var(--ink)"></i>CLOSE</span>`
++ (Number.isFinite(sp.hi10) ? `<span><i style="background:var(--ink);opacity:.55"></i>10s HIGH</span>` : "")
++ (tag200 ? `<span style="color:var(--ma200)">${esc(tag200)}</span>` : "");
+// The series the crosshair reads, carried on the element so the handler
+// needs no lookup back into the document.
+const pulls = pullSeries(sp.close);
+const payload = esc(JSON.stringify({ c: sp.close, a: sp.ma20, b: sp.ma50,
+d: draw200 ? sp.ma200 : null, p: pulls, n: n }));
+return `<div class="spark" data-spark="${payload}">
+<div class="xhread" aria-live="polite"></div>
+<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${g}</svg>
+<div class="n40">${n} sessions</div>${hhmm ? `<div class="lastlbl">${esc(hhmm)}</div>` : ""}
+</div><div class="leg">${leg}</div>`;
+}
+function episodes(h, state) {
+if (!h) return "";
+const uni = UNIVERSE_DEEP[state] || UNIVERSE_DEEP.BROKEN;
+const bits = [];
+if (!h.n) bits.push("STRESSED none on file");
+else if (h.n < 3) bits.push(`STRESSED n<3 (universe: ${uni}% fell another 10%+)`);
+else bits.push(`STRESSED ×${h.n}, trough ${fp1(h.trough_vs_ma50)} vs 50-day, held ${fp1(h.held).replace("+", "")}`);
+if (!h.broken_n) bits.push("BROKEN none");
+else if (h.broken_n < 3) bits.push(`BROKEN n<3 (universe: ${uni}% fell another 10%+)`);
+else bits.push(`BROKEN ×${h.broken_n}, +20s ${fp1(h.broken_ret20)}`);
+return `<div class="mline">past episodes: ${esc(bits.join(" · "))}</div>`;
+}
+function memberCard(r, coh, offRoster) {
+if (r.state === "NO BARS") {
+return `<div class="mcard"><div class="mtop"><span class="sy">${esc(r.name)}</span>
+<span class="ro">${esc(r.role || "")}</span>
+<span class="pill ${sKey(r.state)}">– NO BARS</span></div>
+<div class="mline nobars">no bars${r.last_bar ? " · last bar " + esc(r.last_bar) : ""}</div></div>`;
+}
+// THE COLOUR RULE, the same one the PNG card follows: the state colour
+// appears on the pill and on the ONE number that produced the state --
+// the off-high for STRESSED and BROKEN, the 20-day for EARLY and for a
+// return to HEALTHY. Every other number is ink, and a negative is NOT red.
+// A card that paints every negative red reports that the price fell, which
+// the reader can see, and hides which number the machine acted on.
+const defIdx = (r.state === "BROKEN" || r.state === "STRESSED") ? 0
+: (r.state === "EARLY" || r.state === "HEALTHY") ? 1 : -1;
+const tile = (i, k, v, cap) => `<div class="${i === defIdx ? "def " + sKey(r.state) : ""}"><div class="k">${k}</div><div class="v">${v}</div>${cap ? `<div class="cap">${esc(cap)}</div>` : ""}</div>`;
+const cl = coh ? `<div class="mline">${esc(coh.label)}: breadth ${fp1(coh.breadth).replace("+", "")} · RS20 ${fp1(coh.rs20)}</div>`
+: `<div class="mline">no cohort / own story</div>`;
+const lt = r.last_transition
+? `<div class="mline last">last transition ${esc(r.last_transition.date)} · ${esc(r.last_transition.from)} → ${esc(r.last_transition.to)}</div>` : "";
+const st = r.stretch && STRETCH_TXT[r.stretch]
+? `<div class="mline str">STRETCH ${esc(r.stretch)} · ${esc(STRETCH_TXT[r.stretch])}</div>` : "";
+return `<div class="mcard"><div class="mtop">
+<span class="sy">${esc(r.name)}</span><span class="ro">${esc(r.role || "")}</span>
+${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>` : ""}
+<span class="pill ${sKey(r.state)}">${SGLYPH[r.state] || "?"} ${esc(r.state)}${r.days ? " · " + r.days + (r.days === 1 ? " session" : " sessions") : ""}</span>
+</div>
+${thresholdLine(r)}
+<div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
+<div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
+${sparkSvg(r.spark, r._as_of)}${st}${cl}${episodes(r.hist, r.state)}${lt}
+</div>`;
+}
+// The on-demand reply is the cmd_listener's text block for "state TICKER".
+// Both ends of that format are ours, so it is parsed back into a card rather
+// than dumped as text. Any line that does not parse is simply absent.
+function stateQueryCard(m) {
+const b = m.message || "";
+const blocks = b.split(/^== /m).slice(1);
+if (!blocks.length) return plainCard(m);
+return blocks.map((blk) => {
+const L = blk.split("\n");
+const head = (L[0] || "").trim().split(/\s+/);
+const name = head[0] || "?";
+const role = (L[0] || "").includes("(not on the roster)")
+? "" : head.slice(1, -1).join(" ");
+const off = (L[0] || "").includes("(not on the roster)");
+const grab = (re) => { for (const l of L) { const x = l.match(re); if (x) return x; } return null; };
+const stc = grab(/state \(close rule\)\s+\S*\s*(\w+)/);
+const sti = grab(/intraday \(pad [\d.]+\)\s+(\w+)/);
+const cp = grab(/close ([\d.]+)\s+pull ([+-][\d.]+)% off the \d+-session high ([\d.]+)/);
+const ds = grab(/vs MA20 ([+-][\d.]+)%\s+vs MA50 ([+-][\d.]+)%\s+vs MA200 (n\/a|[+-][\d.]+%)/);
+const stz = grab(/^stretch (\S+)/m);
+const coh = grab(/^cohort (\S+) n=(\d+)\s+breadth (\S+)\s+RS20 (\S+)/m);
+const sh = grab(/^STRESS HIST\s+(.+)$/m);
+const bk = grab(/^BROKEN record (\d+)/m);
+const lt = grab(/^last transition (.+)$/m);
+const state = stc ? stc[1] : "";
+const r = {
+name, role: role || (off ? "not on the roster" : ""), state,
+days: null,
+close: cp ? +cp[1] : null,
+pull: cp ? (+cp[2]) / 100 : null,
+d20: ds ? (+ds[1]) / 100 : null,
+d50: ds ? (+ds[2]) / 100 : null,
+stretch: stz && stz[1] !== "-" ? stz[1] : "",
+hist: null, spark: null,
+last_transition: null,
+};
+const extra = [
+sti ? `<div class="mline">close rule <b>${esc(state)}</b> · intraday ${esc(sti[1])}</div>` : "",
+ds && ds[3] !== "n/a" ? `<div class="mline">vs MA200 ${esc(ds[3])}</div>` : "",
+coh ? `<div class="mline">cohort ${esc(coh[1])} n=${esc(coh[2])} · breadth ${esc(coh[3])} · RS20 ${esc(coh[4])}</div>`
+: `<div class="mline">no cohort / own story</div>`,
+sh ? `<div class="mline">past episodes: STRESS HIST ${esc(sh[1])}${bk ? " · BROKEN ×" + esc(bk[1]) : ""}</div>` : "",
+lt ? `<div class="mline last">last transition ${esc(lt[1])}</div>` : "",
+].filter(Boolean).join("");
+const base = memberCard(r, null, off);
+return base.replace("<div class=\"mline\">no cohort / own story</div>", extra);
+}).join("");
+}
+function statesView() {
+const d = statesDoc;
+if (!d) {
+return `<div class="empty">No states.json in the last ${SINCE}<br>
+the desk publishes it each cycle<br>nothing cached yet</div>`;
+}
+const age = statesAgeMin(d);
+let html = "";
+// The age is only quoted when it is POSITIVE. A document stamped ahead of
+// this device's clock -- skew, or a timezone the page did not expect --
+// otherwise rendered as "-883m old", which reads as a fault in the data
+// when it is a disagreement about the time.
+const ageTxt = (age !== null && age >= 0) ? " · " + Math.round(age) + "m old"
+: (age !== null ? " · stamped ahead of this device's clock" : "");
+if (statesFrom === "cache") {
+html += `<div class="banner">SHOWING THE LAST GOOD COPY — as of ${esc(d.as_of || "?")}${ageTxt}. The feed has nothing newer (ntfy drops attachments after ~3h).</div>`;
+} else if (age !== null && age > STALE_MIN && inRTH()) {
+html += `<div class="banner">STATES ARE ${Math.round(age)} MIN OLD during RTH — as of ${esc(d.as_of || "?")}.</div>`;
+}
+// a. the ticker box, first -- publishes "state TICKER" to the command topic
+// the page already holds, exactly as the debug block does, and never writes
+// to the roster.
+const sv = document.getElementById("stIn")?.value || "";
+html += `<div class="dbgbar" style="margin:0 0 12px"><input id="stIn" class="dbg" placeholder="state of any name · up to 5" maxlength="29" autocapitalize="characters" autocorrect="off" value="${esc(sv)}"><button class="bigbtn dbg" id="stGo">State</button></div>`;
+// the newest on-demand replies, rendered as member cards above the roster
+const q = msgs.filter((m) => m.kind === "stateq").slice(0, 2);
+html += q.map(stateQueryCard).join("");
+// b. summary chips
+html += `<div class="chips">` + SORDER.map((s) => {
+const n = (d.counts || {})[s] || 0;
+return `<div class="chip ${sKey(s)}${n ? "" : " zero"}"><span class="g">${SGLYPH[s]}</span>${esc(s === "NO BARS" ? "No run" : s[0] + s.slice(1).toLowerCase())}<span class="n">${n}</span></div>`;
+}).join("") + `</div>`;
+// b. alert strip
+const al = (d.alerts || []);
+if (al.length) {
+html += `<div class="alerts"><div class="hd">Today's alerts · newest first</div>` + al.map((a) => {
+// The PNG only reaches the phone if the alert push carried it as an
+// attachment; today it does not, so the three-line text is what shows.
+const hit = msgs.find((m) => m.kind !== "statesdoc" && m.attachment && m.attachment.url
+&& (m.title || "").toUpperCase().startsWith(a.name + " " + a.to));
+const url = hit && hit.attachment && (!hit.attachment.expires
+|| Date.now() / 1000 < hit.attachment.expires) ? hit.attachment.url : "";
+const row = `<span class="g">${SGLYPH[a.to] || "?"}</span>
+<span class="nm">${esc(a.name)}</span>
+<span class="mv">${esc(a.from)} → ${esc(a.to)}</span>
+${url ? `<span class="pin">card ↗</span>` : ""}
+<span class="tm">${esc(a.time)}</span>`;
+const three = url ? "" : `<div class="three">${esc(fp1(a.pull) + " off 10s high · " + fp1(a.d20) + " vs MA20 · " + fp1(a.d50) + " vs MA50")}</div>`;
+return `<div class="aitem">` + (url
+? `<a class="arow" href="${esc(url)}" target="_blank" rel="noopener">${row}</a>`
+: `<div class="arow">${row}</div>${three}`) + `</div>`;
+}).join("") + `</div>`;
+}
+// d. cohort blocks in roster order, singles last. as_of rides on each row
+// so the sparkline can label its last point with the cycle clock without
+// the renderer reaching back up to the document.
+const names = (d.names || []).map((r) => Object.assign({}, r,
+{ _as_of: d.as_of }));
+const cohorts = d.cohorts || [];
+const byId = {};
+cohorts.forEach((c) => { byId[c.id] = c; });
+const done = new Set();
+for (const c of cohorts) {
+const mem = names.filter((r) => r.cohort_id === c.id && !r.single);
+if (!mem.length) continue;
+mem.forEach((r) => done.add(r.name));
+const b = Number.isFinite(c.breadth) ? c.breadth : null;
+html += `<div class="coh"><div class="cohhd">
+<span class="lb">${esc(c.label)}</span>
+${b !== null ? `<span class="bbar"><i class="${b < 0.5 ? "lo" : ""}" style="width:${(b * 100).toFixed(0)}%"></i></span><span class="live">${(b * 100).toFixed(0)}% · ${c.n_live}/${c.n} live</span>` : `<span class="live">${c.n_live}/${c.n} live</span>`}
+<span class="rs ${(c.rs20 || 0) >= 0 ? "g" : "r"}">${fp1(c.rs20)}</span>
+</div>
+${c.note ? `<div class="cohnote">${esc(c.note)}</div>` : ""}
+${mem.map((r) => memberCard(r, c, false)).join("")}</div>`;
+}
+const singles = names.filter((r) => !done.has(r.name));
+if (singles.length) {
+html += `<div class="coh"><div class="cohhd">
+<span class="lb">Singles</span><span class="live">no cohort / own story</span></div>
+${singles.map((r) => memberCard(r, null, false)).join("")}</div>`;
+}
+// e. HOW TO READ, collapsed
+html += `<details class="howto"><summary>How to read ▾</summary><div class="bodyp">
+<b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
+<b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
+<b>Stretch</b> (HEALTHY only, close over MA20) — S1 5-10%, S2 10-15%, S3 over 15%. Rates that go on to a further -10%: S1 19% · S2 36% · S3 48-65%.<br><br>
+<b>Stress hist</b> — for every past STRESSED <i>entry</i> (a run counts once), the trough close over the next 20 sessions measured against the MA50 <i>at entry</i>, and how often that level held. Under n=3 no figure is quoted.<br><br>
+<b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
+</div></details>`;
+// f. footer
+html += `<div class="foot">States describe; they do not predict.<br>
+Entry ordering inside a trend is distance to MA20; the MA50 is where pullbacks have ended.<br>
+session ${esc(d.session || "?")} · basis ${esc(d.basis || "?")} · as of ${esc(d.as_of || "?")}${statesFrom === "cache" ? " · from cache" : ""}</div>`;
+return html;
+}
 function plainCard(m) {
 const body = m.message || "";
 const inner = looksTabular(body)
@@ -572,7 +1138,22 @@ ${inner}${attBlock(m)}
 }
 function render() {
 const el = document.getElementById("main");
-const shown = msgs.filter((m) => tab === "all" || m.kind === tab);
+// The STATES tab is not a message list -- it is one view built from the
+// newest states.json -- so it short-circuits the feed renderer entirely.
+if (tab === "states") {
+let h = "";
+if (DEMO || failedOnce) {
+h += `<div class="banner">${DEMO ? "DEMO DATA — remove ?demo from URL for live feed." : "FEED UNREACHABLE — showing last loaded messages."}</div>`;
+}
+el.innerHTML = h + statesView();
+document.getElementById("ribbon").innerHTML = "";
+return;
+}
+// The data message is machinery, not reading: it is kept out of every feed
+// tab including All, so a quiet tape still looks quiet. Its payload is the
+// STATES tab's whole content and appears nowhere else.
+const shown = msgs.filter((m) => m.kind !== "statesdoc"
+&& (tab === "all" || m.kind === tab));
 let html = "";
 if (DEMO || failedOnce) {
 html += `<div class="banner">${DEMO ? "DEMO DATA — remove ?demo from URL for live feed." : "FEED UNREACHABLE — showing last loaded messages."}</div>`;
@@ -596,7 +1177,19 @@ document.getElementById("ribbon").innerHTML = hot
 }
 function renderTabs() {
 document.getElementById("tabs").innerHTML = TABS.map((t) => {
-const n = t.id === "all" ? msgs.length : msgs.filter((m) => m.kind === t.id).length;
+// STATES carries glyph counts instead of a message count: a message count
+// would always read 1 (one data message) and say nothing. Only BROKEN and
+// STRESSED get a badge -- HEALTHY and EARLY are not worth one, and a tab
+// label that lit up for nine healthy names would cry wolf every day.
+if (t.id === "states") {
+const c = (statesDoc && statesDoc.counts) || {};
+const badge = ["BROKEN", "STRESSED"]
+.filter((s) => c[s]).map((s) => SGLYPH[s] + c[s]).join(" ");
+return `<button class="tab${tab === t.id ? " on" : ""}" data-tab="${t.id}">${t.label}${badge ? `<b>${badge}</b>` : ""}</button>`;
+}
+const n = t.id === "all"
+? msgs.filter((m) => m.kind !== "statesdoc").length
+: msgs.filter((m) => m.kind === t.id).length;
 return `<button class="tab${tab === t.id ? " on" : ""}" data-tab="${t.id}">${t.label}${n ? `<b>${n}</b>` : ""}</button>`;
 }).join("");
 }
@@ -618,7 +1211,15 @@ location.hash = v; location.reload();
 }
 async function refresh() {
 const dot = document.getElementById("dot"), sync = document.getElementById("sync");
-if (!TOPIC && !DEMO) { if (!document.getElementById("topicIn")) renderSetup(); return; }
+// With no topic there is nothing to poll. The setup screen belongs in that
+// case -- EXCEPT on the STATES tab holding a cached document, where the
+// 60-second refresh would otherwise replace a board the reader is looking at
+// with a connect form every minute.
+if (!TOPIC && !DEMO) {
+if (tab === "states" && statesDoc) { syncIndicator(); renderTabs(); render(); return; }
+if (!document.getElementById("topicIn")) renderSetup();
+return;
+}
 dot.classList.add("pulse");
 try {
 let text;
@@ -635,12 +1236,43 @@ msgs = text.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l);
 .sort((a, b) => b.time - a.time);
 failedOnce = false;
 dot.classList.remove("err");
-sync.textContent = "synced " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+lastPollText = "synced " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+sync.textContent = lastPollText;
+await loadStates();
 } catch (e) {
 failedOnce = true; dot.classList.add("err"); sync.textContent = "offline";
 }
 dot.classList.remove("pulse");
+syncIndicator();
 renderTabs(); render();
+}
+// On the STATES tab the indicator speaks for the DOCUMENT, not the poll: the
+// poll can be fresh while the states file is hours old, and a green "synced
+// 11:36" over a stale board would be the quiet lie the page refuses
+// elsewhere. Amber past STALE_MIN during RTH, always with the basis and the
+// document's own clock.
+//
+// It is its own function because SWITCHING to the tab has to update it too.
+// Folded into refresh() it only changed on the 60-second poll, so the first
+// minute on the tab showed the poll's clock over the document's data.
+let lastPollText = "";
+function syncIndicator() {
+const sync = document.getElementById("sync");
+const sb = document.getElementById("syncbtn");
+if (!sync || !sb) return;
+if (tab === "states" && statesDoc && !failedOnce) {
+const age = statesAgeMin(statesDoc);
+const hhmm = (statesDoc.as_of || "").slice(11, 16);
+const stale = age !== null && age > STALE_MIN && inRTH();
+sync.textContent = (statesDoc.basis === "close"
+? "close " + (statesDoc.session || "")
+: "synced " + hhmm + " · intraday")
++ (stale ? " · " + Math.round(age) + "m old" : "");
+sb.classList.toggle("warn", !!stale);
+} else {
+sb.classList.remove("warn");
+if (lastPollText && !failedOnce) sync.textContent = lastPollText;
+}
 }
 function demoNDJSON() {
 const now = Math.floor(Date.now() / 1000);
@@ -654,7 +1286,96 @@ mk({ time: now - 5400, title: "KMB - E2 verdict", tags: ["x"],
 message: "❌ FAILED hold\n📍 109.61" }),
 mk({ time: now - 12000, title: "3 divergences - 512 scanned", tags: ["ocean"],
 message: "🐳 MSTR +4.1%" }),
+// The states document. In the live feed it arrives as an ATTACHMENT with an
+// empty body; demo mode carries the same JSON inline, which the loader also
+// accepts. Four names, five states between them, one below-floor triple and
+// one NO BARS row, so the tab can be seen without a live topic.
+mk({ time: now - 60, title: "states.json", message: JSON.stringify(demoStates()) }),
+mk({ time: now - 300, title: "State NVDA", tags: ["mag"], message:
+"== NVDA  single  2026-10-02\nstate (close rule) ● HEALTHY   | intraday (pad 0.02) HEALTHY\n"
++ "close 233.95  pull +1.3% off the 10-session high 230.86\n"
++ "vs MA20 +4.7%  vs MA50 +7.4%  vs MA200 +16.7%\nstretch -\n"
++ "cohort 48 n=2  breadth 100%  RS20 +14.9  R^2 0.2730\n"
++ "STRESS HIST  n=11  median trough -5.4% vs MA50 at entry  held 4 of 11 (36%)\n"
++ "BROKEN record 23 session(s) in the window\nlast transition 2026-09-17 STRESSED -> HEALTHY\n" }),
 ].join("\n");
+}
+function demoStates() {
+const spark = (base, drift) => {
+const close = [], ma20 = [], ma50 = [], ma200 = [];
+for (let i = 0; i < 40; i++) {
+const v = base * (1 + drift * i / 40 + Math.sin(i / 4) * 0.012);
+close.push(+v.toFixed(2));
+ma20.push(+(v * (1 - drift * 0.18)).toFixed(2));
+ma50.push(+(v * (1 - drift * 0.38)).toFixed(2));
+ma200.push(+(v * 0.62).toFixed(2));
+}
+return { close, ma20, ma50, ma200, hi10: Math.max(...close.slice(-10)) };
+};
+// as_of must be a real local timestamp with its own offset. Built from
+// toISOString() minus the offset it would have had, this read 4 hours
+// ahead and made the demo look like a stale document.
+const off = -new Date().getTimezoneOffset();
+const sgn = off >= 0 ? "+" : "-";
+const pad2 = (n) => String(Math.abs(n)).padStart(2, "0");
+const local = new Date(Date.now() + off * 60000).toISOString().slice(0, 19);
+return {
+as_of: local + sgn + pad2((off / 60) | 0) + ":" + pad2(off % 60),
+session: "2026-10-02", basis: "intraday",
+counts: { BROKEN: 1, STRESSED: 1, EARLY: 1, HEALTHY: 1, NONE: 1, "NO BARS": 1 },
+cohorts: [
+{ id: 18, label: "Cybersecurity", n_live: 4, n: 5, breadth: 1.0, rs20: 0.2956, note: "" },
+{ id: 31, label: "Mega-cap internet", n_live: 3, n: 3, breadth: 0.6667, rs20: 0.0631,
+note: "triple, below cohort floor" },
+],
+names: [
+{ name: "CRWD", role: "index", cohort_id: 18, single: false, state: "HEALTHY",
+prev: "HEALTHY", days: 15, close: 270.04, pull: 0.0148, d20: 0.1274, d50: 0.2383,
+d200: 0.7673, stretch: "S2",
+hist: { n: 8, trough_vs_ma50: 0.0041, held: 0.5, broken_n: 11,
+broken_ret20: 0.1139, broken_deep: 0.1818 },
+spark: spark(240, 0.12),
+last_transition: { date: "2026-09-14", from: "BROKEN", to: "HEALTHY" } },
+{ name: "PANW", role: "amplifier", cohort_id: 18, single: false, state: "STRESSED",
+prev: "HEALTHY", days: 2, close: 403.24, pull: -0.061, d20: -0.032, d50: 0.021,
+d200: 0.18, stretch: "",
+hist: { n: 10, trough_vs_ma50: 0.045, held: 0.7, broken_n: 4,
+broken_ret20: 0.03, broken_deep: 0.25 },
+spark: spark(410, -0.04),
+last_transition: { date: "2026-10-01", from: "HEALTHY", to: "STRESSED" } },
+{ name: "GOOG", role: "index", cohort_id: 31, single: false, state: "EARLY",
+prev: "NONE", days: 1, close: 340.35, pull: -0.03, d20: 0.003, d50: -0.003,
+d200: 0.11, stretch: "",
+hist: { n: 6, trough_vs_ma50: -0.051, held: 0.1667, broken_n: 2,
+broken_ret20: null, broken_deep: null },
+spark: spark(338, 0.01),
+last_transition: { date: "2026-10-02", from: "NONE", to: "EARLY" } },
+{ name: "AMZN", role: "member", cohort_id: 31, single: false, state: "NONE",
+prev: "NONE", days: 9, close: 251.52, pull: -0.027, d20: -0.002, d50: -0.018,
+d200: 0.06, stretch: "",
+hist: { n: 6, trough_vs_ma50: -0.048, held: 0.1667, broken_n: 5,
+broken_ret20: -0.02, broken_deep: 0.4 },
+spark: spark(254, -0.01),
+last_transition: { date: "2026-09-20", from: "EARLY", to: "NONE" } },
+{ name: "MU", role: "single", cohort_id: 1, single: true, state: "BROKEN",
+prev: "HEALTHY", days: 1, close: 924.4, pull: -0.158, d20: -0.093, d50: -0.031,
+d200: 0.41, stretch: "",
+hist: { n: 11, trough_vs_ma50: 0.121, held: 0.5455, broken_n: 9,
+broken_ret20: 0.08, broken_deep: 0.33 },
+spark: spark(1070, -0.1),
+last_transition: { date: "2026-10-02", from: "HEALTHY", to: "BROKEN" } },
+{ name: "GHOSTX", role: "single", cohort_id: null, single: true, state: "NO BARS",
+prev: null, days: null, close: null, pull: null, d20: null, d50: null,
+d200: null, stretch: "", hist: null, spark: null, last_transition: null,
+last_bar: "2026-08-14" },
+],
+alerts: [
+{ time: "10:36", name: "MU", from: "HEALTHY", to: "BROKEN", pull: -0.158,
+d20: -0.093, d50: -0.031, card: "monitor/alert_2026-10-02_1036_MU.png" },
+{ time: "09:58", name: "PANW", from: "HEALTHY", to: "STRESSED", pull: -0.061,
+d20: -0.032, d50: 0.021, card: "monitor/alert_2026-10-02_0958_PANW.png" },
+],
+};
 }
 // The desk topic is the WRITE credential for the paper book. It is stored
 // once in localStorage and, before this control existed, could never be
@@ -690,15 +1411,47 @@ fetch("https://ntfy.sh/" + encodeURIComponent(ct),
 .catch(() => toast("Send failed"));
 }
 const sendDebug = () => sendDesk("debug");
+// "state TICKER [TICKER...]" rides the SAME desk command topic and the same
+// credential handling as the Log button and the debug block -- no new topic,
+// no new path. The VM's cmd_listener answers on the feed topic, so the reply
+// lands here as a normal message and the STATES tab renders it as a card.
+// Up to five names; "roster" and a bare cluster id are also accepted by the
+// listener, and neither counts against the five.
+function sendState() {
+const inp = document.getElementById("stIn");
+const raw = (inp?.value || "").trim().toUpperCase();
+if (!raw) { toast("Enter a ticker"); return; }
+const toks = raw.split(/[\s,]+/).filter(Boolean);
+const special = toks.length === 1 && (toks[0] === "ROSTER" || /^\d+$/.test(toks[0]));
+if (!special) {
+if (toks.length > 5) { toast("Five names at most"); return; }
+if (!toks.every((t) => /^[A-Z][A-Z.\-]{0,5}$/.test(t))) {
+toast("Enter tickers"); return;
+}
+}
+let ct = "";
+try { ct = localStorage.getItem("walls_cmd") || ""; } catch {}
+if (!ct) {
+ct = (prompt("Command topic (from cmd_listener on the VM):") || "").trim();
+if (!ct) return;
+try { localStorage.setItem("walls_cmd", ct); } catch {}
+}
+fetch("https://ntfy.sh/" + encodeURIComponent(ct),
+{ method: "POST", body: "state " + toks.join(" "), headers: { "Title": "cmd" } })
+.then(() => { if (inp) inp.value = ""; toast("State " + toks.join(" ") + " sent — reply lands in feed"); })
+.catch(() => toast("Send failed"));
+}
 document.addEventListener("keydown", (e) => {
 if (e.key === "Enter" && e.target && e.target.id === "dbgIn") sendDebug();
+if (e.key === "Enter" && e.target && e.target.id === "stIn") sendState();
 });
 document.addEventListener("click", (e) => {
 if (e.target.closest("#dbgGo")) { sendDesk("debug"); return; }
 if (e.target.closest("#storyGo")) { sendDesk("story"); return; }
+if (e.target.closest("#stGo")) { sendState(); return; }
 if (e.target.closest("#deskset")) { setDeskTopic(); return; }
 const t = e.target.closest(".tab");
-if (t) { tab = t.dataset.tab; renderTabs(); render(); return; }
+if (t) { tab = t.dataset.tab; syncIndicator(); renderTabs(); render(); return; }
 const c = e.target.closest("[data-copy]");
 if (c) { navigator.clipboard?.writeText(c.dataset.copy).then(() => toast("Log command copied")); return; }
 const g = e.target.closest("[data-logcmd]");
@@ -724,6 +1477,84 @@ fetch("https://ntfy.sh/" + encodeURIComponent(ct),
 .catch(() => { g.textContent = "Log trade"; toast("Send failed"); });
 }
 });
+// ─── the sparkline crosshair ────────────────────────────────────────────────
+// Pointer events, so one handler covers mouse and touch. The series travel on
+// the element itself (data-spark), so dragging needs no lookup back into the
+// document and a re-render cannot leave the handler pointing at stale data.
+//
+// The readout gives the close, the three averages and the pull AT THAT POINT.
+// The pull is recomputed from the close series by the desk's own definition
+// (close over the highest of the previous 10 closes), so it is the same
+// quantity the card's tile shows, not an approximation of it.
+//
+// It cannot give a DATE: states.json's spark carries four arrays of numbers
+// and no session dates, so the readout says how far back the point is
+// instead. Adding a dates array to the spark block in monitor_json.py would
+// fix it; that is a VM change and this pass does not touch the VM.
+function xhMove(sp, clientX) {
+let d;
+try { d = JSON.parse(sp.dataset.spark || "{}"); } catch { return; }
+if (!d.c || !d.c.length) return;
+const svg = sp.querySelector("svg");
+const box = svg.getBoundingClientRect();
+if (!box.width) return;
+const f = Math.min(1, Math.max(0, (clientX - box.left) / box.width));
+const i = Math.round(f * (d.n - 1));
+const W = 320, H = 72;
+const x = (d.n < 2) ? 0 : (i * W / (d.n - 1));
+const g = svg.querySelector(".xh");
+const vb = svg.viewBox.baseVal;
+// the dot rides the close line: map the value back through the same scale
+const all = [];
+[d.c, d.a, d.b, d.d].forEach((arr) => {
+if (Array.isArray(arr)) arr.forEach((v) => { if (Number.isFinite(v)) all.push(v); });
+});
+let lo = Math.min(...all), hi = Math.max(...all);
+if (!(hi > lo)) hi = lo + 1;
+const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
+const Y = (v) => (H - (v - lo) / (hi - lo) * H);
+g.style.display = "";
+g.querySelector(".xhl").setAttribute("x1", x);
+g.querySelector(".xhl").setAttribute("x2", x);
+const dot = g.querySelector(".xhd");
+dot.setAttribute("cx", x);
+dot.setAttribute("cy", Number.isFinite(d.c[i]) ? Y(d.c[i]) : H);
+const back = (d.n - 1) - i;
+const bits = [back === 0 ? "latest" : back + " back",
+Number.isFinite(d.c[i]) ? d.c[i].toFixed(2) : "—",
+"20d " + fp1(Number.isFinite(d.a[i]) && d.c[i] ? d.c[i] / d.a[i] - 1 : null),
+"50d " + fp1(Number.isFinite(d.b[i]) && d.c[i] ? d.c[i] / d.b[i] - 1 : null)];
+if (d.d && Number.isFinite(d.d[i]) && d.c[i]) bits.push("200d " + fp1(d.c[i] / d.d[i] - 1));
+bits.push("pull " + fp1(d.p ? d.p[i] : null));
+sp.querySelector(".xhread").textContent = bits.join(" · ");
+}
+function xhEnd(sp) {
+const g = sp.querySelector(".xh");
+if (g) g.style.display = "none";
+const r = sp.querySelector(".xhread");
+if (r) r.textContent = "";
+}
+document.addEventListener("pointerdown", (e) => {
+const sp = e.target.closest && e.target.closest(".spark");
+if (!sp || !sp.dataset.spark) return;
+sp.setPointerCapture && sp.setPointerCapture(e.pointerId);
+sp.dataset.dragging = "1";
+xhMove(sp, e.clientX);
+});
+document.addEventListener("pointermove", (e) => {
+const sp = e.target.closest && e.target.closest(".spark");
+if (!sp || sp.dataset.dragging !== "1") return;
+e.preventDefault();
+xhMove(sp, e.clientX);
+}, { passive: false });
+for (const ev of ["pointerup", "pointercancel", "pointerleave"]) {
+document.addEventListener(ev, (e) => {
+const sp = e.target.closest && e.target.closest(".spark");
+if (!sp) return;
+sp.dataset.dragging = "0";
+xhEnd(sp);
+});
+}
 document.getElementById("syncbtn").addEventListener("click", refresh);
 function toast(txt) {
 const el = document.getElementById("toast");
