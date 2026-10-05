@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>STATES tab tests</title>
+<style>
+body { font: 13px/1.6 ui-monospace, Menlo, Consolas, monospace;
+margin: 20px; background: #F3F2F2; color: #201E1D; }
+h2 { font-size: 13px; margin: 18px 0 6px; text-transform: uppercase;
+letter-spacing: .6px; }
+.ok::before { content: "ok   "; color: #157F3D; }
+.fail::before { content: "FAIL "; color: #D22B12; }
+.fail { color: #D22B12; font-weight: 700; }
+#sum { font-size: 16px; font-weight: 800; margin: 16px 0; padding: 10px;
+background: #fff; border: 2px solid #201E1D; }
+#stage { position: absolute; left: -10000px; width: 390px; }
+</style>
+</head>
+<body>
+<h1 style="font-size:15px">STATES tab — browser tests</h1>
+<div id="sum">running…</div>
+<div id="out"></div>
+<!-- The tab under test is rendered into this off-screen stage by loading
+     index.html in an iframe at 390px and driving its real functions. No
+     copy of the page's code lives here: a test that re-implements the thing
+     it tests passes while the page is broken. -->
+<iframe id="stage" src="about:blank" width="390" height="900"></iframe>
+<script>
+"use strict";
+let PASS = 0, FAIL = 0;
+const out = document.getElementById("out");
+function check(label, cond) {
+  const d = document.createElement("div");
+  d.className = cond ? "ok" : "fail";
+  d.textContent = label;
+  out.appendChild(d);
+  cond ? PASS++ : FAIL++;
+}
+function head(t) {
+  const h = document.createElement("h2");
+  h.textContent = t;
+  out.appendChild(h);
+}
+
+// ── fixtures ───────────────────────────────────────────────────────────────
+function spark(base, drift) {
+  const close = [], ma20 = [], ma50 = [], ma200 = [];
+  for (let i = 0; i < 40; i++) {
+    const v = base * (1 + drift * i / 40 + Math.sin(i / 4) * 0.012);
+    close.push(+v.toFixed(2));
+    ma20.push(+(v * (1 - drift * 0.18)).toFixed(2));
+    ma50.push(+(v * (1 - drift * 0.38)).toFixed(2));
+    ma200.push(+(v * 0.62).toFixed(2));   // ~38% away: must be OMITTED
+  }
+  return { close, ma20, ma50, ma200, hi10: Math.max(...close.slice(-10)) };
+}
+function sparkNear(base) {
+  const s = spark(base, 0.04);
+  s.ma200 = s.ma200.map((_v, i) => +(s.close[i] * 0.93).toFixed(2)); // 7.5%
+  return s;
+}
+const HIST = { n: 8, trough_vs_ma50: 0.004, held: 0.5, broken_n: 11,
+  broken_ret20: 0.1139, broken_deep: 0.1818 };
+const HIST_THIN = { n: 2, trough_vs_ma50: null, held: null, broken_n: 1,
+  broken_ret20: null, broken_deep: null };
+
+function fixture(asOf) {
+  return {
+    as_of: asOf || "2026-10-05T11:36:00-04:00",
+    session: "2026-10-05", basis: "intraday",
+    counts: { BROKEN: 1, STRESSED: 1, EARLY: 1, HEALTHY: 1, NONE: 1,
+      "NO BARS": 1 },
+    cohorts: [
+      { id: 18, label: "Cybersecurity", n_live: 4, n: 5, breadth: 1.0,
+        rs20: 0.2956, note: "" },
+      { id: 31, label: "Mega-cap internet", n_live: 3, n: 3, breadth: 0.6667,
+        rs20: 0.0631, note: "triple, below cohort floor" }],
+    names: [
+      { name: "CRWD", role: "index", cohort_id: 18, single: false,
+        state: "HEALTHY", prev: "HEALTHY", days: 15, close: 270.04,
+        pull: 0.0148, d20: 0.1274, d50: 0.2383, d200: 0.7673, stretch: "S2",
+        hist: HIST, spark: spark(240, 0.12),
+        pull_stress: -0.05, pull_broken: -0.08,
+        last_transition: { date: "2026-09-14", from: "BROKEN",
+          to: "HEALTHY" } },
+      { name: "PANW", role: "amplifier", cohort_id: 18, single: false,
+        state: "STRESSED", prev: "HEALTHY", days: 2, close: 403.24,
+        pull: -0.061, d20: -0.0032, d50: 0.0500, d200: 0.18, stretch: "",
+        hist: HIST_THIN, spark: sparkNear(410),
+        pull_stress: -0.05, pull_broken: -0.08,
+        last_transition: { date: "2026-10-01", from: "HEALTHY",
+          to: "STRESSED" } },
+      { name: "GOOG", role: "index", cohort_id: 31, single: false,
+        state: "EARLY", prev: "NONE", days: 1, close: 340.35, pull: -0.03,
+        d20: 0.0100, d50: -0.0100, d200: 0.11, stretch: "", hist: HIST,
+        spark: spark(338, 0.01), pull_stress: -0.05, pull_broken: -0.08,
+        last_transition: { date: "2026-10-02", from: "NONE", to: "EARLY" } },
+      { name: "AMZN", role: "member", cohort_id: 31, single: false,
+        state: "NONE", prev: "NONE", days: 9, close: 251.52, pull: -0.027,
+        d20: -0.0501, d50: -0.018, d200: 0.06, stretch: "", hist: HIST,
+        spark: spark(254, -0.01), pull_stress: -0.05, pull_broken: -0.08,
+        last_transition: { date: "2026-09-20", from: "EARLY",
+          to: "NONE" } },
+      { name: "MU", role: "single", cohort_id: 1, single: true,
+        state: "BROKEN", prev: "HEALTHY", days: 1, close: 924.4,
+        pull: -0.158, d20: -0.093, d50: -0.031, d200: 0.41, stretch: "",
+        hist: HIST, spark: spark(1070, -0.1),
+        pull_stress: -0.08, pull_broken: -0.13,
+        last_transition: { date: "2026-10-02", from: "HEALTHY",
+          to: "BROKEN" } },
+      { name: "GHOSTX", role: "single", cohort_id: null, single: true,
+        state: "NO BARS", prev: null, days: null, close: null, pull: null,
+        d20: null, d50: null, d200: null, stretch: "", hist: null,
+        spark: null, last_transition: null, last_bar: "2026-08-14" }],
+    alerts: [
+      { time: "10:36", name: "MU", from: "HEALTHY", to: "BROKEN",
+        pull: -0.158, d20: -0.093, d50: -0.031,
+        card: "monitor/alert_2026-10-05_1036_MU.png" },
+      { time: "09:58", name: "PANW", from: "HEALTHY", to: "STRESSED",
+        pull: -0.061, d20: -0.0032, d50: 0.05,
+        card: "monitor/alert_2026-10-05_0958_PANW.png" }],
+  };
+}
+
+// ── drive the real page ────────────────────────────────────────────────────
+// The fixture has to be in localStorage BEFORE index.html loads, or the page
+// renders whatever it finds first and the assertions test that instead. So
+// the frame is driven as a sequence: blank -> seed -> load -> assert ->
+// seed again -> load -> assert the newer as_of.
+//
+// It is loaded WITHOUT ?demo on purpose. With no topic the page cannot poll,
+// so nothing competes with the fixture, and the cached-copy path -- the one
+// that actually runs most of the day, once the 3-hour attachment has gone --
+// is what gets exercised.
+const frame = document.getElementById("stage");
+const PAGE = "../index.html";
+let step = 0;
+
+frame.addEventListener("load", () => {
+  const w = frame.contentWindow;
+  if (frame.contentDocument.location.href.endsWith("blank")) return;
+  setTimeout(() => (step === 0 ? run() : runNewer()), 600);
+});
+
+// seed, then load
+(function boot() {
+  const probe = document.createElement("iframe");
+  probe.src = PAGE;
+  probe.style.cssText = "position:absolute;left:-10000px;width:1px;height:1px";
+  probe.addEventListener("load", () => {
+    try {
+      probe.contentWindow.localStorage.setItem("walls_states",
+        JSON.stringify(fixture()));
+      probe.contentWindow.localStorage.removeItem("walls_topic");
+      probe.contentWindow.localStorage.setItem("walls_theme", "light");
+    } catch (e) {
+      check("same-origin access to the page's localStorage", false);
+      finish();
+      return;
+    }
+    probe.remove();
+    frame.src = PAGE;
+  }, { once: true });
+  document.body.appendChild(probe);
+})();
+
+function run() {
+  step = 1;
+  const w = frame.contentWindow, doc = frame.contentDocument;
+  let main;
+
+  head("the page loaded and exposes the tab");
+  const tabBtn = doc.querySelector('[data-tab="states"]');
+  check("the STATES tab button exists", !!tabBtn);
+  const ids = [...doc.querySelectorAll(".tab")].map((b) => b.dataset.tab);
+  check("it sits between E2 and DARK POOL",
+    ids.indexOf("states") === ids.indexOf("e2") + 1 &&
+    ids.indexOf("dp") === ids.indexOf("states") + 1);
+
+  if (tabBtn) tabBtn.click();
+  main = doc.getElementById("main");
+  const txt = () => (main.textContent || "").replace(/\s+/g, " ");
+
+  head("the fixture renders all six states");
+  const t = txt();
+  for (const s of ["BROKEN", "STRESSED", "EARLY", "HEALTHY", "NONE",
+                   "No run"]) {
+    check("chip for " + s, t.includes(s));
+  }
+  for (const nm of ["CRWD", "PANW", "GOOG", "AMZN", "MU", "GHOSTX"]) {
+    check("row for " + nm, t.includes(nm));
+  }
+
+  head("NO BARS rows carry the last bar date and nothing else");
+  const ghost = [...main.querySelectorAll(".mcard")]
+    .find((c) => c.textContent.includes("GHOSTX"));
+  check("the GHOSTX card exists", !!ghost);
+  if (ghost) {
+    check("it says NO BARS", ghost.textContent.includes("NO BARS"));
+    check("and the last bar date", ghost.textContent.includes("2026-08-14"));
+    check("it draws no chart", !ghost.querySelector("svg"));
+    check("and shows no tiles", !ghost.querySelector(".quad"));
+  }
+
+  head("the triple note renders");
+  check("'triple, below cohort floor' is shown",
+    t.includes("triple, below cohort floor"));
+
+  head("the alert strip, newest first");
+  const rows = [...main.querySelectorAll(".arow")];
+  check("two alert rows", rows.length === 2);
+  if (rows.length === 2) {
+    check("MU (10:36) is first", rows[0].textContent.includes("MU"));
+    check("PANW (09:58) is second", rows[1].textContent.includes("PANW"));
+    check("the row shows from -> to",
+      rows[0].textContent.includes("HEALTHY") &&
+      rows[0].textContent.includes("BROKEN"));
+    check("with no attachment it falls back to the three-line text",
+      !!main.querySelector(".three"));
+  }
+
+  head("the threshold line");
+  const card = (nm) => [...main.querySelectorAll(".mcard")]
+    .find((c) => (c.querySelector(".sy") || {}).textContent === nm);
+  const muR = card("MU") && card("MU").querySelector(".mrule");
+  const crR = card("CRWD") && card("CRWD").querySelector(".mrule");
+  check("MU names itself, because its rule is not the default",
+    !!muR && /MU rule: stressed -8% · broken -13%/.test(muR.textContent));
+  check("a default name says only 'Rule:'",
+    !!crR && /^Rule: stressed -5% · broken -8%$/.test(crR.textContent));
+
+  head("caption bands at the boundaries");
+  const capOf = (nm, i) => {
+    const c = card(nm);
+    if (!c) return "";
+    const tiles = c.querySelectorAll(".quad > div");
+    const cap = tiles[i] && tiles[i].querySelector(".cap");
+    return cap ? cap.textContent.trim() : "";
+  };
+  check("GOOG d20 = +1.00% exactly -> 'testing it'",
+    capOf("GOOG", 1) === "testing it");
+  check("GOOG d50 = -1.00% exactly -> 'testing it'",
+    capOf("GOOG", 2) === "testing it");
+  check("PANW d20 = -0.32% -> 'testing it'", capOf("PANW", 1) === "testing it");
+  check("PANW d50 = +5.00% exactly -> 'above', not 'well above'",
+    capOf("PANW", 2) === "above");
+  check("AMZN d20 = -5.01% -> 'well below'",
+    capOf("AMZN", 1) === "well below");
+  check("CRWD d20 = +12.7% -> 'well above'", capOf("CRWD", 1) === "well above");
+
+  head("the colour rule: the state-defining number only");
+  const defOf = (nm) => {
+    const c = card(nm);
+    if (!c) return -1;
+    const tiles = [...c.querySelectorAll(".quad > div")];
+    return tiles.findIndex((d) => d.classList.contains("def"));
+  };
+  check("BROKEN colours the off-high (tile 0)", defOf("MU") === 0);
+  check("STRESSED colours the off-high (tile 0)", defOf("PANW") === 0);
+  check("EARLY colours the 20-day (tile 1)", defOf("GOOG") === 1);
+  check("HEALTHY colours the 20-day (tile 1)", defOf("CRWD") === 1);
+  check("NONE colours nothing", defOf("AMZN") === -1);
+  check("exactly one tile per card is coloured",
+    ["MU", "PANW", "GOOG", "CRWD"].every((nm) =>
+      [...card(nm).querySelectorAll(".quad > div.def")].length === 1));
+
+  head("the 200-day: drawn near, omitted far");
+  const legOf = (nm) => {
+    const c = card(nm);
+    const l = c && c.querySelector(".leg");
+    return l ? l.textContent : "";
+  };
+  check("CRWD's 200-day is 38% away -> omitted from the chart",
+    !legOf("CRWD").includes("200-DAY"));
+  check("and its distance is stated in the legend",
+    /200-day (below|above)/.test(legOf("CRWD")));
+  check("PANW's 200-day is 7.5% away -> drawn",
+    legOf("PANW").includes("200-DAY"));
+  check("and carries no distance tag",
+    !/200-day (below|above)/.test(legOf("PANW")));
+
+  head("the last point is labelled with the as_of clock");
+  check("the label reads 11:36",
+    (card("CRWD").querySelector(".lastlbl") || {}).textContent === "11:36");
+  check("every charted card carries one",
+    ["CRWD", "PANW", "GOOG", "AMZN", "MU"].every((nm) =>
+      !!card(nm).querySelector(".lastlbl")));
+
+  head("past episodes, and n<3");
+  const epOf = (nm) => [...card(nm).querySelectorAll(".mline")]
+    .map((d) => d.textContent).find((s) => s.startsWith("past episodes")) || "";
+  check("CRWD quotes its figures", /STRESSED ×8/.test(epOf("CRWD")));
+  check("PANW is n=2 -> 'n<3'", /STRESSED n<3/.test(epOf("PANW")));
+  check("and carries the universe figure in the caption",
+    /universe: 35% fell another 10%\+/.test(epOf("PANW")));
+
+  head("the footer");
+  check("line 1", t.includes("States describe; they do not predict."));
+  check("line 2", t.includes(
+    "Entry ordering inside a trend is distance to MA20; the MA50 is where " +
+    "pullbacks have ended."));
+
+  head("the ticker box publishes the agreed form");
+  const sent = [];
+  w.fetch = (url, opt) => {
+    sent.push({ url: String(url), body: (opt || {}).body });
+    return Promise.resolve({ ok: true, text: () => Promise.resolve("") });
+  };
+  w.localStorage.setItem("walls_cmd", "FAKE-CMD-TOPIC");
+  const inp = doc.getElementById("stIn");
+  inp.value = "nvda mu";
+  doc.getElementById("stGo").click();
+  check("one publish", sent.length === 1);
+  check("the body is 'state NVDA MU'",
+    sent.length === 1 && sent[0].body === "state NVDA MU");
+  check("to the command topic the page already holds",
+    sent.length === 1 && sent[0].url.includes("FAKE-CMD-TOPIC"));
+  sent.length = 0;
+  inp.value = "a b c d e f";
+  doc.getElementById("stGo").click();
+  check("six names are refused, nothing published", sent.length === 0);
+
+  head("no host other than ntfy.sh and fonts.googleapis.com");
+  const src = doc.documentElement.outerHTML;
+  const hosts = [...new Set((src.match(/https?:\/\/[\w.\-]+/g) || []))];
+  check("hosts: " + hosts.join(", "),
+    hosts.every((h) => h === "https://ntfy.sh" ||
+      h === "https://fonts.googleapis.com"));
+
+  head("the crosshair reads a session out of the chart");
+  const sp = card("CRWD").querySelector(".spark");
+  check("the panel carries its series for the handler",
+    !!sp && !!sp.dataset.spark);
+  check("the readout is reserved above the chart, so dragging cannot make " +
+    "the card jump", !!sp.querySelector(".xhread"));
+  check("the hit target is at least 24px tall",
+    sp.getBoundingClientRect().height >= 24);
+  const svg = sp.querySelector("svg");
+  const bx = svg.getBoundingClientRect();
+  const down = new w.PointerEvent("pointerdown", { clientX: bx.left + bx.width * 0.5,
+    clientY: bx.top + 10, bubbles: true, pointerId: 1 });
+  svg.dispatchEvent(down);
+  const read = sp.querySelector(".xhread").textContent;
+  check("a drag fills the readout (" + read.slice(0, 60) + ")", !!read);
+  check("it names the close", /\d+\.\d\d/.test(read));
+  check("the 20-day and 50-day distances", /20d/.test(read) && /50d/.test(read));
+  check("and the pull at that point", /pull/.test(read));
+  check("the crosshair is visible while dragging",
+    sp.querySelector(".xh").style.display !== "none");
+  svg.dispatchEvent(new w.PointerEvent("pointerup", { bubbles: true,
+    pointerId: 1 }));
+  check("release hides it",
+    sp.querySelector(".xh").style.display === "none" &&
+    sp.querySelector(".xhread").textContent === "");
+
+  head("a newer as_of moves the last point and its label");
+  BEFORE_CY = card("CRWD").querySelector("svg circle").getAttribute("cy");
+  const fx2 = fixture("2026-10-05T15:55:00-04:00");
+  // DOWN, not up. CRWD's fixture series rises, so its last point is already
+  // the maximum: raising it further left the point pinned to the top of a
+  // range that rescaled with it, and cy read 5.0 before and after. A price
+  // below the window's range moves it unambiguously.
+  fx2.names[0].spark.close[39] = 215.0;
+  fx2.names[0].close = 215.0;
+  w.localStorage.setItem("walls_states", JSON.stringify(fx2));
+  step = 2;
+  frame.contentWindow.location.reload();
+}
+let BEFORE_CY = "";
+function runNewer() {
+  const d2 = frame.contentDocument;
+  const btn = d2.querySelector('[data-tab="states"]');
+  if (btn) btn.click();
+  const c2 = [...d2.querySelectorAll(".mcard")]
+    .find((c) => (c.querySelector(".sy") || {}).textContent === "CRWD");
+  check("the card is still there after the reload", !!c2);
+  if (c2) {
+    check("the label follows as_of to 15:55",
+      (c2.querySelector(".lastlbl") || {}).textContent === "15:55");
+    const after = c2.querySelector("svg circle").getAttribute("cy");
+    check("and the last point moved (" + BEFORE_CY + " -> " + after + ")",
+      BEFORE_CY !== after);
+  }
+  finish();
+}
+
+function finish() {
+  const s = document.getElementById("sum");
+  s.textContent = PASS + " passed, " + FAIL + " failed";
+  s.style.borderColor = FAIL ? "#D22B12" : "#157F3D";
+  s.style.color = FAIL ? "#D22B12" : "#157F3D";
+  window.__RESULT = { pass: PASS, fail: FAIL };
+}
+</script>
+</body>
+</html>
