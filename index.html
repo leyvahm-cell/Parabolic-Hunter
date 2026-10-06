@@ -808,9 +808,13 @@ const SGLYPH = { HEALTHY: "●", STRESSED: "▲", BROKEN: "■", EARLY: "◆",
 NONE: "–", "NO BARS": "–" };
 const SORDER = ["BROKEN", "STRESSED", "EARLY", "HEALTHY", "NONE", "NO BARS"];
 const STRETCH_TXT = {
-S1: "5-10% over MA20 · 19% go on to a further -10%",
-S2: "10-15% over MA20 · 36% go on to a further -10%",
-S3: "over 15% over MA20 · 48-65% go on to a further -10%",
+// Holdout rates, 2026-10-07. The old 19 / 36 / 48-65 were fit-window
+// figures. These are measured on sessions 147-252 (2026-05-05 .. 2026-10-05),
+// which no fit touched; see export/stateml/01_stretch_oot.txt on the VM.
+// They match the card and board PNGs, which were relabelled on 2026-10-05.
+S1: "5-10% over MA20 · 28% go on to a further -10%",
+S2: "10-15% over MA20 · 48% go on to a further -10%",
+S3: "over 15% over MA20 · 59% go on to a further -10%",
 };
 const fp1 = (x) => (x === null || x === undefined || !Number.isFinite(x))
 ? "—" : (x > 0 ? "+" : "") + (x * 100).toFixed(1) + "%";
@@ -943,7 +947,11 @@ const uni = UNIVERSE_DEEP[state] || UNIVERSE_DEEP.BROKEN;
 const bits = [];
 if (!h.n) bits.push("STRESSED none on file");
 else if (h.n < 3) bits.push(`STRESSED n<3 (universe: ${uni}% fell another 10%+)`);
-else bits.push(`STRESSED ×${h.n}, trough ${fp1(h.trough_vs_ma50)} vs 50-day, held ${fp1(h.held).replace("+", "")}`);
+// The held share was removed on 2026-10-07: it INVERTS out of sample.
+// Names with more held history ran a HIGHER deep rate on the holdout
+// (30.1%) than the lo tercile (15.8%), the reverse of the fit window
+// (20.1% vs 40.8%). h.held is still in the document; nothing reads it.
+else bits.push(`STRESSED ×${h.n}, trough ${fp1(h.trough_vs_ma50)} vs 50-day`);
 if (!h.broken_n) bits.push("BROKEN none");
 else if (h.broken_n < 3) bits.push(`BROKEN n<3 (universe: ${uni}% fell another 10%+)`);
 else bits.push(`BROKEN ×${h.broken_n}, +20s ${fp1(h.broken_ret20)}`);
@@ -1115,8 +1123,8 @@ ${singles.map((r) => memberCard(r, null, false)).join("")}</div>`;
 html += `<details class="howto"><summary>How to read ▾</summary><div class="bodyp">
 <b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
 <b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
-<b>Stretch</b> (HEALTHY only, close over MA20) — S1 5-10%, S2 10-15%, S3 over 15%. Rates that go on to a further -10%: S1 19% · S2 36% · S3 48-65%.<br><br>
-<b>Stress hist</b> — for every past STRESSED <i>entry</i> (a run counts once), the trough close over the next 20 sessions measured against the MA50 <i>at entry</i>, and how often that level held. Under n=3 no figure is quoted.<br><br>
+<b>Stretch</b> — distance above the 20-day while HEALTHY. Share that goes on to a further 10%+ drop within 20 sessions: under 5% → 17% · S1 (5-10%) → 28% · S2 (10-15%) → 48% · S3 (&gt;15%) → 59%. Out-of-time holdout, May–Oct 2026.<br><br>
+<b>Stress hist</b> — for every past STRESSED <i>entry</i> (a run counts once), the trough close over the next 20 sessions measured against the 50-day <i>at entry</i>. Under n=3 no figure is quoted. Past episodes describe this name's history; they do not predict the next one.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
 </div></details>`;
 // f. footer
