@@ -1,0 +1,128 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>on-demand card tests</title>
+<style>body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}.bad::before{content:"FAIL ";color:#f55}
+.bad{color:#f88}h2{font-size:13px;margin:14px 0 4px;color:#fff;text-transform:uppercase}
+#sum{font-size:16px;font-weight:700;margin:8px 0}iframe{width:400px;height:300px;opacity:.01;position:fixed;bottom:0;right:0}</style>
+<h1 style="font-size:15px">on-demand card — browser tests</h1>
+<div id="sum">running…</div>
+<div id="out"></div>
+<script>
+// Renders a REAL `state F PANW` reply, captured from monitor_close.on_demand
+// on the VM, through the page's own stateQueryCard() in an iframe. Static
+// string tests would not have caught any of the four defects this covers:
+// every one of them was a rendering fault, visible only once the card was
+// built.
+//
+// The four, from 2026-10-06:
+//   1. the not-on-roster tag printed twice
+//   2. the 200-day tile read "—" while the text line below carried it
+//   3. "BROKEN ×74" -- BROKEN days relabelled as entries
+//   4. no days-in-state and no 40-session chart, unlike every roster card
+const out = document.getElementById("out");
+let P = 0, F = 0;
+function head(t) { out.insertAdjacentHTML("beforeend", `<h2>${t}</h2>`); }
+function check(label, cond) {
+  cond ? P++ : F++;
+  out.insertAdjacentHTML("beforeend",
+    `<div class="${cond ? "ok" : "bad"}">${label}</div>`);
+}
+function done() {
+  document.getElementById("sum").textContent = `${P} passed, ${F} failed`;
+}
+
+fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
+  const f = document.createElement("iframe");
+  f.src = "../index.html";
+  document.body.appendChild(f);
+  f.onload = () => {
+    const w = f.contentWindow;
+    let html;
+    try {
+      html = w.stateQueryCard({ message: fx.message });
+    } catch (e) {
+      check("stateQueryCard threw: " + e.message, false);
+      return done();
+    }
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;left:-9999px;width:400px";
+    host.innerHTML = html;
+    document.body.appendChild(host);
+    const cards = [...host.querySelectorAll(".mcard")];
+    const card = (nm) => cards.find((c) =>
+      (c.querySelector(".sy") || {}).textContent === nm);
+
+    head("the reply parses into one card per name");
+    check("two cards", cards.length === 2);
+    check("F is one of them", !!card("F"));
+    check("PANW is the other", !!card("PANW"));
+    if (!card("F") || !card("PANW")) return done();
+    const F_ = card("F"), P_ = card("PANW");
+    const txt = (el) => (el.textContent || "").replace(/\s+/g, " ");
+
+    head("1. the not-on-roster tag appears once");
+    const tags = [...F_.querySelectorAll(".ro")]
+      .map((e) => e.textContent.trim()).filter(Boolean);
+    check("F carries exactly one role/roster tag, got " + JSON.stringify(tags),
+      tags.length === 1);
+    check("and it is the roster tag", /not on roster/i.test(tags[0] || ""));
+    check("the words 'not on the roster' do not also appear",
+      !/not on the roster/i.test(txt(F_)));
+    const ptags = [...P_.querySelectorAll(".ro")]
+      .map((e) => e.textContent.trim()).filter(Boolean);
+    check("PANW is on the roster and shows its role, not a roster tag",
+      ptags.length === 1 && /amplifier/i.test(ptags[0]));
+
+    head("2. the 200-day tile is filled from the same field as the text");
+    const d200 = (c) => (c.querySelector(".d200") || {}).textContent || "";
+    check("F's 200-day reads a number, not a dash: " + d200(F_).trim(),
+      /-?\d+\.\d%/.test(d200(F_)));
+    check("and it is F's -10.0%", /−10\.0%|-10\.0%/.test(d200(F_)));
+    check("PANW's 200-day is its +62.5%", /\+62\.5%/.test(d200(P_)));
+    check("the vs MA200 line is not ALSO printed as body text",
+      (txt(F_).match(/200-day|MA200/g) || []).length === 1);
+
+    head("3. BROKEN counts entries, not days");
+    const ep = (c) => (([...c.querySelectorAll(".mline")]
+      .map((d) => d.textContent)
+      .find((s) => s.startsWith("past episodes"))) || "");
+    check("F quotes a BROKEN count", /BROKEN ×\d+/.test(ep(F_)));
+    const fbn = +(ep(F_).match(/BROKEN ×(\d+)/) || [0, 0])[1];
+    check("F's BROKEN count is its 9 ENTRIES, not its 43 broken days",
+      fbn === 9);
+    check("it is nowhere near a count of sessions", fbn < 30);
+    check("and the forward figure rides with it",
+      /BROKEN ×9, \+20s/.test(ep(F_)));
+    check("PANW quotes 11 entries", /BROKEN ×11/.test(ep(P_)));
+    check("the STRESSED half is the roster card's wording",
+      /STRESSED ×9, trough .* vs 50-day/.test(ep(F_)));
+
+    head("3b. a positive trough is explained in the reply");
+    check("PANW's reply says what a + trough means",
+      /\+8\.1%|\+8\.3% = pullbacks ended ABOVE the 50-day/
+        .test(fx.message));
+
+    head("4. days-in-state and the 40-session chart");
+    const pill = (c) => (c.querySelector(".pill") || {}).textContent || "";
+    check("F's pill carries its days in state", /·\s*1 session\b/.test(pill(F_)));
+    check("PANW's pill carries its 16 sessions", /·\s*16 sessions/.test(pill(P_)));
+    check("F has a chart", !!F_.querySelector(".spark svg"));
+    check("PANW has a chart", !!P_.querySelector(".spark svg"));
+    check("the chart says 40 sessions",
+      /40 sessions/.test((F_.querySelector(".n40") || {}).textContent || ""));
+    check("it carries its series for the crosshair, like a roster card",
+      !!(F_.querySelector(".spark") || {}).dataset?.spark);
+    check("and the close line is drawn", F_.querySelectorAll(".spark path").length >= 1);
+
+    head("nothing else was lost");
+    check("the cohort line is still there", /cohort 62/.test(txt(F_)));
+    check("the close-rule vs intraday line is still there",
+      /close rule/.test(txt(F_)));
+    check("the last transition is still there",
+      /last transition 2026-10-05/.test(txt(F_)));
+    check("the stretch line shows for PANW", /STRETCH S1/.test(txt(P_)));
+    done();
+  };
+}).catch((e) => { check("fixture load: " + e.message, false); done(); });
+</script>

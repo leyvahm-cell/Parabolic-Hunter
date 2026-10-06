@@ -1011,27 +1011,44 @@ const cp = grab(/close ([\d.]+)\s+pull ([+-][\d.]+)% off the \d+-session high ([
 const ds = grab(/vs MA20 ([+-][\d.]+)%\s+vs MA50 ([+-][\d.]+)%\s+vs MA200 (n\/a|[+-][\d.]+%)/);
 const stz = grab(/^stretch (\S+)/m);
 const coh = grab(/^cohort (\S+) n=(\d+)\s+breadth (\S+)\s+RS20 (\S+)/m);
-const sh = grab(/^STRESS HIST\s+(.+)$/m);
-const bk = grab(/^BROKEN record (\d+)/m);
+// STRESS HIST, parsed into the same shape the roster cards carry so the
+// SAME episodes() renders both. The hand-rolled line this replaced also
+// printed the reply's old "BROKEN record N session(s)" as "BROKEN ×N" --
+// days relabelled as entries, which is how a name showed "BROKEN ×74" in
+// 252 sessions. The reply now sends entries; both ends count them once.
+const shn = grab(/^STRESS HIST\s+n=(\d+)\s+median trough ([+-][\d.]+)%/m);
+const bk = grab(/^BROKEN record\s+n=(\d+) entries\s+median \+20s ([+-][\d.]+|-)/m);
+const dy = grab(/^days in state (\d+)/m);
+const sp = grab(/^spark (\{.*\})$/m);
 const lt = grab(/^last transition (.+)$/m);
 const state = stc ? stc[1] : "";
+let spark = null;
+if (sp) { try { spark = JSON.parse(sp[1]); } catch (e) { spark = null; } }
 const r = {
-name, role: role || (off ? "not on the roster" : ""), state,
-days: null,
+// `off` already puts "not on roster" on the card; naming it here too
+// printed the tag twice, as "NOT ON THE ROSTER" and "NOT ON ROSTER".
+name, role, state,
+days: dy ? +dy[1] : null,
 close: cp ? +cp[1] : null,
 pull: cp ? (+cp[2]) / 100 : null,
 d20: ds ? (+ds[1]) / 100 : null,
 d50: ds ? (+ds[2]) / 100 : null,
+// the tile read "—" while the text line below it carried the number
+d200: ds && ds[3] !== "n/a" ? (parseFloat(ds[3]) / 100) : null,
 stretch: stz && stz[1] !== "-" ? stz[1] : "",
-hist: null, spark: null,
+hist: (shn || bk) ? {
+n: shn ? +shn[1] : 0,
+trough_vs_ma50: shn ? (+shn[2]) / 100 : null,
+broken_n: bk ? +bk[1] : 0,
+broken_ret20: bk && bk[2] !== "-" ? (+bk[2]) / 100 : null,
+} : null,
+spark,
 last_transition: null,
 };
 const extra = [
 sti ? `<div class="mline">close rule <b>${esc(state)}</b> · intraday ${esc(sti[1])}</div>` : "",
-ds && ds[3] !== "n/a" ? `<div class="mline">vs MA200 ${esc(ds[3])}</div>` : "",
 coh ? `<div class="mline">cohort ${esc(coh[1])} n=${esc(coh[2])} · breadth ${esc(coh[3])} · RS20 ${esc(coh[4])}</div>`
 : `<div class="mline">no cohort / own story</div>`,
-sh ? `<div class="mline">past episodes: STRESS HIST ${esc(sh[1])}${bk ? " · BROKEN ×" + esc(bk[1]) : ""}</div>` : "",
 lt ? `<div class="mline last">last transition ${esc(lt[1])}</div>` : "",
 ].filter(Boolean).join("");
 const base = memberCard(r, null, off);
