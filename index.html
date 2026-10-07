@@ -347,6 +347,9 @@ letter-spacing: .3px; }
 font-variant-numeric: tabular-nums; }
 .mline.str { color: var(--s-good); }
 .mline.sizeline { color: var(--ink); font-size: 11px; }
+.mline.profline { color: var(--ink); font-size: 11px; }
+.plk { color: var(--faint); font-size: 9.5px; letter-spacing: .06em;
+  margin-right: 6px; }
 .mline.sizewarn { color: var(--s-warn); font-size: 10.5px; font-weight: 700;
   margin-top: 3px; }
 .acctbtn { margin-left: 8px; padding: 1px 6px; border-radius: 4px;
@@ -973,6 +976,13 @@ return "$" + Math.round(v);
 function pctStr(v) {
 return (+(v * 100).toFixed(2)).toString() + "%";
 }
+// THE PROFILE LINE. The VM builds the wording in profile_nightly and
+// ships it in states.json, so the page prints the same sentence the PNG
+// does rather than reassembling it from parts and drifting.
+function profileLine(pr) {
+if (!pr || !pr.line) return "";
+return `<div class="mline profline"><span class="plk">PROFILE</span> ${esc(pr.line)}</div>`;
+}
 function sizeLine(sz, price) {
 if (!sz || !sz.stop_dollars) return "";
 const over = acctOverride();
@@ -999,10 +1009,13 @@ else if (h.n < 3) bits.push(`STRESSED n<3 (universe: ${uni}% fell another 10%+)`
 // Names with more held history ran a HIGHER deep rate on the holdout
 // (30.1%) than the lo tercile (15.8%), the reverse of the fit window
 // (20.1% vs 40.8%). h.held is still in the document; nothing reads it.
-else bits.push(`STRESSED ×${h.n}, trough ${fp1(h.trough_vs_ma50)} vs 50-day`);
+// COUNTS ONLY from 2026-10-07: the trough-vs-50-day figure is the
+// pullback-depth trait and it did not persist across the halves
+// (Spearman +0.051), so it described its window and not the name.
+else bits.push(`STRESSED ×${h.n}`);
 if (!h.broken_n) bits.push("BROKEN none");
 else if (h.broken_n < 3) bits.push(`BROKEN n<3 (universe: ${uni}% fell another 10%+)`);
-else bits.push(`BROKEN ×${h.broken_n}, +20s ${fp1(h.broken_ret20)}`);
+else bits.push(`BROKEN ×${h.broken_n}`);
 return `<div class="mline">past episodes: ${esc(bits.join(" · "))}</div>`;
 }
 function memberCard(r, coh, offRoster) {
@@ -1035,7 +1048,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of)}${st}${cl}${sizeLine(r.size, r.close)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1206,7 +1219,8 @@ html += `<details class="howto"><summary>How to read ▾</summary><div class="bo
 <b>Stretch</b> — distance above the 20-day while HEALTHY. Share that goes on to a further 10%+ drop within 20 sessions: under 5% → 17% · S1 (5-10%) → 28% · S2 (10-15%) → 48% · S3 (&gt;15%) → 59%. Out-of-time holdout, May–Oct 2026.<br><br>
 <b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
-<b>Stress hist</b> — for every past STRESSED <i>entry</i> (a run counts once), the trough close over the next 20 sessions measured against the 50-day <i>at entry</i>. Under n=3 no figure is quoted. Past episodes describe this name's history; they do not predict the next one.<br><br>
+<b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>
+<b>Profile</b> — Character: the traits that persisted across halves (vol 0.84, ATR 0.88, beta/R2 0.6+). Describes how the name has moved, not where it will go. Rebuilt nightly over the trailing 106 sessions. A name in no block shows its <i>nearest</i> block, named as such. beta/R2 persistence is an upper bound: cohort membership was fitted across both windows.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
 </div></details>`;
 // f. footer
