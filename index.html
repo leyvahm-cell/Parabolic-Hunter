@@ -346,6 +346,13 @@ letter-spacing: .3px; }
 .mline { margin-top: 7px; font-size: 11.5px; font-weight: 700; color: var(--muted);
 font-variant-numeric: tabular-nums; }
 .mline.str { color: var(--s-good); }
+.mline.sizeline { color: var(--ink); font-size: 11px; }
+.mline.sizewarn { color: var(--s-warn); font-size: 10.5px; font-weight: 700;
+  margin-top: 3px; }
+.acctbtn { margin-left: 8px; padding: 1px 6px; border-radius: 4px;
+  border: 1px solid var(--line); cursor: pointer; font-size: 10.5px;
+  color: var(--muted); }
+.acctbtn:hover { border-color: var(--ink); color: var(--ink); }
 .mline.last { font-size: 10.5px; color: var(--faint); font-weight: 700; }
 .nobars { font-size: 12px; font-weight: 800; color: var(--s-warn);
 text-transform: uppercase; letter-spacing: .5px; }
@@ -941,6 +948,47 @@ return `<div class="spark" data-spark="${payload}">
 <div class="n40">${n} sessions</div>${hhmm ? `<div class="lastlbl">${esc(hhmm)}</div>` : ""}
 </div><div class="leg">${leg}</div>`;
 }
+// THE SIZE LINE.
+//
+// The VM computes it in states.json from bars_daily and prints the same
+// line on the PNG. The page may override ONE field -- the account -- and
+// when it does it recomputes shares from stop_dollars, which is the only
+// number in the block that does not depend on the account. Everything
+// else (ATR, the 2.5-ATR stop distance) comes from the document, so the
+// page can never disagree with the card about what the stop is.
+//
+// The override lives in localStorage on this device only. It is never
+// published, never sent to the topic and never written back to the VM.
+const ACCT_KEY = "walls_account";
+function acctOverride() {
+try { const v = parseFloat(localStorage.getItem(ACCT_KEY) || "");
+return Number.isFinite(v) && v > 0 ? v : null; } catch (e) { return null; }
+}
+function money(v) {
+const a = Math.abs(v);
+if (a >= 1e6) return "$" + (v / 1e6).toFixed(2) + "M";
+if (a >= 1000) return "$" + (v / 1000).toFixed(1) + "k";
+return "$" + Math.round(v);
+}
+function pctStr(v) {
+return (+(v * 100).toFixed(2)).toString() + "%";
+}
+function sizeLine(sz, price) {
+if (!sz || !sz.stop_dollars) return "";
+const over = acctOverride();
+// the account this device will use: the local override, else whatever
+// the document carried, else nothing -- and with nothing, the VM's own
+// share count stands rather than a share count computed off a guess
+const acct = over !== null ? over
+: (Number.isFinite(sz.account) ? sz.account : null);
+const shares = acct !== null
+? Math.floor((acct * sz.risk_pct) / sz.stop_dollars) : sz.shares;
+const px = Number.isFinite(price) ? price : null;
+const notional = px !== null ? shares * px : sz.notional;
+const warn = (over === null && sz.source === "default")
+? `<div class="mline sizewarn">account not set — tap it to set one on this device${Number.isFinite(sz.account) ? "; this is the " + esc(money(sz.account)) + " default" : ""}</div>` : "";
+return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: <b>${shares} sh</b>${Number.isFinite(notional) ? " (" + esc(money(notional)) + ")" : ""}<span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
+}
 function episodes(h, state) {
 if (!h) return "";
 const uni = UNIVERSE_DEEP[state] || UNIVERSE_DEEP.BROKEN;
@@ -987,7 +1035,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of)}${st}${cl}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of)}${st}${cl}${sizeLine(r.size, r.close)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1020,6 +1068,10 @@ const shn = grab(/^STRESS HIST\s+n=(\d+)\s+median trough ([+-][\d.]+)%/m);
 const bk = grab(/^BROKEN record\s+n=(\d+) entries\s+median \+20s ([+-][\d.]+|-)/m);
 const dy = grab(/^days in state (\d+)/m);
 const sp = grab(/^spark (\{.*\})$/m);
+// the reply's size line, parsed back into the same block states.json
+// carries, so one sizeLine() renders both kinds of card
+const sz = grab(/^size ATR14 \$([\d.]+) \(([\d.]+)%\)\s+·\s+([\d.]+) ATR = \$([\d.]+)\s+·\s+at ([\d.]+)% risk: (\d+) sh/m);
+const szDef = /^\s+account not set/m.test(blk);
 const lt = grab(/^last transition (.+)$/m);
 const state = stc ? stc[1] : "";
 let spark = null;
@@ -1043,6 +1095,17 @@ broken_n: bk ? +bk[1] : 0,
 broken_ret20: bk && bk[2] !== "-" ? (+bk[2]) / 100 : null,
 } : null,
 spark,
+size: sz ? {
+atr: +sz[1], atr_pct: (+sz[2]) / 100, stop_atr: +sz[3],
+stop_dollars: +sz[4], risk_pct: (+sz[5]) / 100,
+// The reply does not print the account, and it must NOT be
+// reconstructed from the share count: shares are floored, so any
+// account derived back from them is wrong by up to one share's
+// worth of stop. It stays null, and sizeLine uses the VM's own
+// share count until the reader sets an account on this device.
+account: null, shares: +sz[6], notional: null,
+source: szDef ? "default" : "set",
+} : null,
 last_transition: null,
 };
 const extra = [
@@ -1141,6 +1204,7 @@ html += `<details class="howto"><summary>How to read ▾</summary><div class="bo
 <b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
 <b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
 <b>Stretch</b> — distance above the 20-day while HEALTHY. Share that goes on to a further 10%+ drop within 20 sessions: under 5% → 17% · S1 (5-10%) → 28% · S2 (10-15%) → 48% · S3 (&gt;15%) → 59%. Out-of-time holdout, May–Oct 2026.<br><br>
+<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Stress hist</b> — for every past STRESSED <i>entry</i> (a run counts once), the trough close over the next 20 sessions measured against the 50-day <i>at entry</i>. Under n=3 no figure is quoted. Past episodes describe this name's history; they do not predict the next one.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
@@ -1476,6 +1540,33 @@ if (e.target.closest("#dbgGo")) { sendDesk("debug"); return; }
 if (e.target.closest("#storyGo")) { sendDesk("story"); return; }
 if (e.target.closest("#stGo")) { sendState(); return; }
 if (e.target.closest("#deskset")) { setDeskTopic(); return; }
+// The account chip. An inline input rather than prompt(): a modal
+// blocks the page, and this is a number the reader may want to try a
+// few values of. It is stored on this device and nowhere else.
+const ab = e.target.closest("[data-acct]");
+if (ab) {
+const cur = acctOverride();
+const inp = document.createElement("input");
+inp.className = "dbg"; inp.style.cssText = "width:110px;font-size:11px";
+inp.value = cur !== null ? String(cur) : "";
+inp.placeholder = "account";
+const commit = () => {
+const v = parseFloat(inp.value.replace(/[^0-9.]/g, ""));
+try {
+if (Number.isFinite(v) && v > 0) localStorage.setItem(ACCT_KEY, String(v));
+else localStorage.removeItem(ACCT_KEY);
+} catch (err) {}
+render();
+};
+inp.addEventListener("keydown", (ev) => {
+if (ev.key === "Enter") commit();
+if (ev.key === "Escape") render();
+});
+inp.addEventListener("blur", commit);
+ab.replaceWith(inp);
+inp.focus(); inp.select();
+return;
+}
 const t = e.target.closest(".tab");
 if (t) { tab = t.dataset.tab; syncIndicator(); renderTabs(); render(); return; }
 const c = e.target.closest("[data-copy]");
