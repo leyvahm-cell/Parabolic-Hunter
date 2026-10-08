@@ -22,14 +22,20 @@
 //   4. no days-in-state and no 40-session chart, unlike every roster card
 const out = document.getElementById("out");
 let P = 0, F = 0;
+const FAILED = [];
 function head(t) { out.insertAdjacentHTML("beforeend", `<h2>${t}</h2>`); }
 function check(label, cond) {
-  cond ? P++ : F++;
+  cond ? P++ : (F++, FAILED.push(label));
   out.insertAdjacentHTML("beforeend",
     `<div class="${cond ? "ok" : "bad"}">${label}</div>`);
 }
 function done() {
   document.getElementById("sum").textContent = `${P} passed, ${F} failed`;
+  if (FAILED.length) {
+    const ul = FAILED.map((x) => "<div>FAILED  " + x + "</div>").join("");
+    document.getElementById("sum").insertAdjacentHTML("afterend",
+      "<div class='bad'>" + ul + "</div>");
+  }
 }
 
 fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
@@ -60,6 +66,22 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
     if (!card("F") || !card("PANW")) return done();
     const F_ = card("F"), P_ = card("PANW");
     const txt = (el) => (el.textContent || "").replace(/\s+/g, " ");
+    // EXPECTATIONS COME FROM THE FIXTURE, NOT FROM FROZEN NUMBERS.
+    // The first version pinned "-10.0%", "16 sessions", "S1" and so on;
+    // the archive rolls every night and by the next morning five of
+    // them were wrong about live data that was perfectly correct. The
+    // card must agree with THE REPLY IT WAS BUILT FROM, which is what
+    // these now check.
+    const blockOf = (nm) => {
+      const b = fx.message.split(/^== /m).slice(1)
+        .find((x) => x.trim().split(/\s+/)[0] === nm);
+      return b || "";
+    };
+    const field = (nm, re) => {
+      const m2 = blockOf(nm).match(re);
+      return m2 ? m2[1] : null;
+    };
+
 
     head("1. the not-on-roster tag appears once");
     const tags = [...F_.querySelectorAll(".ro")]
@@ -78,8 +100,12 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
     const d200 = (c) => (c.querySelector(".d200") || {}).textContent || "";
     check("F's 200-day reads a number, not a dash: " + d200(F_).trim(),
       /-?\d+\.\d%/.test(d200(F_)));
-    check("and it is F's -10.0%", /−10\.0%|-10\.0%/.test(d200(F_)));
-    check("PANW's 200-day is its +62.5%", /\+62\.5%/.test(d200(P_)));
+    const m200F = field("F", /vs MA200 ([+-][\d.]+%)/);
+    check("and it is the reply's own figure (" + m200F + ")",
+      d200(F_).replace(/−/g, "-").includes(m200F));
+    const m200P = field("PANW", /vs MA200 ([+-][\d.]+%)/);
+    check("PANW's is the reply's too (" + m200P + ")",
+      d200(P_).replace(/−/g, "-").includes(m200P));
     check("the vs MA200 line is not ALSO printed as body text",
       (txt(F_).match(/200-day|MA200/g) || []).length === 1);
 
@@ -105,8 +131,12 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
 
     head("4. days-in-state and the 40-session chart");
     const pill = (c) => (c.querySelector(".pill") || {}).textContent || "";
-    check("F's pill carries its days in state", /·\s*1 session\b/.test(pill(F_)));
-    check("PANW's pill carries its 16 sessions", /·\s*16 sessions/.test(pill(P_)));
+    const dF = field("F", /days in state (\d+)/);
+    check("F's pill carries the reply's days in state (" + dF + ")",
+      pill(F_).indexOf(dF + " session") >= 0);
+    const dP = field("PANW", /days in state (\d+)/);
+    check("PANW's pill carries its " + dP + " sessions",
+      pill(P_).indexOf(dP + " session") >= 0);
     check("F has a chart", !!F_.querySelector(".spark svg"));
     check("PANW has a chart", !!P_.querySelector(".spark svg"));
     check("the chart says 40 sessions",
@@ -115,13 +145,58 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
       !!(F_.querySelector(".spark") || {}).dataset?.spark);
     check("and the close line is drawn", F_.querySelectorAll(".spark path").length >= 1);
 
+
+    head("5. the SIZE line");
+    const sl = (c) => (([...c.querySelectorAll(".sizeline")]
+      .map((d) => d.textContent))[0] || "");
+    check("PANW carries a size line", !!sl(P_));
+    check("F carries one too", !!sl(F_));
+    check("it names ATR14 in dollars and percent",
+      /ATR14 \$\d+\.\d\d \(\d+\.\d%\)/.test(sl(P_)));
+    check("it states the 2.5-ATR stop in dollars",
+      /2\.5 ATR = \$\d+\.\d\d/.test(sl(P_)));
+    check("it states the risk percent and the share count",
+      /at 1% risk: \d+ sh/.test(sl(P_)));
+    const shP = +(sl(P_).match(/(\d+) sh/) || [0,0])[1];
+    const atrP = +(sl(P_).match(/2\.5 ATR = \$([\d.]+)/) || [0,0])[1];
+    check("shares x stop is at or under 1% of the default 100k",
+      shP * atrP <= 1000.0001);
+    check("and one more share would exceed it, so it is FLOORED",
+      (shP + 1) * atrP > 1000);
+    check("an unset account is flagged, not left to look real",
+      !!P_.querySelector(".sizewarn"));
+    check("the account chip is offered", !!P_.querySelector("[data-acct]"));
+
+    head("5b. a local account override changes the share count");
+    try { w.localStorage.setItem("walls_account", "250000"); } catch (e) {}
+    const host2 = document.createElement("div");
+    host2.style.cssText = "position:fixed;left:-9999px;width:400px";
+    host2.innerHTML = w.stateQueryCard({ message: fx.message });
+    document.body.appendChild(host2);
+    const P2 = [...host2.querySelectorAll(".mcard")].find((c) =>
+      (c.querySelector(".sy") || {}).textContent === "PANW");
+    const sl2 = ([...P2.querySelectorAll(".sizeline")]
+      .map((d) => d.textContent))[0] || "";
+    const shP2 = +(sl2.match(/(\d+) sh/) || [0,0])[1];
+    check("2.5x the account gives 2.5x the shares (" + shP + " -> " + shP2 + ")",
+      shP2 === Math.floor(250000 * 0.01 / atrP));
+    // compared as NUMBERS: "41.90" !== String(41.9) is a bug in the
+    // test, not a change in the stop
+    check("the stop distance did NOT change with the account",
+      Math.abs(+sl2.match(/2\.5 ATR = \$([\d.]+)/)[1] - atrP) < 1e-9);
+    check("and the warning is gone once an account is set",
+      !P2.querySelector(".sizewarn"));
+    try { w.localStorage.removeItem("walls_account"); } catch (e) {}
+
     head("nothing else was lost");
     check("the cohort line is still there", /cohort 62/.test(txt(F_)));
     check("the close-rule vs intraday line is still there",
       /close rule/.test(txt(F_)));
     check("the last transition is still there",
       /last transition 2026-10-05/.test(txt(F_)));
-    check("the stretch line shows for PANW", /STRETCH S1/.test(txt(P_)));
+    const stP = field("PANW", /^stretch (\S+)/m);
+    check("the stretch line shows the reply's band (" + stP + ")",
+      txt(P_).includes("STRETCH " + stP));
     done();
   };
 }).catch((e) => { check("fixture load: " + e.message, false); done(); });

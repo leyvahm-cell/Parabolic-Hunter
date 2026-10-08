@@ -348,6 +348,11 @@ font-variant-numeric: tabular-nums; }
 .mline.str { color: var(--s-good); }
 .mline.sizeline { color: var(--ink); font-size: 11px; }
 .mline.profline { color: var(--ink); font-size: 11px; }
+.mline.nextline { color: var(--ink); font-size: 11px; }
+.mline.histline { color: var(--muted); font-size: 11px; font-weight: 600;
+  line-height: 1.45; }
+.thinflag { color: var(--s-warn); font-weight: 700; }
+.sizesep { color: var(--faint); }
 .plk { color: var(--faint); font-size: 9.5px; letter-spacing: .06em;
   margin-right: 6px; }
 .mline.sizewarn { color: var(--s-warn); font-size: 10.5px; font-weight: 700;
@@ -976,6 +981,29 @@ return "$" + Math.round(v);
 function pctStr(v) {
 return (+(v * 100).toFixed(2)).toString() + "%";
 }
+// NEXT and HISTORY.
+//
+// The VM builds both -- state_monitor.flip_line() and
+// profile_nightly.history_sentence() -- and ships them in states.json,
+// so the page prints the words the desk computed rather than
+// reassembling them from parts and drifting apart. The PNG alert card
+// keeps a compact form; here they are SENTENCES, because a web card has
+// the width for prose and a reader coming to it cold has no legend.
+//
+// Neither is a forecast. NEXT says where the state machine's lines sit
+// at tonight's averages. HISTORY says how this name's runs have ended
+// before, and says "thin" rather than quoting a rate off three episodes.
+function nextLine(nm) {
+if (!nm || !nm.line) return "";
+const body = nm.line.replace(/^NEXT\s*·\s*/, "");
+return `<div class="mline nextline"><span class="plk">NEXT</span> ${esc(body)}</div>`;
+}
+function historyLine(h) {
+if (!h || !h.sentence) return "";
+const txt = h.sentence.replace(/\s*\(n=\d+, thin\)\s*$/, "");
+const thin = h.thin ? ` <span class="thinflag">(n=${h.n}, thin)</span>` : "";
+return `<div class="mline histline"><span class="plk">HISTORY</span> ${esc(txt)}${thin}</div>`;
+}
 // THE PROFILE LINE. The VM builds the wording in profile_nightly and
 // ships it in states.json, so the page prints the same sentence the PNG
 // does rather than reassembling it from parts and drifting.
@@ -997,7 +1025,7 @@ const px = Number.isFinite(price) ? price : null;
 const notional = px !== null ? shares * px : sz.notional;
 const warn = (over === null && sz.source === "default")
 ? `<div class="mline sizewarn">account not set — tap it to set one on this device${Number.isFinite(sz.account) ? "; this is the " + esc(money(sz.account)) + " default" : ""}</div>` : "";
-return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: <b>${shares} sh</b>${Number.isFinite(notional) ? " (" + esc(money(notional)) + ")" : ""}<span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
+return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: <b>${shares} sh</b>${Number.isFinite(notional) ? " (" + esc(money(notional)) + ")" : ""}<span class="sizesep"> · </span><span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
 }
 function episodes(h, state) {
 if (!h) return "";
@@ -1048,7 +1076,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close)}${nextLine(r.next_moves)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1220,6 +1248,7 @@ html += `<details class="howto"><summary>How to read ▾</summary><div class="bo
 <b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>
+<b>Next &amp; history</b> — <b>Next</b> is where the state machine's lines sit at tonight's averages: the close at which this name would turn stressed, broken, or reclaim healthy, plus its 20-day, 50-day and 2.5-ATR stop. It is not a forecast that price will reach them. <b>History</b> is how this name's runs in the current state have ended over the past year. <b>Run counts include today, which the close can still change</b> — the same number the state badge shows. A statistic from fewer than 5 episodes is marked thin.<br><br>
 <b>Profile</b> — Character: the traits that persisted across halves (vol 0.84, ATR 0.88, beta/R2 0.6+). Describes how the name has moved, not where it will go. Rebuilt nightly over the trailing 106 sessions. A name in no block shows its <i>nearest</i> block, named as such. beta/R2 persistence is an upper bound: cohort membership was fitted across both windows.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
 </div></details>`;

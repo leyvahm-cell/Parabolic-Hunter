@@ -1,0 +1,49 @@
+<!doctype html><meta charset="utf-8"><title>NEXT/HISTORY</title>
+<style>body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}.bad::before{content:"FAIL ";color:#f55}.bad{color:#f88}
+iframe{width:400px;height:300px;opacity:.01;position:fixed;bottom:0;right:0}</style>
+<h1 style="font-size:15px">NEXT / HISTORY sentences</h1><div id="sum">running…</div><div id="out"></div>
+<script>
+let P=0,F=0;const FAILED=[];const out=document.getElementById("out");
+function check(l,c){c?P++:(F++,FAILED.push(l));out.insertAdjacentHTML("beforeend",`<div class="${c?"ok":"bad"}">${l}</div>`);}
+function done(){document.getElementById("sum").textContent=`${P} passed, ${F} failed`;
+ if(FAILED.length)document.getElementById("sum").insertAdjacentHTML("afterend",
+  "<div class='bad'>"+FAILED.map(x=>"<div>FAILED  "+x+"</div>").join("")+"</div>");}
+fetch("states_live.json").then(r=>r.json()).then(doc=>{
+ const f=document.createElement("iframe");f.src="../index.html";document.body.appendChild(f);
+ f.onload=()=>{const w=f.contentWindow;
+  const rows=doc.names||doc.rows||[];
+  const host=document.createElement("div");host.style.cssText="position:fixed;left:-9999px;width:460px";
+  document.body.appendChild(host);
+  let nNext=0,nHist=0,nThin=0;
+  for(const r of rows){
+    host.innerHTML=w.memberCard(r,null,false);
+    const nx=host.querySelector(".nextline"), hi=host.querySelector(".histline");
+    if(nx)nNext++; if(hi)nHist++;
+    if(hi&&hi.querySelector(".thinflag"))nThin++;
+  }
+  check("every row renders a NEXT line ("+nNext+"/"+rows.length+")",nNext===rows.length);
+  check("every row renders a HISTORY line ("+nHist+"/"+rows.length+")",nHist===rows.length);
+  // none of the 17 roster names is thin for its CURRENT state, which
+  // is a fact about the roster, not about the renderer. The thin
+  // PATH is tested with a row built to be thin.
+  check("no roster name is thin for its current state ("+nThin+")",nThin===0);
+  const tr=JSON.parse(JSON.stringify(rows[0]));
+  tr.history={run_sessions:4,state:tr.state,n:3,thin:true,
+    sentence:"Healthy for 4 sessions. Over the past year this name's healthy runs usually lasted about 5 sessions (half ended between 3 and 10; the longest was 35). This run is about usual.  (n=3, thin)",
+    compact:"run 4 · n=3, thin"};
+  host.innerHTML=w.memberCard(tr,null,false);
+  const th=host.querySelector(".histline .thinflag");
+  check("a thin statistic renders a thin flag",!!th);
+  check("the flag names the n: "+(th?th.textContent:"-"),/n=3, thin/.test(th?th.textContent:""));
+  check("and the duplicated tail is stripped from the sentence",
+    (host.querySelector(".histline").textContent.match(/thin/g)||[]).length===1);
+  host.innerHTML=w.memberCard(rows[0],null,false);
+  const t=host.querySelector(".histline").textContent;
+  check("HISTORY reads as a sentence, not counts: "+t.slice(0,80),/ sessions\./.test(t));
+  check("NEXT carries a price and a percent",/\d+\.\d\d \([+-]\d/.test(host.querySelector(".nextline").textContent));
+  check("the NEXT label is not duplicated inside the body",
+        (host.querySelector(".nextline").textContent.match(/NEXT/g)||[]).length===1);
+  done();};
+}).catch(e=>{check("load: "+e.message,false);done();});
+</script>
