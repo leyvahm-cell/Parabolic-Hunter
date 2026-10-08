@@ -44,6 +44,24 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
   document.body.appendChild(f);
   f.onload = () => {
     const w = f.contentWindow;
+    // AMENDED 2026-10-08: the stretch line's RATES come from
+    // states.json, not from the reply text -- the reply carries only
+    // the band letter. So the on-demand card can only render the line
+    // when a states doc has been seen. Seeded here with the VM block.
+    try {
+      w.statesDoc = w.statesDoc || null;
+      const _sx = {
+        bands: { S1: { five_year: 16.6, past_year: 22.8 },
+                 S2: { five_year: 22.2, past_year: 30.0 },
+                 S3: { five_year: 30.0, past_year: 36.9 },
+                 under5: { five_year: 12.6, past_year: 16.2 } },
+        labels: { S1: "5-10% over MA20", S2: "10-15% over MA20",
+                  S3: "15%+ over MA20", under5: "under 5% over MA20" },
+        legend: ["l1"], drop_pct: -10, window: 20
+      };
+      w.eval("statesDoc = statesDoc || {}; statesDoc.stretch = "
+        + JSON.stringify(_sx) + ";");
+    } catch (e) { /* asserted below via the rendered line */ }
     let html;
     try {
       html = w.stateQueryCard({ message: fx.message });
@@ -194,9 +212,19 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
       /close rule/.test(txt(F_)));
     check("the last transition is still there",
       /last transition 2026-10-05/.test(txt(F_)));
+    // AMENDED 2026-10-08: two figures per band, and the band is no
+    // longer glued to the word STRETCH -- the line reads
+    // "STRETCH - S2 - 10-15% over MA20 - 22% five-year - 30% past
+    // year go on to a further -10%". The old assertion pinned
+    // "STRETCH S2" against a single fitted rate.
     const stP = field("PANW", /^stretch (\S+)/m);
-    check("the stretch line shows the reply's band (" + stP + ")",
-      txt(P_).includes("STRETCH " + stP));
+    const pTxt = txt(P_);
+    check("the stretch line carries the reply's band (" + stP + ")",
+      pTxt.includes("STRETCH") && pTxt.includes(stP));
+    check("and BOTH rates, from states.json rather than the reply",
+      pTxt.includes("five-year") && pTxt.includes("past year"));
+    check("with the drop it is talking about", pTxt.includes("-10%"));
+    check("and no fitted literal", !/(28|48|59)%/.test(pTxt));
     done();
   };
 }).catch((e) => { check("fixture load: " + e.message, false); done(); });

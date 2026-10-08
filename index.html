@@ -822,15 +822,54 @@ ${stale ? `<div class="agenote">⏳ ${esc(stale)}</div>` : ""}
 const SGLYPH = { HEALTHY: "●", STRESSED: "▲", BROKEN: "■", EARLY: "◆",
 NONE: "–", "NO BARS": "–" };
 const SORDER = ["BROKEN", "STRESSED", "EARLY", "HEALTHY", "NONE", "NO BARS"];
-const STRETCH_TXT = {
-// Holdout rates, 2026-10-07. The old 19 / 36 / 48-65 were fit-window
-// figures. These are measured on sessions 147-252 (2026-05-05 .. 2026-10-05),
-// which no fit touched; see export/stateml/01_stretch_oot.txt on the VM.
-// They match the card and board PNGs, which were relabelled on 2026-10-05.
-S1: "5-10% over MA20 · 28% go on to a further -10%",
-S2: "10-15% over MA20 · 48% go on to a further -10%",
-S3: "over 15% over MA20 · 59% go on to a further -10%",
-};
+// STRETCH, AMENDED 2026-10-08 -- TWO RATES PER BAND, READ FROM THE DOC.
+//
+// This was three literals -- 28 / 48 / 59 -- typed into this file. They
+// came from a May-Oct 2026 holdout of 400 / 100 / 88 observations, and
+// the five-year panel (526 names, ~1,300 sessions) puts the same
+// statistic at 16.6 / 22.2 / 30.0. The page had been overstating the
+// chance of a further -10% by roughly 1.7x to 2x, and nothing could
+// correct it, because no recomputed number had a path into this file.
+//
+// Now the rates come from states.json: doc.stretch.bands[band] carries
+// five_year and past_year with the n behind each, and the VM recomputes
+// them nightly. There are no rate literals left in this file.
+//
+// WHEN THE FIELDS ARE ABSENT, RENDER NOTHING. An old states.json from
+// before the contract changed, or a band the refresh could not compute,
+// yields "" and the line is simply omitted -- never a zero, never an
+// "undefined%", never an error.
+function stretchBands() {
+return (statesDoc && statesDoc.stretch && statesDoc.stretch.bands) || null;
+}
+// The six legend lines come from the VM VERBATIM
+// (state_monitor.STRETCH_LEGEND, shipped in states.json), including the
+// survivorship note. They are not restated here, so the page and the
+// PNG card cannot drift apart. With no doc, the block is omitted.
+function stretchLegendHtml() {
+const sx = (statesDoc && statesDoc.stretch) || null;
+const lines = (sx && Array.isArray(sx.legend)) ? sx.legend : null;
+if (!lines || !lines.length) return "";
+return "<b>Stretch</b> \u2014 " + lines.map(esc).join("<br>")
++ "<br><br>";
+}
+function stretchLine(band) {
+if (!band) return "";
+const bs = stretchBands();
+if (!bs) return "";
+const rec = bs[band];
+if (!rec) return "";
+const fy = rec.five_year, py = rec.past_year;
+if (!Number.isFinite(fy) && !Number.isFinite(py)) return "";
+const sx = statesDoc.stretch;
+const lbl = (sx.labels && sx.labels[band]) || band;
+const drop = Number.isFinite(sx.drop_pct) ? sx.drop_pct : -10;
+const parts = [band, lbl];
+if (Number.isFinite(fy)) parts.push(Math.round(fy) + "% five-year");
+if (Number.isFinite(py)) parts.push(Math.round(py) + "% past year");
+return parts.join(" · ") + " go on to a further "
++ Math.round(drop) + "%";
+}
 const fp1 = (x) => (x === null || x === undefined || !Number.isFinite(x))
 ? "—" : (x > 0 ? "+" : "") + (x * 100).toFixed(1) + "%";
 const sKey = (s) => "s-" + String(s).replace(/\s+/g, "");
@@ -1066,8 +1105,12 @@ const cl = coh ? `<div class="mline">${esc(coh.label)}: breadth ${fp1(coh.breadt
 : `<div class="mline">no cohort / own story</div>`;
 const lt = r.last_transition
 ? `<div class="mline last">last transition ${esc(r.last_transition.date)} · ${esc(r.last_transition.from)} → ${esc(r.last_transition.to)}</div>` : "";
-const st = r.stretch && STRETCH_TXT[r.stretch]
-? `<div class="mline str">STRETCH ${esc(r.stretch)} · ${esc(STRETCH_TXT[r.stretch])}</div>` : "";
+// One renderer serves both the STATES tab and the on-demand card --
+// the on-demand path calls memberCard() and splices extras in -- so
+// this is the only place the stretch line is built.
+const _sl = stretchLine(r.stretch);
+const st = _sl
+? `<div class="mline str">STRETCH · ${esc(_sl)}</div>` : "";
 return `<div class="mcard"><div class="mtop">
 <span class="sy">${esc(r.name)}</span><span class="ro">${esc(r.role || "")}</span>
 ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>` : ""}
@@ -1244,7 +1287,7 @@ ${singles.map((r) => memberCard(r, null, false)).join("")}</div>`;
 html += `<details class="howto"><summary>How to read ▾</summary><div class="bodyp">
 <b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
 <b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
-<b>Stretch</b> — distance above the 20-day while HEALTHY. Share that goes on to a further 10%+ drop within 20 sessions: under 5% → 17% · S1 (5-10%) → 28% · S2 (10-15%) → 48% · S3 (&gt;15%) → 59%. Out-of-time holdout, May–Oct 2026.<br><br>
+${stretchLegendHtml()}
 <b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>

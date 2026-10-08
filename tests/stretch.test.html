@@ -1,0 +1,308 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>two-figure stretch rates — browser tests</title>
+<style>
+body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}
+.bad::before{content:"FAIL ";color:#f55}
+.bad{color:#f88}
+h2{font-size:13px;margin:14px 0 4px;color:#fff;text-transform:uppercase}
+#sum{font-size:16px;font-weight:700;margin:8px 0;border-left:4px solid #555;
+padding-left:8px}
+iframe#stage{width:390px;height:900px;opacity:.01;position:fixed;
+bottom:0;right:0}
+</style>
+<h1 style="font-size:15px">two-figure stretch rates — browser tests</h1>
+<div id="sum">running…</div>
+<div id="out"></div>
+<iframe id="stage" src="about:blank" width="390" height="900"></iframe>
+<script>
+// WHAT THESE EXIST TO STOP.
+//
+// The page carried 28 / 48 / 59 as literals in its own source. They came
+// from a 400/100/88-observation holdout; the five-year panel puts the
+// same statistic at 16.6 / 22.2 / 30.0, so the page overstated the
+// chance of a further -10% by roughly 1.7x to 2x for months. Nothing
+// could notice, because no recomputed number had a path into the file.
+//
+// So: assert the line is BUILT FROM states.json, for a HEALTHY name in
+// every band; assert the legend is the VM's six lines verbatim; and
+// assert that when the fields are absent the line is simply OMITTED --
+// not zero, not "undefined%", not an exception. That last case is the
+// one that matters operationally, because an old cached states.json
+// from before the contract changed looks exactly like it.
+const PAGE = "../index.html";
+const out = document.getElementById("out");
+const frame = document.getElementById("stage");
+let PASS = 0, FAIL = 0, step = 0;
+const FAILED = [];
+
+function head(t) { out.insertAdjacentHTML("beforeend", `<h2>${t}</h2>`); }
+function check(label, cond) {
+  cond ? PASS++ : (FAIL++, FAILED.push(label));
+  out.insertAdjacentHTML("beforeend",
+    `<div class="${cond ? "ok" : "bad"}">${label}</div>`);
+}
+
+// The stretch block exactly as the VM ships it, 2026-10-08.
+const STRETCH = {
+  bands: {
+    under5: { five_year: 12.6, five_year_n: 179973,
+              past_year: 16.2, past_year_n: 22668 },
+    S1: { five_year: 16.6, five_year_n: 73756,
+          past_year: 22.8, past_year_n: 11249 },
+    S2: { five_year: 22.2, five_year_n: 16739,
+          past_year: 30.0, past_year_n: 3106 },
+    S3: { five_year: 30.0, five_year_n: 7951,
+          past_year: 36.9, past_year_n: 1938 }
+  },
+  labels: { under5: "under 5% over MA20", S1: "5-10% over MA20",
+            S2: "10-15% over MA20", S3: "15%+ over MA20" },
+  legend: [
+    "stretch (HEALTHY only, close over MA20): S1 5-10%  S2 10-15%  S3 over 15%.",
+    "        two rates per band, both recomputed nightly: FIVE-YEAR is the base rate over",
+    "        526 names and ~1,300 sessions; PAST YEAR is the same statistic over the last 252",
+    "        sessions only. When past year runs above five-year the tape is harsher than usual.",
+    "        Both are measured on TODAY's names, so a name that was delisted after a deep",
+    "        drawdown is absent -- the five-year rate is if anything an UNDER-estimate."
+  ],
+  drop_pct: -10.0, window: 20, fallback: false,
+  computed: "2026-10-08T00:38:53",
+  five_year_span: ["2021-07-08", "2026-10-07"], five_year_names: 526,
+  past_year_span: ["2025-08-28", "2026-10-07"], past_year_sessions: 252
+};
+
+function nameRec(name, band) {
+  return {
+    name: name, role: "single", single: true, cohort_id: null,
+    state: "HEALTHY", prev: "HEALTHY", days: 6, close: 100.0,
+    pull: -0.012, d20: 0.08, d50: 0.11, d200: 0.22,
+    stretch: band, hist: null, history: null, profile: null,
+    size: null, spark: null, next_moves: null, last_transition: null
+  };
+}
+
+// One HEALTHY name per band, plus one HEALTHY name with NO band at all
+// (a name inside 5% of its MA20 — the live machine assigns "" there).
+function fixture(withStretch) {
+  const d = {
+    // A PAST as_of on purpose. With a fresh stamp the page treats the
+    // doc as live and sits on the CONNECT YOUR FEED gate, which renders
+    // no cards at all; with an old one it renders the last good copy
+    // from cache, which is the path these assertions need. This is the
+    // same choice tests/states.test.html makes.
+    as_of: "2026-10-05T11:36:00-04:00", session: "2026-10-05",
+    basis: "intraday", reference_session: "2026-10-03",
+    // cohorts is an ARRAY in the contract -- statesView() iterates it
+    // with forEach, and an object here throws before a single card is
+    // rendered, which is what made every DOM assertion fail on the
+    // first run of this file.
+    counts: { HEALTHY: 5 }, cohorts: [],
+    names: [nameRec("AAA", "under5"), nameRec("BBB", "S1"),
+            nameRec("CCC", "S2"), nameRec("DDD", "S3"),
+            nameRec("EEE", "")],
+    alerts: [], clusters_file: "", note: "fixture"
+  };
+  if (withStretch) d.stretch = STRETCH;
+  return d;
+}
+
+function seedAndLoad(doc, then) {
+  const probe = document.createElement("iframe");
+  probe.src = PAGE;
+  probe.style.cssText =
+    "position:absolute;left:-10000px;width:1px;height:1px";
+  probe.addEventListener("load", () => {
+    try {
+      probe.contentWindow.localStorage.setItem("walls_states",
+        JSON.stringify(doc));
+      probe.contentWindow.localStorage.setItem("walls_theme", "light");
+      probe.contentWindow.localStorage.removeItem("walls_topic");
+    } catch (e) {
+      check("same-origin access to the page's localStorage", false);
+      finish();
+      return;
+    }
+    probe.remove();
+    then();
+  }, { once: true });
+  document.body.appendChild(probe);
+}
+
+frame.addEventListener("load", () => {
+  if (frame.contentDocument.location.href.endsWith("blank")) return;
+  setTimeout(() => (step === 0 ? runPresent() : runAbsent()), 600);
+});
+
+seedAndLoad(fixture(true), () => { frame.src = PAGE; });
+
+function showStates(w, doc) {
+  const btn = doc.querySelector('[data-tab="states"]');
+  if (btn) btn.click();
+  return doc;
+}
+
+function cardFor(doc, name) {
+  return [...doc.querySelectorAll(".mcard")].find((c) => {
+    const sy = c.querySelector(".sy");
+    return sy && sy.textContent.trim() === name;
+  }) || null;
+}
+
+function runPresent() {
+  step = 1;
+  const w = frame.contentWindow, doc = frame.contentDocument;
+  showStates(w, doc);
+
+  head("the helper builds the line from the doc, not from a literal");
+  check("stretchLine is exposed on the page",
+    typeof w.stretchLine === "function");
+  check("stretchBands reads the doc's bands",
+    typeof w.stretchBands === "function" && !!w.stretchBands());
+  check("the old STRETCH_TXT constant is gone",
+    typeof w.STRETCH_TXT === "undefined");
+
+  head("one HEALTHY name per band renders both figures");
+  const WANT = {
+    under5: "under5 · under 5% over MA20 · 13% five-year "
+      + "· 16% past year go on to a further -10%",
+    S1: "S1 · 5-10% over MA20 · 17% five-year "
+      + "· 23% past year go on to a further -10%",
+    S2: "S2 · 10-15% over MA20 · 22% five-year "
+      + "· 30% past year go on to a further -10%",
+    S3: "S3 · 15%+ over MA20 · 30% five-year "
+      + "· 37% past year go on to a further -10%"
+  };
+  for (const b of ["under5", "S1", "S2", "S3"]) {
+    check(`${b}: stretchLine() is exactly the specified sentence`,
+      w.stretchLine(b) === WANT[b]);
+  }
+  // S2 is the band the brief spelled out; assert it character for
+  // character so a wording drift fails here and not on the phone.
+  check("S2 matches the brief verbatim",
+    w.stretchLine("S2") === "S2 · 10-15% over MA20 · "
+    + "22% five-year · 30% past year go on to a further -10%");
+
+  head("and the cards on the STATES tab carry it");
+  const BANDS = { AAA: "under5", BBB: "S1", CCC: "S2", DDD: "S3" };
+  for (const [nm, band] of Object.entries(BANDS)) {
+    const c = cardFor(doc, nm);
+    check(`${nm} (${band}) has a card`, !!c);
+    if (!c) continue;
+    const line = c.querySelector(".mline.str");
+    check(`${nm} renders a STRETCH line`, !!line);
+    if (!line) continue;
+    const txt = line.textContent.replace(/\s+/g, " ").trim();
+    check(`${nm} shows the five-year figure`,
+      txt.indexOf("five-year") > -1);
+    check(`${nm} shows the past-year figure`,
+      txt.indexOf("past year") > -1);
+    check(`${nm} shows BOTH rates for ${band}`,
+      txt.indexOf(w.stretchLine(band)) > -1);
+  }
+
+  head("a HEALTHY name with no band renders no line");
+  const e = cardFor(doc, "EEE");
+  check("EEE has a card", !!e);
+  check("and it has NO stretch line",
+    !!e && !e.querySelector(".mline.str"));
+
+  head("no rate literal survives anywhere in the rendered view");
+  // #main textContent, NOT body.innerHTML: the latter contains the
+  // page's own inline <script>, so it matches source comments and
+  // reports failures that no reader could ever see.
+  const seen = (doc.getElementById("main") || doc.body).textContent;
+  for (const bad of ["28%", "48%", "59%"]) {
+    check(`the rendered view never shows ${bad}`, seen.indexOf(bad) === -1);
+  }
+
+  head("the legend is the VM's six lines, verbatim");
+  const how = doc.querySelector("details.howto");
+  check("the How-to-read block exists", !!how);
+  const ht = how ? how.textContent : "";
+  check("all six legend lines are present, in order", (() => {
+    let at = -1;
+    for (const l of STRETCH.legend) {
+      const squashed = l.replace(/\s+/g, " ").trim();
+      const i = ht.replace(/\s+/g, " ").indexOf(squashed, at + 1);
+      if (i <= at) return false;
+      at = i;
+    }
+    return true;
+  })());
+  check("it carries the survivorship note",
+    ht.indexOf("delisted") > -1);
+  check("and says the five-year rate is an under-estimate",
+    ht.indexOf("UNDER-estimate") > -1);
+  check("the old holdout sentence is gone",
+    ht.indexOf("Out-of-time holdout") === -1);
+
+  // ---- second pass: the SAME page with the fields absent
+  seedAndLoad(fixture(false), () => {
+    frame.contentWindow.location.reload();
+  });
+}
+
+function runAbsent() {
+  const w = frame.contentWindow, doc = frame.contentDocument;
+  showStates(w, doc);
+
+  head("THE ABSENT CASE -- an old states.json with no stretch block");
+  // statesDoc is declared with let, so it is NOT a window property --
+  // only function and var declarations are. The functional check is the
+  // one that matters anyway: with no block, stretchBands() is null.
+  check("stretchBands() returns null rather than throwing",
+    w.stretchBands() === null);
+  check("and the page still rendered its cards from the same doc",
+    doc.querySelectorAll(".mcard").length >= 5);
+
+  let threw = false;
+  try {
+    for (const b of ["under5", "S1", "S2", "S3", "", null, undefined]) {
+      if (w.stretchLine(b) !== "") threw = "non-empty for " + b;
+    }
+  } catch (e) { threw = "threw " + e; }
+  check("stretchLine returns \"\" for every band, and does not throw",
+    threw === false);
+
+  head("so the cards render nothing, and the page still works");
+  for (const nm of ["AAA", "BBB", "CCC", "DDD", "EEE"]) {
+    const c = cardFor(doc, nm);
+    check(`${nm} still renders a card`, !!c);
+    check(`${nm} has NO stretch line`,
+      !!c && !c.querySelector(".mline.str"));
+  }
+  const seen = (doc.getElementById("main") || doc.body).textContent;
+  check("nothing rendered the word undefined",
+    seen.indexOf("undefined") === -1);
+  check("and no NaN leaked into the view", seen.indexOf("NaN") === -1);
+  check("and no stretch line exists anywhere in the view",
+    doc.querySelectorAll(".mline.str").length === 0);
+
+  head("the legend block degrades to nothing, not to an error");
+  const how = doc.querySelector("details.howto");
+  check("the How-to-read block still renders", !!how);
+  const ht = how ? how.textContent : "";
+  check("it omits the stretch paragraph entirely",
+    ht.indexOf("recomputed nightly") === -1);
+  check("but still carries the other sections", ht.indexOf("Roles") > -1
+    && ht.indexOf("States") > -1);
+  check("and shows no rate literal", ht.indexOf("28%") === -1
+    && ht.indexOf("48%") === -1 && ht.indexOf("59%") === -1);
+
+  finish();
+}
+
+function finish() {
+  const s = document.getElementById("sum");
+  s.textContent = PASS + " passed, " + FAIL + " failed";
+  s.style.borderColor = FAIL ? "#D22B12" : "#157F3D";
+  s.style.color = FAIL ? "#D22B12" : "#157F3D";
+  if (FAILED.length) {
+    s.insertAdjacentHTML("afterend", "<div class='bad'>"
+      + FAILED.map((x) => "<div>FAILED  " + x + "</div>").join("")
+      + "</div>");
+  }
+  window.__RESULT = { pass: PASS, fail: FAIL };
+}
+</script>
