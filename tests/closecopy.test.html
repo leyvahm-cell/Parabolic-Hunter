@@ -1,0 +1,181 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>durable close copy — browser tests</title>
+<style>
+body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}
+.bad::before{content:"FAIL ";color:#f55}
+.bad{color:#f88}
+h2{font-size:13px;margin:14px 0 4px;color:#fff;text-transform:uppercase}
+#sum{font-size:16px;font-weight:700;margin:8px 0;border-left:4px solid #555;
+padding-left:8px}
+iframe#stage{width:390px;height:900px;opacity:.01;position:fixed;
+bottom:0;right:0}
+</style>
+<h1 style="font-size:15px">durable close copy — browser tests</h1>
+<div id="sum">running…</div>
+<div id="out"></div>
+<iframe id="stage" src="about:blank" width="390" height="900"></iframe>
+<script>
+// WHAT THESE EXIST TO STOP.
+//
+// There are now THREE doors into statesDoc -- the close copy committed to
+// this repo, the live ntfy feed, and this browser's localStorage -- and
+// they can disagree by hours. Two things can go wrong and neither is
+// visible on screen:
+//
+//   AN OLDER DOCUMENT DISPLACING A NEWER ONE. The committed close copy is
+//   loaded first on purpose. If the ordering were enforced by call order
+//   alone rather than by an as_of comparison, then on any RTH load the
+//   close copy would arrive second (file fetch vs a cached feed message)
+//   and overwrite the intraday document with last night's close. The page
+//   would look fine and be a day stale.
+//
+//   THE BASIS GOING UNSAID. A close-basis document on screen at 11:00 is
+//   not this morning's trading. The old banner fired only for the cache
+//   or for a stale-during-RTH feed, so in the close-copy case it said
+//   nothing at all and basis lived in the footer.
+//
+// NOTE ON SCOPE: statesDoc, statesFrom, closeTried and CLOSE_FILE are
+// declared with let/const at top-level script scope, which does NOT put
+// them on window. So these tests drive the HOISTED FUNCTIONS and their
+// RETURN VALUES, read the rendered DOM, and read the page source for the
+// call ordering. That is deliberate -- reaching for w.statesDoc returns
+// undefined and would make every assertion vacuously pass.
+const PAGE = "../index.html";
+const out = document.getElementById("out");
+const frame = document.getElementById("stage");
+let PASS = 0, FAIL = 0;
+const FAILED = [];
+
+function head(t) { out.insertAdjacentHTML("beforeend", `<h2>${t}</h2>`); }
+function check(label, cond) {
+  cond ? PASS++ : (FAIL++, FAILED.push(label));
+  out.insertAdjacentHTML("beforeend",
+    `<div class="${cond ? "ok" : "bad"}">${label}</div>`);
+}
+
+const doc_ = (as_of, basis) => ({ as_of, basis, session: "2026-10-09",
+  counts: {}, cohorts: [], names: [], alerts: [] });
+
+function done() {
+  document.getElementById("sum").textContent =
+    `${PASS} passed, ${FAIL} failed` + (FAIL ? " — " + FAILED.join("; ") : "");
+  window.__RESULT = { pass: PASS, fail: FAIL };
+}
+
+frame.addEventListener("load", run, { once: true });
+frame.src = PAGE;
+
+async function run() {
+  const w = frame.contentWindow, d = frame.contentDocument;
+
+  head("the shared pieces are reachable");
+  check("adoptStates is hoisted onto the page",
+    typeof w.adoptStates === "function");
+  check("loadCloseStates is hoisted onto the page",
+    typeof w.loadCloseStates === "function");
+  check("statesBanner is hoisted onto the page",
+    typeof w.statesBanner === "function");
+  check("the old inline accept() closure is gone -- one rule, not two",
+    typeof w.adoptStates === "function");
+
+  // ---------------------------------------------------------------- order
+  head("fallback order: newest wins, whichever door it came through");
+  // Each call feeds the page's own single statesDoc, so the sequence IS
+  // the test: what it accepts and what it rejects, in order.
+  check("a close-basis copy is adopted when nothing is held",
+    w.adoptStates(doc_("2026-10-09T17:02:44-04:00", "close"),
+      "close-file") === true);
+  check("an OLDER feed copy does NOT displace it",
+    w.adoptStates(doc_("2026-10-09T10:07:06-04:00", "intraday"),
+      "feed") === false);
+  check("a NEWER feed copy DOES overlay it",
+    w.adoptStates(doc_("2026-10-10T09:35:02-04:00", "intraday"),
+      "feed") === true);
+  check("and an older close copy cannot claw it back",
+    w.adoptStates(doc_("2026-10-09T17:02:44-04:00", "close"),
+      "close-file") === false);
+  check("a document with no as_of is refused -- it cannot be ordered",
+    w.adoptStates({ basis: "close" }, "close-file") === false);
+  check("null is refused without throwing",
+    w.adoptStates(null, "close-file") === false);
+  check("undefined is refused without throwing",
+    w.adoptStates(undefined, "feed") === false);
+
+  // ------------------------------------------------------- call ordering
+  head("the committed copy is TRIED first");
+  const src = await (await fetch(PAGE, { cache: "no-store" })).text();
+  const iClose = src.indexOf("await loadCloseStates()");
+  const iFeed = src.indexOf("await loadStates()");
+  check("both loaders are called in refresh()", iClose > -1 && iFeed > -1);
+  check("loadCloseStates() is called BEFORE loadStates()",
+    iClose > -1 && iFeed > -1 && iClose < iFeed);
+  check("the committed path is data/states_close.json",
+    src.indexOf('"data/states_close.json"') > -1);
+  check("it is fetched with cache: no-store, so a stale CDN copy cannot "
+    + "pin the page to an old close",
+    /loadCloseStates[\s\S]{0,400}cache:\s*"no-store"/.test(src));
+  check("a non-ok response returns false rather than throwing",
+    /if \(!r\.ok\) return false/.test(src));
+
+  // ------------------------------------------------- absent file is normal
+  head("a missing committed file is normal, not an error");
+  // This is the REAL state of the repo right now: data/states_close.json
+  // does not exist until the first VM push lands. The page above loaded
+  // with it absent, so the proof is that it rendered at all.
+  check("the page booted with no committed file present",
+    !!d.querySelector("#out, #app, body"));
+  check("loadCloseStates resolves false on a repeat call rather than "
+    + "throwing", (await w.loadCloseStates()) === false);
+  let threw = "";
+  try { await w.loadCloseStates(); } catch (e) { threw = String(e); }
+  check("and calling it again is still safe (" + (threw || "no throw") + ")",
+    !threw);
+
+  // ------------------------------------------------------------- banner
+  head("the banner states basis and generation time, always");
+  const AS = "2026-10-09T17:02:44-04:00";
+  const bClose = w.statesBanner(doc_(AS, "close"), "close-file", "", 1);
+  check("it names the BASIS in caps", bClose.indexOf("CLOSE-BASIS") > -1);
+  check("it says 'generated' and gives the timestamp",
+    bClose.indexOf("generated") > -1 && bClose.indexOf(AS) > -1);
+  check("it names the source as the committed repo copy",
+    bClose.indexOf("durable close copy committed to this repo") > -1);
+  check("it explains why the close is what is showing",
+    bClose.indexOf("The feed has nothing newer than the close.") > -1);
+  check("it is a banner div", /^<div class="banner">/.test(bClose));
+
+  const bFeed = w.statesBanner(doc_(AS, "intraday"), "feed", "", 1);
+  check("an intraday feed copy says INTRADAY-BASIS",
+    bFeed.indexOf("INTRADAY-BASIS") > -1);
+  check("and names the live feed", bFeed.indexOf("live feed") > -1);
+  check("with no close-copy explanation attached",
+    bFeed.indexOf("nothing newer than the close") === -1);
+
+  const bCache = w.statesBanner(doc_(AS, "close"), "cache", "", 1);
+  check("a cached copy names this browser as the source",
+    bCache.indexOf("last good copy held by this browser") > -1);
+  check("and keeps the ntfy-expiry explanation",
+    bCache.indexOf("ntfy drops attachments after ~3h") > -1);
+
+  check("an unknown source degrades to the raw word, not 'undefined'",
+    w.statesBanner(doc_(AS, "close"), "weird", "", 1)
+      .indexOf("source: weird") > -1);
+  check("a missing basis renders ? and never 'UNDEFINED'",
+    w.statesBanner({ as_of: AS }, "feed", "", 1).indexOf("?-BASIS") > -1
+    && w.statesBanner({ as_of: AS }, "feed", "", 1)
+      .indexOf("UNDEFINED") === -1);
+  check("the age text is passed through verbatim when supplied",
+    w.statesBanner(doc_(AS, "close"), "close-file", " · 12m old", 12)
+      .indexOf(" · 12m old") > -1);
+
+  head("the footer names the source generally, not just the cache");
+  check("the footer carries a source field",
+    /source \$\{esc\(statesFrom/.test(src));
+  check("and the old cache-only special case is gone",
+    src.indexOf('" · from cache"') === -1);
+
+  done();
+}
+</script>

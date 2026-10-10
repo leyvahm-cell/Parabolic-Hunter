@@ -459,6 +459,47 @@ const STATES_TITLE = "states.json";
 const STATES_CACHE = "walls_states";
 const STALE_MIN = 20;                  // SYNCED goes amber past this, in RTH
 let statesDoc = null, statesFrom = "", statesFetching = false;
+// DURABLE CLOSE COPY (added 2026-10-10).
+//
+// The VM commits the close-basis document into this repo as
+// data/states_close.json after its 16:45 step, so the page has a copy
+// that does not expire. ntfy drops attachments after about three hours
+// while the message window here is twelve, so before this a first load
+// outside that window had nothing but whatever localStorage happened to
+// hold -- and nothing at all in a fresh browser.
+//
+// ORDER OF ADOPTION: the committed file is tried FIRST, then the feed
+// overlays it IF the feed copy is newer. During RTH the feed will be
+// newer, because the scanner republishes intraday every cycle. Outside
+// RTH the close copy is the freshest thing in existence and there is
+// nothing to overlay it with.
+//
+// A MISSING FILE IS NORMAL. Until the first VM push lands there is
+// nothing at that path, and a 404 must leave the page behaving exactly
+// as it did before: feed, then cache.
+const CLOSE_FILE = "data/states_close.json";
+let closeTried = false;
+// One newest-wins rule, shared by every source. Hoisted out of
+// loadStates() on 2026-10-10 so the committed-file loader cannot drift
+// from the feed loader: an older document must never displace a newer
+// one whichever door it came through.
+function adoptStates(doc, from) {
+if (!doc || !doc.as_of) return false;
+const cur = statesDoc ? Date.parse(statesDoc.as_of || 0) : 0;
+if (Date.parse(doc.as_of) < cur) return false;
+statesDoc = doc; statesFrom = from;
+try { localStorage.setItem(STATES_CACHE, JSON.stringify(doc)); } catch {}
+return true;
+}
+async function loadCloseStates() {
+if (closeTried) return false;
+closeTried = true;
+try {
+const r = await fetch(CLOSE_FILE, { cache: "no-store" });
+if (!r.ok) return false;            // 404 until the first push: not an error
+return adoptStates(await r.json(), "close-file");
+} catch { return false; }
+}
 try {
 const raw = localStorage.getItem(STATES_CACHE);
 if (raw) { statesDoc = JSON.parse(raw); statesFrom = "cache"; }
@@ -483,14 +524,7 @@ return !["Sat", "Sun"].includes(g("weekday")) && mins >= 570 && mins <= 960;
 // stale attachment can never overwrite a fresher cached copy.
 async function loadStates() {
 const m = msgs.find((x) => (x.title || "").trim().toLowerCase() === STATES_TITLE);
-const accept = (doc, from) => {
-if (!doc || !doc.as_of) return false;
-const cur = statesDoc ? Date.parse(statesDoc.as_of || 0) : 0;
-if (Date.parse(doc.as_of) < cur) return false;
-statesDoc = doc; statesFrom = from;
-try { localStorage.setItem(STATES_CACHE, JSON.stringify(doc)); } catch {}
-return true;
-};
+const accept = adoptStates;   // AMENDED 2026-10-10: one shared rule
 if (m && m.message && m.message.trim().startsWith("{")) {
 try { if (accept(JSON.parse(m.message), "body")) return true; } catch {}
 }
@@ -1202,6 +1236,37 @@ const base = memberCard(r, null, off);
 return base.replace("<div class=\"mline\">no cohort / own story</div>", extra);
 }).join("");
 }
+// THE BANNER (amended 2026-10-10). It now ALWAYS states the basis and the
+// generation time of whatever is on screen, and names which of the three
+// sources it came from.
+//
+// WHY ALWAYS. There are now three doors -- the committed close copy, the
+// live feed, and this browser's localStorage -- and they can disagree by
+// hours. A close-basis document on screen at 11:00 is not this morning's
+// trading, and the old banner said nothing at all in that case because it
+// only fired for the cache or for a stale-during-RTH feed. Basis was
+// available only in the footer, which is the wrong place for the one fact
+// that decides whether the numbers mean today.
+const STATES_SOURCE_TXT = {
+"close-file": "durable close copy committed to this repo",
+"feed": "live feed",
+"body": "live feed (inline)",
+"cache": "last good copy held by this browser",
+};
+function statesBanner(d, from, ageTxt, age) {
+const basis = String(d.basis || "?").toUpperCase();
+const src = STATES_SOURCE_TXT[from] || from || "unknown source";
+let extra = "";
+if (from === "cache") {
+extra = " The feed has nothing newer (ntfy drops attachments after ~3h).";
+} else if (from === "close-file") {
+extra = " The feed has nothing newer than the close.";
+}
+if (age !== null && age > STALE_MIN && inRTH()) {
+extra += ` ${Math.round(age)} MIN OLD during RTH.`;
+}
+return `<div class="banner">SHOWING ${esc(basis)}-BASIS DATA — generated ${esc(d.as_of || "?")}${ageTxt} · source: ${esc(src)}.${extra}</div>`;
+}
 function statesView() {
 const d = statesDoc;
 if (!d) {
@@ -1216,11 +1281,7 @@ let html = "";
 // when it is a disagreement about the time.
 const ageTxt = (age !== null && age >= 0) ? " · " + Math.round(age) + "m old"
 : (age !== null ? " · stamped ahead of this device's clock" : "");
-if (statesFrom === "cache") {
-html += `<div class="banner">SHOWING THE LAST GOOD COPY — as of ${esc(d.as_of || "?")}${ageTxt}. The feed has nothing newer (ntfy drops attachments after ~3h).</div>`;
-} else if (age !== null && age > STALE_MIN && inRTH()) {
-html += `<div class="banner">STATES ARE ${Math.round(age)} MIN OLD during RTH — as of ${esc(d.as_of || "?")}.</div>`;
-}
+html += statesBanner(d, statesFrom, ageTxt, age);
 // a. the ticker box, first -- publishes "state TICKER" to the command topic
 // the page already holds, exactly as the debug block does, and never writes
 // to the roster.
@@ -1298,7 +1359,7 @@ ${stretchLegendHtml()}
 // f. footer
 html += `<div class="foot">States describe; they do not predict.<br>
 Entry ordering inside a trend is distance to MA20; the MA50 is where pullbacks have ended.<br>
-session ${esc(d.session || "?")} · basis ${esc(d.basis || "?")} · as of ${esc(d.as_of || "?")}${statesFrom === "cache" ? " · from cache" : ""}</div>`;
+session ${esc(d.session || "?")} · basis ${esc(d.basis || "?")} · as of ${esc(d.as_of || "?")} · source ${esc(statesFrom || "?")}</div>`;
 return html;
 }
 function plainCard(m) {
@@ -1414,6 +1475,10 @@ failedOnce = false;
 dot.classList.remove("err");
 lastPollText = "synced " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 sync.textContent = lastPollText;
+// AMENDED 2026-10-10: the committed close copy first, then let the feed
+// overlay it if the feed is newer. adoptStates enforces newest-wins, so
+// the order here is a preference, not a race.
+await loadCloseStates();
 await loadStates();
 } catch (e) {
 failedOnce = true; dot.classList.add("err"); sync.textContent = "offline";
