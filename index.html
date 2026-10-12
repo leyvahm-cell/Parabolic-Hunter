@@ -397,6 +397,20 @@ color: var(--faint); font-weight: 600; }
 font-size: 9px; font-weight: 800; color: var(--ink);
 font-variant-numeric: tabular-nums; }
 .spark .n40 { left: 2px; right: auto; }
+/* A last point that is NOT this cycle's price (added 2026-10-12): the
+   label says so in muted ink, and the dot is hollow. */
+.spark .lastlbl.stale { color: var(--muted); }
+/* THE INTRADAY STRIP (added 2026-10-12), under the 40-session chart. */
+.istrip { margin-top: 8px; position: relative; }
+.istrip .ihd { display: flex; justify-content: space-between; gap: 8px;
+font-size: 9px; font-weight: 800; color: var(--muted); text-transform: uppercase;
+letter-spacing: .3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.istrip .ihd b { color: var(--ink); }
+.istrip svg { display: block; width: 100%; height: 30px; margin-top: 2px; }
+.istrip .iax { display: flex; justify-content: space-between; font-size: 9px;
+font-weight: 700; color: var(--faint); font-variant-numeric: tabular-nums; }
+.mline.quote b { font-variant-numeric: tabular-nums; }
+.mline.quote.none { color: var(--muted); }
 </style>
 </head>
 <body>
@@ -952,7 +966,26 @@ out.push(hi > 0 && Number.isFinite(close[i]) ? close[i] / hi - 1 : null);
 }
 return out;
 }
-function sparkSvg(sp, asOf) {
+// THE LAST POINT'S LABEL (amended 2026-10-12). states.json now says per
+// row whether its last point is this cycle's price (px_src "cycle") or an
+// archived close ("close"). On 2026-10-12 every roster name at 13:51 drew
+// its 10-09 close under a "13:51" label: the scanner only handed over
+// prices for names on the board, and the page had no way to tell. Now:
+//   cycle                -> the cycle clock, as before
+//   close, intraday doc  -> "last close", muted, hollow dot
+//   close, close doc     -> "close"
+//   absent (older doc)   -> the clock, exactly the old behaviour
+// `lbl` overrides all of it: the on-demand card passes its quote time.
+function lastPointLabel(asOf, pxSrc, basis, lbl) {
+if (lbl) return { txt: lbl, stale: false };
+const hhmm = (asOf || "").slice(11, 16);
+if (pxSrc === "close") {
+return basis === "intraday" ? { txt: "last close", stale: true }
+: { txt: "close", stale: false };
+}
+return { txt: hhmm, stale: false };
+}
+function sparkSvg(sp, asOf, pxSrc, basis, lbl) {
 if (!sp || !Array.isArray(sp.close)) return "";
 const pts = sp.close.filter((v) => Number.isFinite(v));
 if (pts.length < 2) return "";
@@ -1009,8 +1042,10 @@ if (dc) g += `<path d="${dc}" fill="none" stroke="var(--ink)" stroke-width="2" s
 // The last point is the latest cycle price. It gets a dot and the clock
 // from as_of, so the newest reading on the chart is identifiable as the
 // one the rest of the card is describing.
-const hhmm = (asOf || "").slice(11, 16);
-g += `<circle cx="${X(n - 1).toFixed(1)}" cy="${Y(px).toFixed(1)}" r="2.6" fill="var(--ink)"/>`;
+const ll = lastPointLabel(asOf, pxSrc, basis, lbl);
+g += ll.stale
+? `<circle cx="${X(n - 1).toFixed(1)}" cy="${Y(px).toFixed(1)}" r="2.6" fill="var(--card)" stroke="var(--muted)" stroke-width="1.4"/>`
+: `<circle cx="${X(n - 1).toFixed(1)}" cy="${Y(px).toFixed(1)}" r="2.6" fill="var(--ink)"/>`;
 // the crosshair, hidden until a drag
 g += `<g class="xh" style="display:none"><line class="xhl" y1="0" y2="${H}" stroke="var(--ink)" stroke-width="1" opacity=".5"/><circle class="xhd" r="3" fill="var(--ink)"/></g>`;
 const leg = live.map(([nm, , col]) =>
@@ -1026,8 +1061,53 @@ d: draw200 ? sp.ma200 : null, p: pulls, n: n }));
 return `<div class="spark" data-spark="${payload}">
 <div class="xhread" aria-live="polite"></div>
 <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${g}</svg>
-<div class="n40">${n} sessions</div>${hhmm ? `<div class="lastlbl">${esc(hhmm)}</div>` : ""}
+<div class="n40">${n} sessions</div>${ll.txt ? `<div class="lastlbl${ll.stale ? " stale" : ""}">${esc(ll.txt)}</div>` : ""}
 </div><div class="leg">${leg}</div>`;
+}
+// THE INTRADAY STRIP (added 2026-10-12).
+//
+// states.json's `intraday` block per roster row: the cycle times (t, ET
+// HH:MM), the cycle prices (px) and the last archived close (ref). The
+// VM writes a point only for a cycle that actually priced the name, so
+// a gap in the line is a cycle with no price, never a restated close.
+//
+// The x axis is the whole session, 09:30 to 16:00, so a strip drawn at
+// 11:00 is visibly a third of a day rather than stretched to look like
+// one. The dashed line is the last close, the same reference the change
+// in the header is measured from. No block, or no points: nothing drawn.
+const RTH_OPEN_MIN = 570, RTH_CLOSE_MIN = 960;
+function intradayStrip(it) {
+if (!it || !Array.isArray(it.t) || !Array.isArray(it.px)) return "";
+const pts = [];
+it.t.forEach((t, i) => {
+const v = it.px[i];
+const m = /^(\d{2}):(\d{2})$/.exec(String(t || ""));
+if (!m || !Number.isFinite(v)) return;
+pts.push([(+m[1]) * 60 + (+m[2]), v, t]);
+});
+if (!pts.length) return "";
+const ref = Number.isFinite(it.ref) ? it.ref : null;
+const vals = pts.map((p) => p[1]).concat(ref !== null ? [ref] : []);
+let lo = Math.min(...vals), hi = Math.max(...vals);
+if (!(hi > lo)) { lo -= 0.5; hi += 0.5; }
+const pad = (hi - lo) * 0.12; lo -= pad; hi += pad;
+const W = 320, H = 30;
+const X = (mins) => Math.max(0, Math.min(W,
+(mins - RTH_OPEN_MIN) / (RTH_CLOSE_MIN - RTH_OPEN_MIN) * W));
+const Y = (v) => H - (v - lo) / (hi - lo) * H;
+let g = "";
+if (ref !== null) {
+g += `<line x1="0" y1="${Y(ref).toFixed(1)}" x2="${W}" y2="${Y(ref).toFixed(1)}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 3" opacity=".7"/>`;
+}
+if (pts.length > 1) {
+g += `<path d="${pts.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ")}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`;
+}
+const last = pts[pts.length - 1];
+g += `<circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="2.4" fill="var(--ink)"/>`;
+const chg = ref ? last[1] / ref - 1 : null;
+return `<div class="istrip"><div class="ihd"><span>today · ${pts.length} cycle${pts.length === 1 ? "" : "s"}</span><span><b>${esc(last[1].toFixed(2))}</b> ${esc(last[2])}${chg !== null ? " · " + esc(fp1(chg)) + " vs close" : ""}</span></div>
+<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="today's cycle prices">${g}</svg>
+<div class="iax"><span>09:30</span><span>12:45</span><span>16:00</span></div></div>`;
 }
 // THE SIZE LINE.
 //
@@ -1153,7 +1233,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close)}${nextLine(r.next_moves)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close)}${nextLine(r.next_moves)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1191,6 +1271,13 @@ const sp = grab(/^spark (\{.*\})$/m);
 const sz = grab(/^size ATR14 \$([\d.]+) \(([\d.]+)%\)\s+·\s+([\d.]+) ATR = \$([\d.]+)\s+·\s+at ([\d.]+)% risk: (\d+) sh/m);
 const szDef = /^\s+account not set/m.test(blk);
 const lt = grab(/^last transition (.+)$/m);
+// THE QUOTE (added 2026-10-12). The listener now fetches one live quote
+// per name at request time and the VM grades the reply on it, so the
+// numbers on this card are as current as a roster card's. The quote line
+// says what the card was built from; a reply without the line (an older
+// listener, or the CLI) renders exactly as before.
+const qt = grab(/^quote ([\d.]+) at (.+?)\s{2}live, graded against the (\S+) bars/);
+const qn = grab(/^quote none\s+graded on the (\S+) close/);
 const state = stc ? stc[1] : "";
 let spark = null;
 if (sp) { try { spark = JSON.parse(sp[1]); } catch (e) { spark = null; } }
@@ -1225,8 +1312,12 @@ account: null, shares: +sz[6], notional: null,
 source: szDef ? "default" : "set",
 } : null,
 last_transition: null,
+// the chart's last point is the quote, so it carries the quote's time
+_lastlbl: qt ? qt[2].replace(/\s*ET$/, "") : (qn ? "close" : ""),
 };
 const extra = [
+qt ? `<div class="mline quote">QUOTE <b>${esc(qt[1])}</b> at ${esc(qt[2])} · live, against the ${esc(qt[3])} bars</div>`
+: qn ? `<div class="mline quote none">no live quote · graded on the ${esc(qn[1])} close</div>` : "",
 sti ? `<div class="mline">close rule <b>${esc(state)}</b> · intraday ${esc(sti[1])}</div>` : "",
 coh ? `<div class="mline">cohort ${esc(coh[1])} n=${esc(coh[2])} · breadth ${esc(coh[3])} · RS20 ${esc(coh[4])}</div>`
 : `<div class="mline">no cohort / own story</div>`,
@@ -1320,7 +1411,7 @@ return `<div class="aitem">` + (url
 // so the sparkline can label its last point with the cycle clock without
 // the renderer reaching back up to the document.
 const names = (d.names || []).map((r) => Object.assign({}, r,
-{ _as_of: d.as_of }));
+{ _as_of: d.as_of, _basis: d.basis }));
 const cohorts = d.cohorts || [];
 const byId = {};
 cohorts.forEach((c) => { byId[c.id] = c; });

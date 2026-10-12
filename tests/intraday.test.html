@@ -1,0 +1,175 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>intraday strip, last-point label, on-demand quote — browser tests</title>
+<style>
+body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}
+.bad::before{content:"FAIL ";color:#f55}
+.bad{color:#f88}
+h2{font-size:13px;margin:14px 0 4px;color:#fff;text-transform:uppercase}
+#sum{font-size:16px;font-weight:700;margin:8px 0;border-left:4px solid #555;
+padding-left:8px}
+iframe{width:400px;height:300px;opacity:.01;position:fixed;bottom:0;right:0}
+</style>
+<h1 style="font-size:15px">2026-10-12 refresh — browser tests</h1>
+<div id="sum">running…</div>
+<div id="out"></div>
+<script>
+// WHAT THESE EXIST TO STOP (added 2026-10-12).
+//
+//   1. A CLOSE DRAWN UNDER A CLOCK. On 10-12 every roster name at 13:51
+//      drew its 10-09 close under a "13:51" label. states.json now says
+//      which it is (px_src); the label must follow it.
+//   2. THE STRIP LYING ABOUT THE DAY. It is drawn on a fixed 09:30-16:00
+//      axis from the cycle points the VM wrote, and draws nothing when
+//      there are none -- never a flat line at the close.
+//   3. THE ON-DEMAND CARD NOT SAYING WHAT IT WAS BUILT FROM. A quoted
+//      reply states the quote and its time; an unquoted one says it is
+//      on the close; an old reply renders exactly as before.
+//
+// Serve the repo root (python -m http.server) and open
+// /tests/intraday.test.html -- fetch() does not work from file://.
+const out = document.getElementById("out");
+let P = 0, F = 0;
+const FAILED = [];
+function head(t) { out.insertAdjacentHTML("beforeend", `<h2>${t}</h2>`); }
+function check(label, cond) {
+  cond ? P++ : (F++, FAILED.push(label));
+  out.insertAdjacentHTML("beforeend",
+    `<div class="${cond ? "ok" : "bad"}">${label}</div>`);
+}
+function done() {
+  document.getElementById("sum").textContent = `${P} passed, ${F} failed`;
+  if (FAILED.length) {
+    document.getElementById("sum").insertAdjacentHTML("afterend",
+      "<div class='bad'>" + FAILED.map((x) => "<div>FAILED  " + x
+        + "</div>").join("") + "</div>");
+  }
+}
+Promise.all([fetch("mu_row_fixture.json").then((r) => r.json()),
+             fetch("reply_fixture.json").then((r) => r.json())])
+.then(([mu, fx]) => {
+  const f = document.createElement("iframe");
+  f.src = "../index.html";
+  document.body.appendChild(f);
+  f.onload = () => {
+    const w = f.contentWindow;
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;left:-9999px;width:400px";
+    document.body.appendChild(host);
+    const card = (r) => { host.innerHTML = w.memberCard(r, null, false);
+      return host; };
+    const lbl = () => host.querySelector(".spark .lastlbl");
+    const AS_OF = "2026-10-12T13:51:49-04:00";
+
+    head("1. the last point's label follows px_src");
+    card(Object.assign({}, mu, { px_src: "cycle", _as_of: AS_OF,
+      _basis: "intraday" }));
+    check("cycle price: the cycle clock (" + (lbl() || {}).textContent + ")",
+      lbl() && lbl().textContent === "13:51" && !lbl().classList.contains("stale"));
+    check("cycle price: a filled dot",
+      !!host.querySelector(".spark circle[fill='var(--ink)']"));
+    card(Object.assign({}, mu, { px_src: "close", _as_of: AS_OF,
+      _basis: "intraday" }));
+    check("no cycle price on an intraday doc: 'last close', not 13:51",
+      lbl() && lbl().textContent === "last close");
+    check("and it is muted", lbl() && lbl().classList.contains("stale"));
+    check("and the dot is hollow",
+      !!host.querySelector(".spark circle[stroke='var(--muted)']"));
+    card(Object.assign({}, mu, { px_src: "close", _as_of: AS_OF,
+      _basis: "close" }));
+    check("the close basis reads 'close'",
+      lbl() && lbl().textContent === "close" && !lbl().classList.contains("stale"));
+    const old = Object.assign({}, mu, { _as_of: AS_OF });
+    delete old.px_src;
+    card(old);
+    check("an older doc without px_src keeps the clock",
+      lbl() && lbl().textContent === "13:51");
+
+    head("2. the intraday strip");
+    card(Object.assign({}, mu, { intraday: null }));
+    check("no block: no strip", !host.querySelector(".istrip"));
+    card(Object.assign({}, mu, { intraday: { t: [], px: [], ref: 1029 } }));
+    check("an empty block: no strip", !host.querySelector(".istrip"));
+    card(Object.assign({}, mu, { intraday: { t: ["9:35", "x"],
+      px: [1, "a"], ref: 1029 } }));
+    check("unparseable points: no strip", !host.querySelector(".istrip"));
+    const it = { t: ["09:35", "10:07", "10:39", "13:49"],
+                 px: [1031.2, 1012.4, 1004.0, 991.58], ref: 1029.0 };
+    card(Object.assign({}, mu, { intraday: it }));
+    const s = host.querySelector(".istrip");
+    check("a block with points draws a strip", !!s);
+    if (!s) return done();
+    const sp = host.querySelector(".spark");
+    check("it sits under the 40-session chart",
+      sp && (sp.compareDocumentPosition(s) & 4) !== 0);
+    const hd = s.querySelector(".ihd").textContent.replace(/\s+/g, " ");
+    check("the header counts the cycles: " + hd, /today · 4 cycles/.test(hd));
+    check("and the axis starts the day at 09:30, so the first cycle needs no label",
+      /^09:30/.test(s.querySelector(".iax").textContent));
+    check("it gives the last price and its time", /991\.58 13:49/.test(hd));
+    check("and the change vs the last close (-3.6%)",
+      hd.includes("-3.6% vs close"));
+    check("one line through the points", s.querySelectorAll("path").length === 1);
+    check("a dashed reference line at the last close",
+      !!s.querySelector("line[stroke-dasharray]"));
+    const d = s.querySelector("path").getAttribute("d").split(/[ML]/)
+      .filter(Boolean).map((p) => +p.trim().split(" ")[0]);
+    check("the x axis is the whole session: 09:35 starts near the left edge",
+      d[0] > 0 && d[0] < 10);
+    check("and 13:49 sits at about two thirds, not stretched to the right edge",
+      d[3] > 200 && d[3] < 230);
+    check("the axis is labelled 09:30 to 16:00",
+      /09:30.*16:00/.test(s.querySelector(".iax").textContent));
+    card(Object.assign({}, mu, { intraday: { t: ["09:35"], px: [1031.2],
+      ref: 1029 } }));
+    const s1 = host.querySelector(".istrip");
+    check("a single point draws a dot, no line",
+      s1 && !s1.querySelector("path") && s1.querySelector("circle"));
+    check("and says '1 cycle'", s1 && /today · 1 cycle(?!s)/.test(s1.textContent));
+
+    head("3. the NEXT line carries the downside for NONE");
+    const nx = Object.assign({}, mu, { next_moves: Object.assign({},
+      mu.next_moves, { line: "NEXT  ·  MA20 1038.25 (+0.9%)  ·  STRESSED 1009.60 (-1.9%)  ·  BROKEN 954.73 (-7.2%)" }) });
+    card(nx);
+    const nl = (host.querySelector(".nextline") || {}).textContent || "";
+    check("all three levels render: " + nl,
+      /MA20 1038\.25/.test(nl) && /STRESSED 1009\.60/.test(nl)
+      && /BROKEN 954\.73/.test(nl));
+
+    head("4. the on-demand card states its quote");
+    const blocks = fx.message.split(/^== /m);
+    const first = blocks[1].split("\n");
+    const nm = first[0].trim().split(/\s+/)[0];
+    const quoted = [blocks[0], [first[0],
+      "quote 991.58 at 14:38 ET  live, graded against the 2026-10-09 bars"]
+      .concat(first.slice(1)).join("\n")].concat(blocks.slice(2))
+      .join("== ");
+    host.innerHTML = w.stateQueryCard({ message: quoted });
+    const qc = [...host.querySelectorAll(".mcard")].find((c) =>
+      (c.querySelector(".sy") || {}).textContent === nm);
+    const ql = qc && qc.querySelector(".mline.quote");
+    check("a quoted reply shows the quote line on " + nm,
+      ql && /QUOTE 991\.58 at 14:38 ET/.test(ql.textContent));
+    check("naming the bars it was graded against",
+      ql && /2026-10-09/.test(ql.textContent));
+    const ql2 = qc && qc.querySelector(".spark .lastlbl");
+    check("the chart's last point carries the quote time",
+      ql2 && ql2.textContent === "14:38");
+    const others = [...host.querySelectorAll(".mcard")].filter((c) => c !== qc);
+    check("a name without a quote line in the same reply shows none",
+      others.every((c) => !c.querySelector(".mline.quote")));
+    const none = [blocks[0], [first[0],
+      "quote none  graded on the 2026-10-09 close"]
+      .concat(first.slice(1)).join("\n")].join("== ");
+    host.innerHTML = w.stateQueryCard({ message: none });
+    const qn = host.querySelector(".mline.quote.none");
+    check("no quote: it says the card is on the close",
+      qn && /no live quote · graded on the 2026-10-09 close/.test(qn.textContent));
+    host.innerHTML = w.stateQueryCard({ message: fx.message });
+    check("an old reply without the line renders no quote line",
+      !host.querySelector(".mline.quote"));
+    done();
+  };
+}).catch((e) => { check("fixtures loaded: " + e.message, false); done(); });
+</script>
