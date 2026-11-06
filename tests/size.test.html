@@ -1,0 +1,84 @@
+<!doctype html><meta charset="utf-8"><title>SIZE line, ladder C</title>
+<style>body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}.bad::before{content:"FAIL ";color:#f55}.bad{color:#f88}
+iframe{width:400px;height:300px;opacity:.01;position:fixed;bottom:0;right:0}</style>
+<h1 style="font-size:15px">SIZE line, ladder C multiplier</h1><div id="sum">running…</div><div id="out"></div>
+<script>
+// Runs on the frozen states_live.json (as_of 2026-10-09 17:02). That file has
+// no EARLY row, so each state is set on a copy of a frozen row: the renderer
+// is what is under test, not the roster's mix on that date.
+let P=0,F=0;const FAILED=[];const out=document.getElementById("out");
+function check(l,c){c?P++:(F++,FAILED.push(l));out.insertAdjacentHTML("beforeend",`<div class="${c?"ok":"bad"}">${l}</div>`);}
+function done(){document.getElementById("sum").textContent=`${P} passed, ${F} failed`;
+ if(FAILED.length)document.getElementById("sum").insertAdjacentHTML("afterend",
+  "<div class='bad'>"+FAILED.map(x=>"<div>FAILED  "+x+"</div>").join("")+"</div>");}
+fetch("states_live.json").then(r=>r.json()).then(doc=>{
+ const f=document.createElement("iframe");f.src="../index.html";document.body.appendChild(f);
+ f.onload=()=>{const w=f.contentWindow;
+  try{w.localStorage.removeItem("walls_account");}catch(e){}
+  const host=document.createElement("div");host.style.cssText="position:fixed;left:-9999px;width:460px";
+  document.body.appendChild(host);
+  const copy=(o)=>JSON.parse(JSON.stringify(o));
+  const line=(r)=>{host.innerHTML=w.memberCard(r,null,false);
+    const e=host.querySelector(".sizeline");return e?e.textContent.replace(/\s+/g," "):"";};
+  const rows=doc.names;
+  const base=(r)=>Math.floor(r.size.account*r.size.risk_pct/r.size.stop_dollars);
+  const nvda=rows.find(r=>r.name==="NVDA");
+  check("the frozen document is the close basis",doc.basis==="close");
+  check("NVDA computes to 11 sh on the frozen row",base(nvda)===11);
+
+  // all five states, on one row, exact text
+  for(const [st,lab,want] of [["HEALTHY","1.00",11],["EARLY","0.50",5],
+      ["STRESSED","0.25",2],["NONE","0.25",2],["BROKEN","0",0]]){
+    const r=copy(nvda);r.state=st;const t=line(r);
+    const s=`at 1.5% risk: 11 sh × ${lab} (${st}) = ${want} sh`;
+    check(st+": "+s,t.includes(s));
+    check(st+": the notional follows the sized shares",
+      t.includes("("+w.money(want*r.close)+")"));
+  }
+  check("one constant holds the five multipliers",
+    w.eval("JSON.stringify(LADDER_C)")===JSON.stringify({HEALTHY:1,EARLY:.5,STRESSED:.25,NONE:.25,BROKEN:0}));
+
+  // the rounding
+  const shaped=(sh,st)=>{const r=copy(nvda);r.state=st;
+    r.size.stop_dollars=r.size.account*r.size.risk_pct/sh;return r;};
+  for(const [sh,st,want] of [[9,"STRESSED",2],[3,"STRESSED",0],[3,"EARLY",1],
+      [1,"EARLY",0],[7,"NONE",1],[8,"STRESSED",2],[4,"EARLY",2]]){
+    check(`${sh} sh ${st} rounds down to ${want}`,line(shaped(sh,st)).includes(`= ${want} sh`));
+  }
+  check("the example line reads as specified",
+    line(shaped(9,"STRESSED")).includes("at 1.5% risk: 9 sh × 0.25 (STRESSED) = 2 sh"));
+
+  // every frozen row
+  let n=0;
+  const lad=w.eval("LADDER_C");
+  for(const r of rows){if(line(r).includes(`(${r.state}) = ${Math.floor(base(r)*lad[r.state])} sh`))n++;}
+  check(`every frozen row renders its state and shares (${n}/${rows.length})`,n===rows.length);
+
+  // an intraday row must not pass its padded state off as the close rule
+  const intr=copy(nvda);intr.state="BROKEN";intr._basis="intraday";intr.name="ZZZZ";
+  let t=line(intr);
+  check("intraday, no close copy for the name: plain shares, no multiplier",
+    t.includes("risk: 11 sh")&&!t.includes("×"));
+  intr.name="NVDA";
+  w.adoptStates({as_of:"2099-01-01T17:00:00-05:00",basis:"close",names:[{name:"NVDA",state:"EARLY"}]},"test");
+  t=line(intr);
+  check("intraday: the close copy's state is used, not the padded one",
+    t.includes("11 sh × 0.50 (EARLY) = 5 sh")&&!t.includes("BROKEN"));
+  w.adoptStates({as_of:"2098-01-01T17:00:00-05:00",basis:"close",names:[{name:"NVDA",state:"NONE"}]},"test");
+  check("an older close document does not replace it",line(intr).includes("(EARLY)"));
+  w.adoptStates({as_of:"2099-06-01T10:00:00-05:00",basis:"intraday",names:[{name:"NVDA",state:"NONE"}]},"test");
+  check("an intraday document does not replace it",line(intr).includes("(EARLY)"));
+
+  // an unknown state and a row with no size block
+  const un=copy(nvda);un.state="UNCLASSIFIED";t=line(un);
+  check("an unknown state shows plain shares",t.includes("risk: 11 sh")&&!t.includes("×"));
+  const ns=copy(nvda);delete ns.size;
+  check("no size block, no line",line(ns)==="");
+  check("a device account override still sizes first",(()=>{
+    try{w.localStorage.setItem("walls_account","20000");}catch(e){return false;}
+    const r=copy(nvda);r.state="STRESSED";const x=line(r);
+    w.localStorage.removeItem("walls_account");return x.includes("23 sh × 0.25 (STRESSED) = 5 sh");})());
+  done();};
+}).catch(e=>{check("load: "+e.message,false);done();});
+</script>

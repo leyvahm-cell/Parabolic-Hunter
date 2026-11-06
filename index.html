@@ -473,6 +473,19 @@ const STATES_TITLE = "states.json";
 const STATES_CACHE = "walls_states";
 const STALE_MIN = 20;                  // SYNCED goes amber past this, in RTH
 let statesDoc = null, statesFrom = "", statesFetching = false;
+// THE CLOSE-RULE STATES, from the newest close document seen by any door.
+// An intraday document grades on the cycle price with the 2% pad, so its
+// `state` is not the close rule, and newest-wins would otherwise discard
+// the close copy that holds it. The size line reads this, nothing else.
+let closeRule = { t: 0, by: {} };
+function noteCloseRule(doc) {
+if (!doc || doc.basis !== "close" || !Array.isArray(doc.names)) return;
+const t = Date.parse(doc.as_of) || 0;
+if (t < closeRule.t) return;
+const by = {};
+doc.names.forEach((r) => { by[r.name] = r.state; });
+closeRule = { t, by };
+}
 // DURABLE CLOSE COPY (added 2026-10-10).
 //
 // The VM commits the close-basis document into this repo as
@@ -499,6 +512,7 @@ let closeTried = false;
 // one whichever door it came through.
 function adoptStates(doc, from) {
 if (!doc || !doc.as_of) return false;
+noteCloseRule(doc);
 const cur = statesDoc ? Date.parse(statesDoc.as_of || 0) : 0;
 if (Date.parse(doc.as_of) < cur) return false;
 statesDoc = doc; statesFrom = from;
@@ -516,7 +530,7 @@ return adoptStates(await r.json(), "close-file");
 }
 try {
 const raw = localStorage.getItem(STATES_CACHE);
-if (raw) { statesDoc = JSON.parse(raw); statesFrom = "cache"; }
+if (raw) { statesDoc = JSON.parse(raw); statesFrom = "cache"; noteCloseRule(statesDoc); }
 } catch {}
 function statesAgeMin(d) {
 if (!d || !d.as_of) return null;
@@ -1164,7 +1178,17 @@ function profileLine(pr) {
 if (!pr || !pr.line) return "";
 return `<div class="mline profline"><span class="plk">PROFILE</span> ${esc(pr.line)}</div>`;
 }
-function sizeLine(sz, price) {
+// LADDER C, the one place these multipliers live. Source: ladder C in
+// export/fiveyear/05_graded_exposure.txt (the VM's five-year study), named
+// before that run and not tuned. Display only: nothing reads the result.
+const LADDER_C = { HEALTHY: 1, EARLY: 0.5, STRESSED: 0.25, NONE: 0.25, BROKEN: 0 };
+// A close document's state and an on-demand card's state are the close
+// rule. An intraday row's is not, so it comes from the close copy, and
+// with no close copy held the card shows the plain share count.
+function closeRuleState(r) {
+return r._basis === "intraday" ? (closeRule.by[r.name] || null) : r.state;
+}
+function sizeLine(sz, price, state) {
 if (!sz || !sz.stop_dollars) return "";
 const over = acctOverride();
 // the account this device will use: the local override, else whatever
@@ -1174,11 +1198,18 @@ const acct = over !== null ? over
 : (Number.isFinite(sz.account) ? sz.account : null);
 const shares = acct !== null
 ? Math.floor((acct * sz.risk_pct) / sz.stop_dollars) : sz.shares;
+const mult = LADDER_C[state];
+const has = mult !== undefined;
+const sized = has ? Math.floor(shares * mult) : shares;
 const px = Number.isFinite(price) ? price : null;
-const notional = px !== null ? shares * px : sz.notional;
+const notional = px !== null ? sized * px
+: (Number.isFinite(sz.notional) && shares > 0 ? sz.notional * sized / shares : sz.notional);
+const sizeTxt = has
+? `${shares} sh × ${mult ? mult.toFixed(2) : "0"} (${esc(state)}) = <b>${sized} sh</b>`
+: `<b>${shares} sh</b>`;
 const warn = (over === null && sz.source === "default")
 ? `<div class="mline sizewarn">account not set — tap it to set one on this device${Number.isFinite(sz.account) ? "; this is the " + esc(money(sz.account)) + " default" : ""}</div>` : "";
-return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: <b>${shares} sh</b>${Number.isFinite(notional) ? " (" + esc(money(notional)) + ")" : ""}<span class="sizesep"> · </span><span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
+return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: ${sizeTxt}${Number.isFinite(notional) ? " (" + esc(money(notional)) + ")" : ""}<span class="sizesep"> · </span><span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
 }
 function episodes(h, state) {
 if (!h) return "";
@@ -1233,7 +1264,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close)}${nextLine(r.next_moves)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close, closeRuleState(r))}${nextLine(r.next_moves)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1440,7 +1471,7 @@ html += `<details class="howto"><summary>How to read ▾</summary><div class="bo
 <b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
 <b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
 ${stretchLegendHtml()}
-<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
+<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. The second figure scales that by the close-rule state, on ladder C (HEALTHY 1.00, EARLY 0.50, STRESSED 0.25, NONE 0.25, BROKEN 0), rounded down. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>
 <b>Next &amp; history</b> — <b>Next</b> is where the state machine's lines sit at tonight's averages: the close at which this name would turn stressed, broken, or reclaim healthy, plus its 20-day, 50-day and 2.5-ATR stop. It is not a forecast that price will reach them. <b>History</b> is how this name's runs in the current state have ended over the past year. <b>Run counts include today, which the close can still change</b> — the same number the state badge shows. A statistic from fewer than 5 episodes is marked thin.<br><br>
