@@ -351,6 +351,7 @@ font-variant-numeric: tabular-nums; }
 .mline.nextline { color: var(--ink); font-size: 11px; }
 .mline.histline { color: var(--muted); font-size: 11px; font-weight: 600;
   line-height: 1.45; }
+.mline.actionline { color: var(--ink); font-size: 11px; }
 .mline.dangerline { color: var(--muted); font-size: 11px; font-weight: 600; }
 .thinflag { color: var(--s-warn); font-weight: 700; }
 .sizesep { color: var(--faint); }
@@ -477,15 +478,16 @@ let statesDoc = null, statesFrom = "", statesFetching = false;
 // THE CLOSE-RULE STATES, from the newest close document seen by any door.
 // An intraday document grades on the cycle price with the 2% pad, so its
 // `state` is not the close rule, and newest-wins would otherwise discard
-// the close copy that holds it. The size line reads this, nothing else.
-let closeRule = { t: 0, by: {} };
+// the close copy that holds it. The size and ACTION lines read this. An
+// intraday row's last_transition is padded too, so ACTION never reads it.
+let closeRule = { t: 0, by: {}, session: "" };
 function noteCloseRule(doc) {
 if (!doc || doc.basis !== "close" || !Array.isArray(doc.names)) return;
 const t = Date.parse(doc.as_of) || 0;
 if (t < closeRule.t) return;
 const by = {};
-doc.names.forEach((r) => { by[r.name] = r.state; });
-closeRule = { t, by };
+doc.names.forEach((r) => { by[r.name] = { state: r.state, lt: r.last_transition }; });
+closeRule = { t, by, session: doc.session || "" };
 }
 // DURABLE CLOSE COPY (added 2026-10-10).
 //
@@ -1219,7 +1221,44 @@ const LADDER_C = { HEALTHY: 1, EARLY: 0.5, STRESSED: 0.25, NONE: 0.25, BROKEN: 0
 // rule. An intraday row's is not, so it comes from the close copy, and
 // with no close copy held the card shows the plain share count.
 function closeRuleState(r) {
-return r._basis === "intraday" ? (closeRule.by[r.name] || null) : r.state;
+return r._basis === "intraday" ? ((closeRule.by[r.name] || {}).state || null) : r.state;
+}
+// The account this device uses: the local override, else whatever the
+// document carried, else nothing, and with nothing the VM's share count
+// stands rather than one computed off a guess.
+function baseShares(sz) {
+const over = acctOverride();
+const acct = over !== null ? over : (Number.isFinite(sz.account) ? sz.account : null);
+return acct !== null ? Math.floor((acct * sz.risk_pct) / sz.stop_dollars) : sz.shares;
+}
+// THE ACTION WORDS, from the two multipliers, so every pair is covered:
+// down to 0 sells all; any other cut sells that share of the position held;
+// up to 1.00 buys to full; any other rise buys that share of a full position;
+// an equal multiplier is no change. monitor's state_monitor.action_line is
+// the same rule for the ntfy cards.
+function actionWords(from, to, date, shares) {
+const m0 = LADDER_C[from], m1 = LADDER_C[to];
+if (m0 === undefined || m1 === undefined) return "";
+const hold = Math.floor(shares * m1);
+const verb = m1 === m0 ? "no change"
+: m1 === 0 ? "sell all"
+: m1 < m0 ? `sell ${Math.round((m0 - m1) / m0 * 100)}%`
+: m1 === 1 ? "buy to full"
+: `buy ${Math.round((m1 - m0) * 100)}%`;
+const tail = (m1 === 0 || m1 === 1) ? `hold ${hold} sh` : `hold ${hold} of ${shares} sh`;
+return `${from} → ${to} on the ${date.slice(5)} close · ${verb} · ${tail}`;
+}
+// Only when the close rule changed this name's state on the most recent
+// close. It reads the close copy alone, and an intraday document that names
+// a newer reference session means that copy is stale, so nothing shows.
+function actionLine(r) {
+const c = closeRule.by[r.name], lt = c && c.lt;
+if (!lt || !r.size || !r.size.stop_dollars) return "";
+if (lt.date !== closeRule.session || lt.to !== c.state) return "";
+const ref = statesDoc && statesDoc.reference_session;
+if (ref && ref > closeRule.session) return "";
+const w = actionWords(lt.from, lt.to, lt.date, baseShares(r.size));
+return w ? `<div class="mline actionline"><span class="plk">ACTION</span> ${esc(w)}</div>` : "";
 }
 function sizeLine(sz, price, state) {
 if (!sz || !sz.stop_dollars) return "";
@@ -1229,8 +1268,7 @@ const over = acctOverride();
 // share count stands rather than a share count computed off a guess
 const acct = over !== null ? over
 : (Number.isFinite(sz.account) ? sz.account : null);
-const shares = acct !== null
-? Math.floor((acct * sz.risk_pct) / sz.stop_dollars) : sz.shares;
+const shares = baseShares(sz);
 const mult = LADDER_C[state];
 const has = mult !== undefined;
 const sized = has ? Math.floor(shares * mult) : shares;
@@ -1297,7 +1335,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close, closeRuleState(r))}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close, closeRuleState(r))}${actionLine(r)}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1504,7 +1542,7 @@ html += `<details class="howto"><summary>How to read ▾</summary><div class="bo
 <b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
 <b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
 ${stretchLegendHtml()}
-<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. The second figure scales that by the close-rule state, on ladder C (HEALTHY 1.00, EARLY 0.50, STRESSED 0.25, NONE 0.25, BROKEN 0), rounded down. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
+<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. The second figure scales that by the close-rule state, on ladder C (HEALTHY 1.00, EARLY 0.50, STRESSED 0.25, NONE 0.25, BROKEN 0), rounded down. <b>Action</b> appears only when the close rule changed the state on the most recent close, never on an intraday state: a cut sells that share of the position held, a rise buys that share of a full position. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>
 <b>Danger</b> — STRESSED cards only. Of every HEALTHY-to-STRESSED entry on the five-year panel in the same ATR14% tercile (calm under 2.73, middle 2.73 to 3.62, violent over 3.62), the share that reached BROKEN first and the share that got back to HEALTHY first within 20 sessions. It describes the cell, not this run, and it does not predict it. The panel is today's names only, so the BROKEN share is understated.<br><br>

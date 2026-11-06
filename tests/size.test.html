@@ -79,6 +79,70 @@ fetch("states_live.json").then(r=>r.json()).then(doc=>{
     try{w.localStorage.setItem("walls_account","20000");}catch(e){return false;}
     const r=copy(nvda);r.state="STRESSED";const x=line(r);
     w.localStorage.removeItem("walls_account");return x.includes("23 sh × 0.25 (STRESSED) = 5 sh");})());
+
+  // ACTION. Every close document here is dated past the page's own, so it
+  // becomes the newest close copy; each step moves the date on.
+  let yr=2200;
+  const closeDoc=(state,lt,session,extra)=>{yr++;return Object.assign({as_of:yr+"-01-01T17:00:00-05:00",
+    basis:"close",session,names:[{name:"NVDA",state,last_transition:lt}]},extra||{});};
+  const act=(r)=>{host.innerHTML=w.memberCard(r,null,false);const e=host.querySelector(".actionline");
+    return e?e.textContent.replace(/\s+/g," ").trim():"";};
+  const H="HEALTHY",E="EARLY",T="STRESSED",N="NONE",B="BROKEN";
+  const PAIRS=[[H,E,"sell 50%","hold 4 of 9 sh"],[H,T,"sell 75%","hold 2 of 9 sh"],
+   [H,N,"sell 75%","hold 2 of 9 sh"],[H,B,"sell all","hold 0 sh"],
+   [E,H,"buy to full","hold 9 sh"],[E,T,"sell 50%","hold 2 of 9 sh"],
+   [E,N,"sell 50%","hold 2 of 9 sh"],[E,B,"sell all","hold 0 sh"],
+   [T,H,"buy to full","hold 9 sh"],[T,E,"buy 25%","hold 4 of 9 sh"],
+   [T,N,"no change","hold 2 of 9 sh"],[T,B,"sell all","hold 0 sh"],
+   [N,H,"buy to full","hold 9 sh"],[N,E,"buy 25%","hold 4 of 9 sh"],
+   [N,T,"no change","hold 2 of 9 sh"],[N,B,"sell all","hold 0 sh"],
+   [B,H,"buy to full","hold 9 sh"],[B,E,"buy 50%","hold 4 of 9 sh"],
+   [B,T,"buy 25%","hold 2 of 9 sh"],[B,N,"buy 25%","hold 2 of 9 sh"]];
+  check("the table covers all 20 from/to pairs",new Set(PAIRS.map(p=>p[0]+p[1])).size===20);
+  for(const [a,b,v,h] of PAIRS){
+    w.adoptStates(closeDoc(b,{date:"2200-11-06",from:a,to:b},"2200-11-06"),"test");
+    const want=`ACTION ${a} → ${b} on the 11-06 close · ${v} · ${h}`;
+    check(want,act(shaped(9,b))===want);
+  }
+  // a stale transition
+  w.adoptStates(closeDoc(T,{date:"2200-11-05",from:H,to:T},"2200-11-06"),"test");
+  check("no ACTION when the transition predates the most recent close",act(shaped(9,T))==="");
+  check("but the size line still shows",line(shaped(9,T)).includes("9 sh × 0.25 (STRESSED) = 2 sh"));
+  // an intraday-only state: the row is padded, the close copy shows no change
+  const quiet=shaped(9,B);quiet._basis="intraday";
+  quiet.last_transition={date:"2200-11-07",from:H,to:B};
+  check("no ACTION on an intraday-only state",act(quiet)==="");
+  // the row's own last_transition is never read, on either basis
+  const own=shaped(9,T);own.last_transition={date:"2200-11-06",from:H,to:T};
+  check("a row's own last_transition is not read",act(own)==="");
+  // a stale close copy behind an intraday document
+  w.adoptStates(closeDoc(T,{date:"2200-11-06",from:H,to:T},"2200-11-06"),"test");
+  check("a transition on the most recent close shows",act(shaped(9,T))!=="");
+  const intra=shaped(9,B);intra._basis="intraday";
+  check("and shows on an intraday row, from the close copy",act(intra).startsWith("ACTION HEALTHY → STRESSED"));
+  w.adoptStates({as_of:"2300-01-01T10:00:00-05:00",basis:"intraday",session:"2200-11-10",
+    reference_session:"2200-11-09",names:[]},"test");
+  check("not when an intraday document names a newer close than the copy",act(intra)==="");
+  // the account, and a row with nothing to size
+  yr=2400;
+  w.adoptStates(closeDoc(T,{date:"2400-11-06",from:H,to:T},"2400-11-06"),"test");
+  check("the device account sizes ACTION too",(()=>{
+    w.localStorage.setItem("walls_account","20000");
+    const r=copy(nvda);r.state=T;const x=act(r);
+    w.localStorage.removeItem("walls_account");return x.includes("hold 5 of 23 sh");})());
+  const none=copy(nvda);delete none.size;
+  check("no size block, no ACTION",act(none)==="");
+  const off=copy(nvda);off.name="ZZZZ";
+  check("a name with no close copy, no ACTION",act(off)==="");
+  // the frozen file itself
+  const frozen=Object.assign(copy(doc),{as_of:"2500-01-01T17:00:00-05:00"});
+  w.adoptStates(frozen,"test");
+  const moved=rows.filter(r=>r.last_transition&&r.last_transition.date===doc.session);
+  const still=rows.filter(r=>!(r.last_transition&&r.last_transition.date===doc.session));
+  check(`every frozen row that moved on the close shows ACTION (${moved.filter(r=>act(r)).length}/${moved.length})`,
+    moved.length>0&&moved.every(r=>act(r).startsWith(`ACTION ${r.last_transition.from} → ${r.last_transition.to} on the 10-09 close`)));
+  check(`no frozen row with an older transition shows it (${still.filter(r=>!act(r)).length}/${still.length})`,
+    still.length>0&&still.every(r=>act(r)===""));
   done();};
 }).catch(e=>{check("load: "+e.message,false);done();});
 </script>
