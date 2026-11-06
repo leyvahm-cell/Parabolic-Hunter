@@ -1,0 +1,71 @@
+<!doctype html><meta charset="utf-8"><title>DANGER line</title>
+<style>body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}.bad::before{content:"FAIL ";color:#f55}.bad{color:#f88}
+iframe{width:400px;height:300px;opacity:.01;position:fixed;bottom:0;right:0}</style>
+<h1 style="font-size:15px">DANGER line, STRESSED cards only</h1><div id="sum">running…</div><div id="out"></div>
+<script>
+// Runs on the frozen states_live.json (as_of 2026-10-09 17:02). The ATR is set
+// on a copy of a frozen STRESSED row so each boundary can be reached exactly.
+let P=0,F=0;const FAILED=[];const out=document.getElementById("out");
+function check(l,c){c?P++:(F++,FAILED.push(l));out.insertAdjacentHTML("beforeend",`<div class="${c?"ok":"bad"}">${l}</div>`);}
+function done(){document.getElementById("sum").textContent=`${P} passed, ${F} failed`;
+ if(FAILED.length)document.getElementById("sum").insertAdjacentHTML("afterend",
+  "<div class='bad'>"+FAILED.map(x=>"<div>FAILED  "+x+"</div>").join("")+"</div>");}
+fetch("states_live.json").then(r=>r.json()).then(doc=>{
+ const f=document.createElement("iframe");f.src="../index.html";document.body.appendChild(f);
+ f.onload=()=>{const w=f.contentWindow;
+  const host=document.createElement("div");host.style.cssText="position:fixed;left:-9999px;width:460px";
+  document.body.appendChild(host);
+  const copy=(o)=>JSON.parse(JSON.stringify(o));
+  const render=(r)=>{host.innerHTML=w.memberCard(r,null,false);};
+  const line=(r)=>{render(r);const e=host.querySelector(".dangerline");
+    return e?e.textContent.replace(/\s+/g," ").trim():"";};
+  const rows=doc.names;
+  const st=rows.find(r=>r.state==="STRESSED");
+  const at=(a)=>{const r=copy(st);r.size.atr_pct=a;return r;};
+  check("the frozen file has a STRESSED row: "+st.name,!!st);
+
+  // the three cells, pooled n-weighted from the file's rows
+  const pool=(rs)=>{const n=rs[0][0]+rs[1][0];
+    return {n,b:(rs[0][0]*rs[0][1]+rs[1][0]*rs[1][1])/n,h:(rs[0][0]*rs[0][2]+rs[1][0]*rs[1][2])/n};};
+  const FILE={calm:[[1746,38.2,58.0],[788,34.5,61.5]],middle:[[1746,45.5,53.7],[1136,42.6,56.8]],
+    violent:[[1746,47.6,52.2],[1390,48.0,51.9]]};
+  for(const t of ["calm","middle","violent"]){
+    const c=w.dangerCell(t),p=pool(FILE[t]);
+    check(`${t}: n ${c.n}, BROKEN ${c.broken.toFixed(1)}%, HEALTHY ${c.healthy.toFixed(1)}%`,
+      c.n===p.n&&Math.abs(c.broken-p.b)<1e-9&&Math.abs(c.healthy-p.h)<1e-9);
+  }
+
+  // the terciles and the two boundaries
+  for(const [a,t] of [[.02,"calm"],[.0272,"calm"],[.0273,"middle"],[.03,"middle"],
+      [.0362,"middle"],[.0363,"violent"],[.063,"violent"]]){
+    check(`ATR14 ${(a*100).toFixed(2)}% is ${t}`,line(at(a)).startsWith(`DANGER ${t} (`));
+  }
+  check("the line reads exactly as specified",line(at(.063))===
+    "DANGER violent (ATR14 6.3%) · names like this went BROKEN 48% of the time within 20 sessions of entering STRESSED; 52% got back to HEALTHY · five-year frequency, n 3,136");
+
+  // it sits under NEXT and above HISTORY
+  render(at(.063));
+  const ls=[...host.querySelectorAll(".mline")].map(e=>e.className);
+  const iN=ls.findIndex(c=>c.includes("nextline")),iD=ls.findIndex(c=>c.includes("dangerline")),
+    iH=ls.findIndex(c=>c.includes("histline"));
+  check("under NEXT and above HISTORY",iN>=0&&iD===iN+1&&iH===iD+1);
+
+  // absent everywhere else
+  for(const s of ["HEALTHY","EARLY","NONE","BROKEN"]){
+    const r=copy(st);r.state=s;r.size.atr_pct=.063;
+    check("no line on a "+s+" card",line(r)==="");
+  }
+  let n=0;const others=rows.filter(r=>r.state!=="STRESSED");
+  for(const r of others){if(line(r)==="")n++;}
+  check(`no line on any frozen non-STRESSED row (${n}/${others.length})`,n===others.length);
+  const stressed=rows.filter(r=>r.state==="STRESSED");
+  check(`a line on every frozen STRESSED row (${stressed.filter(r=>line(r)).length}/${stressed.length})`,
+    stressed.every(r=>line(r)));
+  const ns=copy(st);delete ns.size;
+  check("no size block, no line",line(ns)==="");
+  check("a NO BARS card has no line",(()=>{host.innerHTML=w.memberCard({name:"X",state:"NO BARS"},null,false);
+    return !host.querySelector(".dangerline");})());
+  done();};
+}).catch(e=>{check("load: "+e.message,false);done();});
+</script>

@@ -351,6 +351,7 @@ font-variant-numeric: tabular-nums; }
 .mline.nextline { color: var(--ink); font-size: 11px; }
 .mline.histline { color: var(--muted); font-size: 11px; font-weight: 600;
   line-height: 1.45; }
+.mline.dangerline { color: var(--muted); font-size: 11px; font-weight: 600; }
 .thinflag { color: var(--s-warn); font-weight: 700; }
 .sizesep { color: var(--faint); }
 .plk { color: var(--faint); font-size: 9.5px; letter-spacing: .06em;
@@ -1171,6 +1172,38 @@ const txt = h.sentence.replace(/\s*\(n=\d+, thin\)\s*$/, "");
 const thin = h.thin ? ` <span class="thinflag">(n=${h.n}, thin)</span>` : "";
 return `<div class="mline histline"><span class="plk">HISTORY</span> ${esc(txt)}${thin}</div>`;
 }
+// THE DANGER LINE. STRESSED cards only. A five-year frequency from study 10
+// (export/fiveyear/10_transitions.txt): every HEALTHY -> STRESSED entry,
+// first of BROKEN or HEALTHY within 20 sessions. It describes the cell, not
+// this run. The page cannot read the VM's file, so it holds that file's "all"
+// row for each tercile, fit fold then test fold, as [n, BROKEN %, HEALTHY %],
+// and pools them here, n-weighted. monitor_cards.py reads the file itself.
+// The cut points are the file's "ATR14% tercile cuts from FIT events".
+const DANGER_CALM_BELOW = 2.73, DANGER_VIOLENT_ABOVE = 3.62;
+const DANGER_ROWS = {
+calm: [[1746, 38.2, 58.0], [788, 34.5, 61.5]],
+middle: [[1746, 45.5, 53.7], [1136, 42.6, 56.8]],
+violent: [[1746, 47.6, 52.2], [1390, 48.0, 51.9]],
+};
+function dangerCell(tier) {
+const rows = DANGER_ROWS[tier];
+const n = rows.reduce((t, x) => t + x[0], 0);
+return { n, broken: rows.reduce((t, x) => t + x[0] * x[1], 0) / n,
+healthy: rows.reduce((t, x) => t + x[0] * x[2], 0) / n };
+}
+// calm under 2.73, middle 2.73 to 3.62 inclusive, violent over 3.62.
+// Rounded so a stored 0.0273 lands on the boundary, not beside it.
+function dangerTier(atrFrac) {
+const a = Math.round(atrFrac * 1e5) / 1e3;
+return a < DANGER_CALM_BELOW ? "calm" : a > DANGER_VIOLENT_ABOVE ? "violent" : "middle";
+}
+function dangerLine(r) {
+if (r.state !== "STRESSED" || !r.size || !r.size.atr_pct) return "";
+const tier = dangerTier(r.size.atr_pct);
+const c = dangerCell(tier);
+const body = `${tier} (ATR14 ${(r.size.atr_pct * 100).toFixed(1)}%) · names like this went BROKEN ${Math.round(c.broken)}% of the time within 20 sessions of entering STRESSED; ${Math.round(c.healthy)}% got back to HEALTHY · five-year frequency, n ${c.n.toLocaleString("en-US")}`;
+return `<div class="mline dangerline"><span class="plk">DANGER</span> ${esc(body)}</div>`;
+}
 // THE PROFILE LINE. The VM builds the wording in profile_nightly and
 // ships it in states.json, so the page prints the same sentence the PNG
 // does rather than reassembling it from parts and drifting.
@@ -1264,7 +1297,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close, closeRuleState(r))}${nextLine(r.next_moves)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close, closeRuleState(r))}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1474,6 +1507,7 @@ ${stretchLegendHtml()}
 <b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. The second figure scales that by the close-rule state, on ladder C (HEALTHY 1.00, EARLY 0.50, STRESSED 0.25, NONE 0.25, BROKEN 0), rounded down. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>
+<b>Danger</b> — STRESSED cards only. Of every HEALTHY-to-STRESSED entry on the five-year panel in the same ATR14% tercile (calm under 2.73, middle 2.73 to 3.62, violent over 3.62), the share that reached BROKEN first and the share that got back to HEALTHY first within 20 sessions. It describes the cell, not this run, and it does not predict it. The panel is today's names only, so the BROKEN share is understated.<br><br>
 <b>Next &amp; history</b> — <b>Next</b> is where the state machine's lines sit at tonight's averages: the close at which this name would turn stressed, broken, or reclaim healthy, plus its 20-day, 50-day and 2.5-ATR stop. It is not a forecast that price will reach them. <b>History</b> is how this name's runs in the current state have ended over the past year. <b>Run counts include today, which the close can still change</b> — the same number the state badge shows. A statistic from fewer than 5 episodes is marked thin.<br><br>
 <b>Profile</b> — Character: the traits that persisted across halves (vol 0.84, ATR 0.88, beta/R2 0.6+). Describes how the name has moved, not where it will go. Rebuilt nightly over the trailing 106 sessions. A name in no block shows its <i>nearest</i> block, named as such. beta/R2 persistence is an upper bound: cohort membership was fitted across both windows.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
