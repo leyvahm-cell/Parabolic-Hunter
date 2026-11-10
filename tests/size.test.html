@@ -90,14 +90,14 @@ fetch("states_live.json").then(r=>r.json()).then(doc=>{
   const H="HEALTHY",E="EARLY",T="STRESSED",N="NONE",B="BROKEN";
   const PAIRS=[[H,E,"sell 50%","hold 4 of 9 sh"],[H,T,"sell 75%","hold 2 of 9 sh"],
    [H,N,"sell 75%","hold 2 of 9 sh"],[H,B,"sell all","hold 0 sh"],
-   [E,H,"buy to full","hold 9 sh"],[E,T,"sell 50%","hold 2 of 9 sh"],
+   [E,H,"resume full","hold 9 sh"],[E,T,"sell 50%","hold 2 of 9 sh"],
    [E,N,"sell 50%","hold 2 of 9 sh"],[E,B,"sell all","hold 0 sh"],
-   [T,H,"buy to full","hold 9 sh"],[T,E,"buy 25%","hold 4 of 9 sh"],
+   [T,H,"resume full","hold 9 sh"],[T,E,"resume 25%","hold 4 of 9 sh"],
    [T,N,"no change","hold 2 of 9 sh"],[T,B,"sell all","hold 0 sh"],
-   [N,H,"buy to full","hold 9 sh"],[N,E,"buy 25%","hold 4 of 9 sh"],
+   [N,H,"resume full","hold 9 sh"],[N,E,"resume 25%","hold 4 of 9 sh"],
    [N,T,"no change","hold 2 of 9 sh"],[N,B,"sell all","hold 0 sh"],
-   [B,H,"buy to full","hold 9 sh"],[B,E,"buy 50%","hold 4 of 9 sh"],
-   [B,T,"buy 25%","hold 2 of 9 sh"],[B,N,"buy 25%","hold 2 of 9 sh"]];
+   [B,H,"resume full","hold 9 sh"],[B,E,"resume 50%","hold 4 of 9 sh"],
+   [B,T,"resume 25%","hold 2 of 9 sh"],[B,N,"resume 25%","hold 2 of 9 sh"]];
   check("the table covers all 20 from/to pairs",new Set(PAIRS.map(p=>p[0]+p[1])).size===20);
   for(const [a,b,v,h] of PAIRS){
     w.adoptStates(closeDoc(b,{date:"2200-11-06",from:a,to:b},"2200-11-06"),"test");
@@ -143,6 +143,24 @@ fetch("states_live.json").then(r=>r.json()).then(doc=>{
     moved.length>0&&moved.every(r=>act(r).startsWith(`ACTION ${r.last_transition.from} → ${r.last_transition.to} on the 10-09 close`)));
   check(`no frozen row with an older transition shows it (${still.filter(r=>!act(r)).length}/${still.length})`,
     still.length>0&&still.every(r=>act(r)===""));
+  // 2026-11-10: rounding to zero, both cases
+  yr=2600;
+  w.adoptStates(closeDoc("STRESSED",{date:"2600-11-06",from:"BROKEN",to:"STRESSED"},"2600-11-06"),"test");
+  check("the multiplier rounding to 0 says so (spec example)",
+    act(shaped(2,"STRESSED"))==="ACTION BROKEN → STRESSED on the 11-06 close · resume 25% · rounds to 0 of 2 sh at this account");
+  w.adoptStates(closeDoc("STRESSED",{date:"2600-11-07",from:"HEALTHY",to:"STRESSED"},"2600-11-07"),"test");
+  check("on a cut too",act(shaped(2,"STRESSED")).endsWith("sell 75% · rounds to 0 of 2 sh at this account"));
+  const zero=copy(nvda);zero.state="BROKEN";
+  zero.size.stop_dollars=zero.size.account*zero.size.risk_pct*1.002;
+  const zl=line(zero),bud=w.money(zero.size.account*zero.size.risk_pct);
+  check("a full size of 0 states the reason ("+bud+")",
+    zl.includes("0 sh: one share risks $"+zero.size.stop_dollars.toFixed(2)+", above the "+bud+" budget"));
+  check("and prints no notional",!/budget \(/.test(zl));
+  check("the device account sets the budget it names",(()=>{w.localStorage.setItem("walls_account","5000");
+    const x=line(zero);w.localStorage.removeItem("walls_account");
+    return x.includes("above the "+w.money(5000*zero.size.risk_pct)+" budget");})());
+  const two=copy(nvda);two.state="STRESSED";two.size.stop_dollars=two.size.account*two.size.risk_pct/2;
+  check("a non-zero full size keeps the ladder line",line(two).includes("2 sh × 0.25 (STRESSED) = 0 sh"));
   done();};
 }).catch(e=>{check("load: "+e.message,false);done();});
 </script>

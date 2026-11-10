@@ -352,6 +352,8 @@ font-variant-numeric: tabular-nums; }
 .mline.histline { color: var(--muted); font-size: 11px; font-weight: 600;
   line-height: 1.45; }
 .mline.actionline { color: var(--ink); font-size: 11px; }
+.mline.pbline { color: var(--muted); font-size: 11px; font-weight: 600; margin-top: 2px; }
+.mline.nearline { color: var(--muted); font-size: 11px; font-weight: 600; }
 .mline.dangerline { color: var(--muted); font-size: 11px; font-weight: 600; }
 .thinflag { color: var(--s-warn); font-weight: 700; }
 .sizesep { color: var(--faint); }
@@ -1168,9 +1170,65 @@ if (!nm || !nm.line) return "";
 const body = nm.line.replace(/^NEXT\s*·\s*/, "");
 return `<div class="mline nextline"><span class="plk">NEXT</span> ${esc(body)}</div>`;
 }
+// PULLBACK and NEAR BAND, ADDED 2026-11-10. Display only; d50 is the close
+// over the MA50 strictly before the day. state_monitor.pill_tag is the same
+// rule for the PNG. NEAR BAND is study 11's touch band; its rates are the
+// MA50 test fold (export/fiveyear/11_matouch.txt).
+const NEAR_BAND = 0.015;
+const NEAR_BAND_STRESSED10 = [54, 38];
+function pillTag(state, d50) {
+if (!Number.isFinite(d50)) return "";
+if ((state === "STRESSED" || state === "BROKEN") && d50 > 0) return "PULLBACK";
+if (state === "HEALTHY" && d50 >= 0 && d50 <= NEAR_BAND) return "NEAR BAND";
+return "";
+}
+function pullbackLine(r) {
+if (pillTag(r.state, r.d50) !== "PULLBACK") return "";
+return `<div class="mline pbline">pullback · close above MA50 ${esc(fp1(r.d50))} · flagged by the off-high rule</div>`;
+}
+function nearBandLine(r) {
+if (pillTag(r.state, r.d50) !== "NEAR BAND") return "";
+return `<div class="mline nearline"><span class="plk">NEAR BAND</span> within 1.5% of the MA50 · touch entries went STRESSED within 10 sessions ${NEAR_BAND_STRESSED10[0]}% of the time, random HEALTHY days ${NEAR_BAND_STRESSED10[1]}% (five-year, study 11)</div>`;
+}
+// THE COHORT RULE, ADDED 2026-11-10 (profile_nightly.cohort_header and
+// profile_line are the VM's copy). A named cohort shows its name on the
+// header and on PROFILE, never a cluster id. Without one: "no named cohort"
+// with the nearest cluster and what it explains; "own story" only under 50%.
+const OWN_STORY_BELOW = 0.5;
+function clusterRef(r) {
+const pr = r.profile || {};
+if (pr.block_id) return "cluster " + pr.block_id;
+if (pr.block_kind !== "nearest" && r.cohort_id != null) return "cluster " + r.cohort_id;
+return pr.block_label || "";
+}
+function cohortFallback(r) {
+const pr = r.profile;
+if (pr && typeof pr.header === "string" && pr.header) return pr.header;
+const ref = clusterRef(r), r2 = pr ? pr.r2 : null;
+if (!pr || !Number.isFinite(r2) || !ref) return "no named cohort";
+const ex = `nearest ${ref} explains ${Math.round(r2 * 100)}%`;
+return r2 < OWN_STORY_BELOW ? `no named cohort · own story · ${ex}` : `no named cohort · ${ex}`;
+}
+function profileText(r, coh) {
+const pr = r.profile;
+if (!pr) return "";
+if (typeof pr.header === "string") return pr.line || "";   // the VM's own copy of the rule
+const bits = [];
+if (Number.isFinite(pr.vol20)) bits.push(`moves ${pr.vol20.toFixed(0)}% vol`);
+const ref = clusterRef(r);
+if (Number.isFinite(pr.beta) && coh && coh.label && pr.block_kind !== "nearest") {
+bits.push(`beta ${pr.beta.toFixed(2)} to ${coh.label}`);
+if (Number.isFinite(pr.r2)) bits.push(`cohort explains ${(pr.r2 * 100).toFixed(0)}%`);
+} else if (Number.isFinite(pr.beta) && ref) {
+bits.push(`beta ${pr.beta.toFixed(2)} to nearest ${ref}`);
+if (Number.isFinite(pr.r2)) bits.push(`explains ${(pr.r2 * 100).toFixed(0)}%`);
+}
+return bits.length ? bits.join("  ·  ") : (pr.line || "");
+}
 function historyLine(h) {
 if (!h || !h.sentence) return "";
-const txt = h.sentence.replace(/\s*\(n=\d+, thin\)\s*$/, "");
+// AMENDED 2026-11-10: "The other 0 did not." is dropped when none failed.
+const txt = h.sentence.replace(/\s*\(n=\d+, thin\)\s*$/, "").replace(/\s*The other 0 did not\./, "");
 const thin = h.thin ? ` <span class="thinflag">(n=${h.n}, thin)</span>` : "";
 return `<div class="mline histline"><span class="plk">HISTORY</span> ${esc(txt)}${thin}</div>`;
 }
@@ -1209,9 +1267,10 @@ return `<div class="mline dangerline"><span class="plk">DANGER</span> ${esc(body
 // THE PROFILE LINE. The VM builds the wording in profile_nightly and
 // ships it in states.json, so the page prints the same sentence the PNG
 // does rather than reassembling it from parts and drifting.
-function profileLine(pr) {
-if (!pr || !pr.line) return "";
-return `<div class="mline profline"><span class="plk">PROFILE</span> ${esc(pr.line)}</div>`;
+function profileLine(r, coh) {
+const t = profileText(r, coh);
+if (!t) return "";
+return `<div class="mline profline"><span class="plk">PROFILE</span> ${esc(t)}</div>`;
 }
 // LADDER C, the one place these multipliers live. Source: ladder C in
 // export/fiveyear/05_graded_exposure.txt (the VM's five-year study), named
@@ -1233,19 +1292,23 @@ return acct !== null ? Math.floor((acct * sz.risk_pct) / sz.stop_dollars) : sz.s
 }
 // THE ACTION WORDS, from the two multipliers, so every pair is covered:
 // down to 0 sells all; any other cut sells that share of the position held;
-// up to 1.00 buys to full; any other rise buys that share of a full position;
+// up to 1.00 resumes full; any other rise resumes that share of a full position;
 // an equal multiplier is no change. monitor's state_monitor.action_line is
 // the same rule for the ntfy cards.
 function actionWords(from, to, date, shares) {
 const m0 = LADDER_C[from], m1 = LADDER_C[to];
 if (m0 === undefined || m1 === undefined) return "";
 const hold = Math.floor(shares * m1);
+// AMENDED 2026-11-10: a rise reads "resume", and a hold that rounds to 0 on
+// a non-zero multiplier says so. state_monitor.action_line is the same rule.
 const verb = m1 === m0 ? "no change"
 : m1 === 0 ? "sell all"
 : m1 < m0 ? `sell ${Math.round((m0 - m1) / m0 * 100)}%`
-: m1 === 1 ? "buy to full"
-: `buy ${Math.round((m1 - m0) * 100)}%`;
-const tail = (m1 === 0 || m1 === 1) ? `hold ${hold} sh` : `hold ${hold} of ${shares} sh`;
+: m1 === 1 ? "resume full"
+: `resume ${Math.round((m1 - m0) * 100)}%`;
+const tail = (m1 > 0 && hold === 0)
+? (shares ? `rounds to 0 of ${shares} sh at this account` : "0 sh at this account")
+: (m1 === 0 || m1 === 1) ? `hold ${hold} sh` : `hold ${hold} of ${shares} sh`;
 return `${from} → ${to} on the ${date.slice(5)} close · ${verb} · ${tail}`;
 }
 // Only when the close rule changed this name's state on the most recent
@@ -1275,12 +1338,18 @@ const sized = has ? Math.floor(shares * mult) : shares;
 const px = Number.isFinite(price) ? price : null;
 const notional = px !== null ? sized * px
 : (Number.isFinite(sz.notional) && shares > 0 ? sz.notional * sized / shares : sz.notional);
-const sizeTxt = has
+// AMENDED 2026-11-10: a full size of 0 says why -- one share's stop
+// already costs more than the risk budget at this account.
+const budget = acct !== null ? acct * sz.risk_pct
+: (Number.isFinite(sz.risk_dollars) ? sz.risk_dollars : null);
+const sizeTxt = shares === 0
+? `<b>0 sh</b>: one share risks ${esc("$" + sz.stop_dollars.toFixed(2))}, above the ${budget !== null ? esc(money(budget)) + " " : ""}budget`
+: has
 ? `${shares} sh × ${mult ? mult.toFixed(2) : "0"} (${esc(state)}) = <b>${sized} sh</b>`
 : `<b>${shares} sh</b>`;
 const warn = (over === null && sz.source === "default")
 ? `<div class="mline sizewarn">account not set — tap it to set one on this device${Number.isFinite(sz.account) ? "; this is the " + esc(money(sz.account)) + " default" : ""}</div>` : "";
-return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: ${sizeTxt}${Number.isFinite(notional) ? " (" + esc(money(notional)) + ")" : ""}<span class="sizesep"> · </span><span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
+return `<div class="mline sizeline"><b>ATR14 ${esc("$" + sz.atr.toFixed(2))} (${(sz.atr_pct * 100).toFixed(1)}%)</b> · ${esc(String(sz.stop_atr))} ATR = <b>${esc("$" + sz.stop_dollars.toFixed(2))}</b> · at ${esc(pctStr(sz.risk_pct))} risk: ${sizeTxt}${Number.isFinite(notional) && shares !== 0 ? " (" + esc(money(notional)) + ")" : ""}<span class="sizesep"> · </span><span class="acctbtn" data-acct="1" title="set the account on this device">${acct !== null ? esc(money(acct)) : "set account"}</span></div>${warn}`;
 }
 function episodes(h, state) {
 if (!h) return "";
@@ -1317,8 +1386,9 @@ return `<div class="mcard"><div class="mtop"><span class="sy">${esc(r.name)}</sp
 const defIdx = (r.state === "BROKEN" || r.state === "STRESSED") ? 0
 : (r.state === "EARLY" || r.state === "HEALTHY") ? 1 : -1;
 const tile = (i, k, v, cap) => `<div class="${i === defIdx ? "def " + sKey(r.state) : ""}"><div class="k">${k}</div><div class="v">${v}</div>${cap ? `<div class="cap">${esc(cap)}</div>` : ""}</div>`;
-const cl = coh ? `<div class="mline">${esc(coh.label)}: breadth ${fp1(coh.breadth).replace("+", "")} · RS20 ${fp1(coh.rs20)}</div>`
-: `<div class="mline">no cohort / own story</div>`;
+const cl = coh ? `<div class="mline cohline">${esc(coh.label)}: breadth ${fp1(coh.breadth).replace("+", "")} · RS20 ${fp1(coh.rs20)}</div>`
+: `<div class="mline cohline">${esc(cohortFallback(r))}</div>`;
+const tag = pillTag(r.state, r.d50);
 const lt = r.last_transition
 ? `<div class="mline last">last transition ${esc(r.last_transition.date)} · ${esc(r.last_transition.from)} → ${esc(r.last_transition.to)}</div>` : "";
 // One renderer serves both the STATES tab and the on-demand card --
@@ -1330,12 +1400,12 @@ const st = _sl
 return `<div class="mcard"><div class="mtop">
 <span class="sy">${esc(r.name)}</span><span class="ro">${esc(r.role || "")}</span>
 ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>` : ""}
-<span class="pill ${sKey(r.state)}">${SGLYPH[r.state] || "?"} ${esc(r.state)}${r.days ? " · " + r.days + (r.days === 1 ? " session" : " sessions") : ""}</span>
+<span class="pill ${sKey(r.state)}">${SGLYPH[r.state] || "?"} ${esc(r.state)}${r.days ? " · " + r.days + (r.days === 1 ? " session" : " sessions") : ""}${tag ? " · " + tag : ""}</span>
 </div>
-${thresholdLine(r)}
+${pullbackLine(r)}${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r.profile)}${sizeLine(r.size, r.close, closeRuleState(r))}${actionLine(r)}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r, coh)}${sizeLine(r.size, r.close, closeRuleState(r))}${actionLine(r)}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${nearBandLine(r)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1421,12 +1491,14 @@ const extra = [
 qt ? `<div class="mline quote">QUOTE <b>${esc(qt[1])}</b> at ${esc(qt[2])} · live, against the ${esc(qt[3])} bars</div>`
 : qn ? `<div class="mline quote none">no live quote · graded on the ${esc(qn[1])} close</div>` : "",
 sti ? `<div class="mline">close rule <b>${esc(state)}</b> · intraday ${esc(sti[1])}</div>` : "",
-coh ? `<div class="mline">cohort ${esc(coh[1])} n=${esc(coh[2])} · breadth ${esc(coh[3])} · RS20 ${esc(coh[4])}</div>`
-: `<div class="mline">no cohort / own story</div>`,
+"\u0000COH\u0000",
 lt ? `<div class="mline last">last transition ${esc(lt[1])}</div>` : "",
 ].filter(Boolean).join("");
 const base = memberCard(r, null, off);
-return base.replace("<div class=\"mline\">no cohort / own story</div>", extra);
+// the reply's named cohort replaces the card's line; without one the card's
+// own fallback (the cohort rule) stays
+return base.replace(/<div class="mline cohline">[^<]*<\/div>/, (own) => extra.replace("\u0000COH\u0000",
+coh ? `<div class="mline cohline">cohort ${esc(coh[1])} n=${esc(coh[2])} · breadth ${esc(coh[3])} · RS20 ${esc(coh[4])}</div>` : own));
 }).join("");
 }
 // THE BANNER (amended 2026-10-10). It now ALWAYS states the basis and the
@@ -1542,11 +1614,13 @@ html += `<details class="howto"><summary>How to read ▾</summary><div class="bo
 <b>Roles</b> — index: the name the theme is read from. amplifier: moves further than the index. tracker / member: follows. single: no cohort.<br><br>
 <b>States</b> — <b>● HEALTHY</b> above MA20 and MA50, pull shallower than pull_stress. <b>◆ EARLY</b> above MA20, below MA50. <b>▲ STRESSED</b> was HEALTHY inside 5 sessions, pull between the two thresholds. <b>■ BROKEN</b> pull at or past pull_broken — this one dominates. <b>– NONE</b> at or below MA20 and not BROKEN.<br><br>
 ${stretchLegendHtml()}
-<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. The second figure scales that by the close-rule state, on ladder C (HEALTHY 1.00, EARLY 0.50, STRESSED 0.25, NONE 0.25, BROKEN 0), rounded down. <b>Action</b> appears only when the close rule changed the state on the most recent close, never on an intraday state: a cut sells that share of the position held, a rise buys that share of a full position. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
+<b>Size</b> — <b>size is set by volatility, not conviction: the same 1% of the account is at risk in every name at a 2.5-ATR stop.</b> ATR14 is last night's, from bars_daily highs, lows and closes. Shares are floored, so the risk at the stop is always a little under the budget, never over. The second figure scales that by the close-rule state, on ladder C (HEALTHY 1.00, EARLY 0.50, STRESSED 0.25, NONE 0.25, BROKEN 0), rounded down. <b>Action</b> appears only when the close rule changed the state on the most recent close, never on an intraday state: a cut sells that share of the position held, a rise resumes that share of a full position (resume full back to HEALTHY). When the floor takes a hold to 0 the line says <i>rounds to 0 of N sh at this account</i>, and a full size of 0 says that one share's stop already costs more than the risk budget. Tap the account figure to set it for this device; it is stored in this browser only and is never published, never sent to the desk and never written back to the VM. The PNG cards use the VM's value instead. None of this is advice to take the trade — it is arithmetic for a decision already made.<br><br>
 <b>Cohort breadth and RS20</b> — these describe the group <i>today</i>. In the census test half a higher RS20 was followed by <b>lower</b> cohort excess over the next 40 sessions (26 of 32 cohorts, p=0.0005; at 20 sessions 22 of 32, p=0.05). A strong reading is not a reason to add. Breadth crossing 50% carried no excess versus random dates (census Parts A/B, 246 events, inside the null).<br><br>
 <b>Past episodes</b> — STRESSED and BROKEN <i>entries</i> in the window, a run counted once. Counts only: pullback depth and time-in-state did not persist across halves (+0.05, +0.19) and are not shown. Past episodes describe this name's history; they do not predict the next one.<br><br>
 <b>Danger</b> — STRESSED cards only. Of every HEALTHY-to-STRESSED entry on the five-year panel in the same ATR14% tercile (calm under 2.73, middle 2.73 to 3.62, violent over 3.62), the share that reached BROKEN first and the share that got back to HEALTHY first within 20 sessions. It describes the cell, not this run, and it does not predict it. The panel is today's names only, so the BROKEN share is understated.<br><br>
 <b>Next &amp; history</b> — <b>Next</b> is where the state machine's lines sit at tonight's averages: the close at which this name would turn stressed, broken, or reclaim healthy, plus its 20-day, 50-day and 2.5-ATR stop. It is not a forecast that price will reach them. <b>History</b> is how this name's runs in the current state have ended over the past year. <b>Run counts include today, which the close can still change</b> — the same number the state badge shows. A statistic from fewer than 5 episodes is marked thin.<br><br>
+<b>Markers</b> — <b>PULLBACK</b> on a STRESSED or BROKEN card whose close is still above its MA50: the off-high rule flagged it, the 50-day did not break. <b>NEAR BAND</b> on a HEALTHY card within 1.5% above its MA50: on the five-year test fold such touch entries went STRESSED within 10 sessions 54% of the time against 38% for random HEALTHY days (study 11). Both describe; neither predicts.<br><br>
+<b>Cohort</b> — a name with a roster cohort shows that cohort on its header and its profile. Without one the header reads <i>no named cohort</i> with its nearest cluster and how much of the name that cluster explains; <i>own story</i> only when it explains under 50%.<br><br>
 <b>Profile</b> — Character: the traits that persisted across halves (vol 0.84, ATR 0.88, beta/R2 0.6+). Describes how the name has moved, not where it will go. Rebuilt nightly over the trailing 106 sessions. A name in no block shows its <i>nearest</i> block, named as such. beta/R2 persistence is an upper bound: cohort membership was fitted across both windows.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
 </div></details>`;

@@ -1,0 +1,100 @@
+<!doctype html><meta charset="utf-8"><title>card fixes 2026-11-10</title>
+<style>body{font:13px ui-monospace,monospace;padding:16px;background:#111;color:#ddd}
+.ok::before{content:"ok   ";color:#5c5}.bad::before{content:"FAIL ";color:#f55}.bad{color:#f88}
+iframe{width:400px;height:300px;opacity:.01;position:fixed;bottom:0;right:0}</style>
+<h1 style="font-size:15px">Card fixes: markers, cohort rule, HISTORY tail, NEXT from the close copy</h1><div id="sum">running…</div><div id="out"></div>
+<script>
+// Runs on the frozen states_live.json (as_of 2026-10-09 17:02) and on the
+// published close copy data/states_close.json. Rows are copied and edited
+// where a case is not in the frozen file; the renderer is under test.
+let P=0,F=0;const FAILED=[];const out=document.getElementById("out");
+function check(l,c){c?P++:(F++,FAILED.push(l));out.insertAdjacentHTML("beforeend",`<div class="${c?"ok":"bad"}">${l}</div>`);}
+function done(){document.getElementById("sum").textContent=`${P} passed, ${F} failed`;
+ if(FAILED.length)document.getElementById("sum").insertAdjacentHTML("afterend",
+  "<div class='bad'>"+FAILED.map(x=>"<div>FAILED  "+x+"</div>").join("")+"</div>");}
+Promise.all([fetch("states_live.json").then(r=>r.json()),
+             fetch("../data/states_close.json").then(r=>r.json())]).then(([doc,pub])=>{
+ const f=document.createElement("iframe");f.src="../index.html";document.body.appendChild(f);
+ f.onload=()=>{const w=f.contentWindow;
+  try{w.localStorage.removeItem("walls_account");}catch(e){}
+  const host=document.createElement("div");host.style.cssText="position:fixed;left:-9999px;width:460px";
+  document.body.appendChild(host);
+  const copy=(o)=>JSON.parse(JSON.stringify(o));
+  const T=(s)=>s.replace(/\s+/g," ").trim();
+  const rows=doc.names, by=Object.fromEntries(rows.map(r=>[r.name,r]));
+  const cohOf=(r)=>r.single?null:(doc.cohorts||[]).find(c=>c.id===r.cohort_id)||null;
+  const card=(r,coh)=>{host.innerHTML=w.memberCard(r,coh===undefined?cohOf(r):coh,false);return host;};
+  const q=(r,sel,coh)=>{const e=card(r,coh).querySelector(sel);return e?T(e.textContent):"";};
+  check("the frozen document is the close basis",doc.basis==="close");
+
+  // ---------------------------------------------------------- PULLBACK
+  check("one rule for the tag",w.pillTag("STRESSED",0.156)==="PULLBACK"&&w.pillTag("BROKEN",0.03)==="PULLBACK"
+    &&w.pillTag("STRESSED",-0.01)===""&&w.pillTag("BROKEN",0)===""&&w.pillTag("EARLY",0.2)==="");
+  const crl=copy(by.AMAT);crl.state="STRESSED";crl.days=1;crl.d50=0.156;
+  check("the pill reads STRESSED · 1 SESSION · PULLBACK (upper-cased by CSS)",
+    q(crl,".pill").endsWith("STRESSED · 1 session · PULLBACK"));
+  check("the pullback line under the pill (spec text)",
+    q(crl,".pbline")==="pullback · close above MA50 +15.6% · flagged by the off-high rule");
+  check("it sits directly under the card's top row",
+    card(crl).querySelector(".mtop").nextElementSibling.classList.contains("pbline"));
+  const frozenPB=rows.filter(r=>(r.state==="STRESSED"||r.state==="BROKEN")&&r.d50>0);
+  check(`every frozen STRESSED/BROKEN row above its MA50 is tagged (${frozenPB.map(r=>r.name).join(",")})`,
+    frozenPB.length===4&&frozenPB.every(r=>q(r,".pill").endsWith("PULLBACK")&&q(r,".pbline").startsWith("pullback · close above MA50 +")));
+  const below=rows.filter(r=>(r.state==="STRESSED"||r.state==="BROKEN")&&!(r.d50>0));
+  check("and none below it",below.every(r=>!q(r,".pill").includes("PULLBACK")&&!q(r,".pbline")));
+
+  // --------------------------------------------------------- NEAR BAND
+  const near=rows.filter(r=>r.state==="HEALTHY"&&r.d50>=0&&r.d50<=0.015);
+  check(`the four frozen HEALTHY rows within 1.5% are tagged (${near.map(r=>r.name).join(",")})`,
+    near.length===4&&near.every(r=>q(r,".pill").endsWith("NEAR BAND")));
+  check("AMZN at exactly +1.50% is inside the band",near.some(r=>r.name==="AMZN"));
+  check("the near-band line (spec text)",q(by.AMGN,".nearline")===
+    "NEAR BAND within 1.5% of the MA50 · touch entries went STRESSED within 10 sessions 54% of the time, random HEALTHY days 38% (five-year, study 11)");
+  check("it sits in the footer group, after HISTORY",(()=>{const c=card(by.AMGN);
+    const h=c.querySelector(".histline"),n=c.querySelector(".nearline");return !!(h&&n&&(h.compareDocumentPosition(n)&4));})());
+  check("no HEALTHY row outside the band is tagged",rows.filter(r=>r.state==="HEALTHY"&&!near.includes(r))
+    .every(r=>!q(r,".pill").includes("NEAR BAND")&&!q(r,".nearline")));
+  const just=copy(by.AMGN);just.d50=0.0151;
+  check("+1.51% is outside",!q(just,".nearline"));
+  const neg=copy(by.AMGN);neg.d50=-0.001;
+  check("a close under the MA50 is outside",!q(neg,".nearline"));
+
+  // -------------------------------------------------------- cohort rule
+  for(const r of rows.filter(r=>cohOf(r))){
+    const c=cohOf(r);
+    check(`${r.name}: header is ${c.label}, PROFILE names it, no cluster id`,
+      q(r,".cohline").startsWith(c.label+": breadth")&&q(r,".profline").includes(" to "+c.label)
+      &&!q(r,".profline").includes("cluster"));
+  }
+  check("MU: no named cohort · nearest cluster 1 explains 64%",
+    q(by.MU,".cohline")==="no named cohort · nearest cluster 1 explains 64%");
+  check("MU: PROFILE says the same cluster, not the cohort name",
+    q(by.MU,".profline").includes("to nearest cluster 1 · explains 64%")&&!q(by.MU,".profline").includes("Hardware"));
+  check("VST at 77% is not 'own story'",q(by.VST,".cohline")==="no named cohort · nearest cluster 45 explains 77%");
+  check("NVDA at 29% is own story",q(by.NVDA,".cohline")==="no named cohort · own story · nearest cluster 30 explains 29%");
+  check("own story appears only under 50%",rows.filter(r=>!cohOf(r)&&r.profile)
+    .every(r=>q(r,".cohline").includes("own story")===(r.profile.r2<0.5)));
+  check("no card says the old 'no cohort / own story'",rows.every(r=>!card(r).textContent.includes("no cohort / own story")));
+  const bare=copy(by.VST);bare.profile=null;
+  check("with no profile it says only 'no named cohort'",q(bare,".cohline")==="no named cohort");
+  const vm=copy(by.VST);vm.profile.header="no named cohort · nearest cluster 44 explains 79%";
+  vm.profile.line="moves 46% vol  ·  beta 1.02 to nearest cluster 44  ·  explains 79%";
+  check("a VM document's own header and line are used as sent",
+    q(vm,".cohline")===vm.profile.header&&q(vm,".profline")==="PROFILE "+T(vm.profile.line));
+
+  // ------------------------------------------------------ HISTORY tail
+  const lr=by.LRCX;
+  check("the frozen LRCX sentence carries 'The other 0 did not.'",lr.history.sentence.includes("The other 0 did not."));
+  check("the card drops it",!q(lr,".histline").includes("The other")&&q(lr,".histline").endsWith("."));
+  const two=copy(lr);two.history.sentence=two.history.sentence.replace("The other 0 did not.","The other 2 did not.");
+  check("a real remainder stays",q(two,".histline").includes("The other 2 did not."));
+
+  // ----------------------------------------- NEXT from the close copy
+  check(`the published close copy carries NEXT on every live name (${pub.as_of})`,
+    pub.basis==="close"&&pub.names.filter(r=>r.state!=="NO BARS").every(r=>r.next_moves&&r.next_moves.line));
+  check("and the card renders it from that copy",pub.names.filter(r=>r.state!=="NO BARS")
+    .every(r=>q(r,".nextline").startsWith("NEXT ")));
+  check("the frozen file renders NEXT on every row",rows.every(r=>!r.next_moves||!r.next_moves.line||q(r,".nextline").startsWith("NEXT ")));
+  done();};
+});
+</script>
