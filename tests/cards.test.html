@@ -60,27 +60,42 @@ Promise.all([fetch("states_live.json").then(r=>r.json()),
   check("a close under the MA50 is outside",!q(neg,".nearline"));
 
   // -------------------------------------------------------- cohort rule
+  // the frozen document becomes the page's own, so its cohorts are the
+  // ones a name's nearest named cohort is looked up in
+  w.adoptStates(Object.assign(copy(doc),{as_of:"2999-01-01T17:00:00-05:00"}),"test");
+  check("the frozen document is the page's document",w.eval("statesDoc.as_of")==="2999-01-01T17:00:00-05:00");
   for(const r of rows.filter(r=>cohOf(r))){
     const c=cohOf(r);
     check(`${r.name}: header is ${c.label}, PROFILE names it, no cluster id`,
       q(r,".cohline").startsWith(c.label+": breadth")&&q(r,".profline").includes(" to "+c.label)
       &&!q(r,".profline").includes("cluster"));
   }
-  check("MU: no named cohort · nearest cluster 1 explains 64%",
-    q(by.MU,".cohline")==="no named cohort · nearest cluster 1 explains 64%");
-  check("MU: PROFILE says the same cluster, not the cohort name",
-    q(by.MU,".profline").includes("to nearest cluster 1 · explains 64%")&&!q(by.MU,".profline").includes("Hardware"));
-  check("VST at 77% is not 'own story'",q(by.VST,".cohline")==="no named cohort · nearest cluster 45 explains 77%");
-  check("NVDA at 29% is own story",q(by.NVDA,".cohline")==="no named cohort · own story · nearest cluster 30 explains 29%");
-  check("own story appears only under 50%",rows.filter(r=>!cohOf(r)&&r.profile)
-    .every(r=>q(r,".cohline").includes("own story")===(r.profile.r2<0.5)));
+  const hw=doc.cohorts.find(c=>c.label==="Hardware");
+  for(const [nm,pct] of [["MU",64],["AMD",71]]){
+    check(`${nm}: nearest named cohort · Hardware · explains ${pct}%, with Hardware's breadth and RS20`,
+      q(by[nm],".cohline")===`nearest named cohort · Hardware · explains ${pct}%: breadth ${T(w.eval("fp1")(hw.breadth)).replace("+","")} · RS20 ${T(w.eval("fp1")(hw.rs20))}`);
+    check(`${nm}: PROFILE names Hardware, no cluster id`,
+      q(by[nm],".profline").includes(" to Hardware · cohort explains")&&!q(by[nm],".profline").includes("cluster"));
+  }
+  check("META (a nearest block that is a named cohort) gets the label, not its breadth",
+    q(by.META,".cohline")==="nearest named cohort · Mega-cap-internet · explains 15%");
+  check("VST at 77%: no named cohort explains it",q(by.VST,".cohline")==="no named cohort · nearest cluster 45 explains 77%");
+  check("VST's PROFILE uses the cluster",q(by.VST,".profline").includes("to nearest cluster 45 · explains 77%"));
+  check("NVDA at 29%, nearest cluster 30: own story",q(by.NVDA,".cohline")==="no named cohort · own story · nearest cluster 30 explains 29%");
+  const fb=rows.filter(r=>!cohOf(r)&&r.profile&&!w.namedNear(r));
+  check(`own story appears only under 50% among the fallback rows (${fb.map(r=>r.name).join(",")})`,
+    fb.length>0&&fb.every(r=>q(r,".cohline").includes("own story")===(r.profile.r2<0.5)));
   check("no card says the old 'no cohort / own story'",rows.every(r=>!card(r).textContent.includes("no cohort / own story")));
   const bare=copy(by.VST);bare.profile=null;
   check("with no profile it says only 'no named cohort'",q(bare,".cohline")==="no named cohort");
   const vm=copy(by.VST);vm.profile.header="no named cohort · nearest cluster 44 explains 79%";
+  vm.profile.named_near="";
   vm.profile.line="moves 46% vol  ·  beta 1.02 to nearest cluster 44  ·  explains 79%";
   check("a VM document's own header and line are used as sent",
     q(vm,".cohline")===vm.profile.header&&q(vm,".profline")==="PROFILE "+T(vm.profile.line));
+  const vmu=copy(by.MU);vmu.profile.named_near="Hardware";vmu.profile.header="nearest named cohort · Hardware · explains 64%";
+  vmu.profile.line="moves 59% vol  ·  beta 1.69 to Hardware  ·  cohort explains 64%";
+  check("and a VM document's named_near finds the cohort",q(vmu,".cohline").startsWith("nearest named cohort · Hardware · explains 64%: breadth"));
 
   // ------------------------------------------------------ HISTORY tail
   const lr=by.LRCX;

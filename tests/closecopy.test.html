@@ -126,6 +126,11 @@ async function run() {
   // with it absent, so the proof is that it rendered at all.
   check("the page booted with no committed file present",
     !!d.querySelector("#out, #app, body"));
+  // FIXED 2026-11-10: data/states_close.json has been committed since the
+  // first VM push, so the FIRST call in this test can succeed when the
+  // page's own boot has not called the loader yet. The guard under test is
+  // the repeat: call once, then the second call must resolve false.
+  await w.loadCloseStates();
   check("loadCloseStates resolves false on a repeat call rather than "
     + "throwing", (await w.loadCloseStates()) === false);
   let threw = "";

@@ -136,11 +136,16 @@ fetch("reply_fixture.json").then((r) => r.json()).then((fx) => {
     check("F's BROKEN count is its 9 ENTRIES, not its 43 broken days",
       fbn === 9);
     check("it is nowhere near a count of sessions", fbn < 30);
-    check("and the forward figure rides with it",
-      /BROKEN ×9, \+20s/.test(ep(F_)));
+    // FIXED 2026-11-10: the +20 forward figure was retired on 2026-10-07
+    // (past episodes is counts only); the test still asserted it.
+    check("and no forward figure rides with it (counts only)",
+      /BROKEN ×9(?!\d)/.test(ep(F_)) && !/\+20/.test(ep(F_)));
     check("PANW quotes 11 entries", /BROKEN ×11/.test(ep(P_)));
-    check("the STRESSED half is the roster card's wording",
-      /STRESSED ×9, trough .* vs 50-day/.test(ep(F_)));
+    // FIXED 2026-11-10: the trough-vs-50-day figure was retired on
+    // 2026-10-07 (it did not persist across halves); the roster card's
+    // wording is now the bare count.
+    check("the STRESSED half is the roster card's wording: a count, no trough",
+      /STRESSED ×\d+ · BROKEN/.test(ep(F_)) && !/trough|50-day/.test(ep(F_)));
 
     head("3b. a positive trough is explained in the reply");
     check("PANW's reply says what a + trough means",

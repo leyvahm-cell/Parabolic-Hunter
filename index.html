@@ -1201,6 +1201,18 @@ if (pr.block_id) return "cluster " + pr.block_id;
 if (pr.block_kind !== "nearest" && r.cohort_id != null) return "cluster " + r.cohort_id;
 return pr.block_label || "";
 }
+// AMENDED 2026-11-10 (second pass): a name with no roster cohort whose
+// profile block carries a roster cohort's label (MU, AMD, NVDA -> Hardware)
+// shows that cohort, labelled "nearest named cohort", with its breadth and
+// RS20; the cluster fallback is only for a name no named cohort explains.
+// profile_nightly.named_near is the VM's copy.
+function namedNear(r) {
+const pr = r.profile;
+if (!pr) return null;
+const cs = (statesDoc && statesDoc.cohorts) || [];
+const lab = (typeof pr.named_near === "string") ? pr.named_near : (pr.block_label || "");
+return lab ? (cs.find((c) => c.label === lab) || null) : null;
+}
 function cohortFallback(r) {
 const pr = r.profile;
 if (pr && typeof pr.header === "string" && pr.header) return pr.header;
@@ -1209,15 +1221,16 @@ if (!pr || !Number.isFinite(r2) || !ref) return "no named cohort";
 const ex = `nearest ${ref} explains ${Math.round(r2 * 100)}%`;
 return r2 < OWN_STORY_BELOW ? `no named cohort · own story · ${ex}` : `no named cohort · ${ex}`;
 }
-function profileText(r, coh) {
+function profileText(r, coh, near) {
 const pr = r.profile;
 if (!pr) return "";
 if (typeof pr.header === "string") return pr.line || "";   // the VM's own copy of the rule
 const bits = [];
 if (Number.isFinite(pr.vol20)) bits.push(`moves ${pr.vol20.toFixed(0)}% vol`);
 const ref = clusterRef(r);
-if (Number.isFinite(pr.beta) && coh && coh.label && pr.block_kind !== "nearest") {
-bits.push(`beta ${pr.beta.toFixed(2)} to ${coh.label}`);
+const named = near ? near.label : (coh && coh.label && pr.block_kind !== "nearest" ? coh.label : "");
+if (Number.isFinite(pr.beta) && named) {
+bits.push(`beta ${pr.beta.toFixed(2)} to ${named}`);
 if (Number.isFinite(pr.r2)) bits.push(`cohort explains ${(pr.r2 * 100).toFixed(0)}%`);
 } else if (Number.isFinite(pr.beta) && ref) {
 bits.push(`beta ${pr.beta.toFixed(2)} to nearest ${ref}`);
@@ -1267,8 +1280,8 @@ return `<div class="mline dangerline"><span class="plk">DANGER</span> ${esc(body
 // THE PROFILE LINE. The VM builds the wording in profile_nightly and
 // ships it in states.json, so the page prints the same sentence the PNG
 // does rather than reassembling it from parts and drifting.
-function profileLine(r, coh) {
-const t = profileText(r, coh);
+function profileLine(r, coh, near) {
+const t = profileText(r, coh, near);
 if (!t) return "";
 return `<div class="mline profline"><span class="plk">PROFILE</span> ${esc(t)}</div>`;
 }
@@ -1386,7 +1399,13 @@ return `<div class="mcard"><div class="mtop"><span class="sy">${esc(r.name)}</sp
 const defIdx = (r.state === "BROKEN" || r.state === "STRESSED") ? 0
 : (r.state === "EARLY" || r.state === "HEALTHY") ? 1 : -1;
 const tile = (i, k, v, cap) => `<div class="${i === defIdx ? "def " + sKey(r.state) : ""}"><div class="k">${k}</div><div class="v">${v}</div>${cap ? `<div class="cap">${esc(cap)}</div>` : ""}</div>`;
+const near = coh ? null : namedNear(r);
+const nearHead = near ? `nearest named cohort · ${near.label}${r.profile && Number.isFinite(r.profile.r2) ? " · explains " + Math.round(r.profile.r2 * 100) + "%" : ""}` : "";
+// a "nearest" block is not the name's own cluster, so it gets the label
+// and not the breadth of a group the name is not in
+const nearOwn = near && r.profile.block_kind !== "nearest";
 const cl = coh ? `<div class="mline cohline">${esc(coh.label)}: breadth ${fp1(coh.breadth).replace("+", "")} · RS20 ${fp1(coh.rs20)}</div>`
+: near ? `<div class="mline cohline">${esc(nearHead)}${nearOwn ? `: breadth ${fp1(near.breadth).replace("+", "")} · RS20 ${fp1(near.rs20)}` : ""}</div>`
 : `<div class="mline cohline">${esc(cohortFallback(r))}</div>`;
 const tag = pillTag(r.state, r.d50);
 const lt = r.last_transition
@@ -1405,7 +1424,7 @@ ${offRoster ? `<span class="ro" style="color:var(--s-warn)">not on roster</span>
 ${pullbackLine(r)}${thresholdLine(r)}
 <div class="quad">${tile(0, "OFF 10s HIGH", fp1(r.pull))}${tile(1, "vs 20-DAY", fp1(r.d20), caption(r.d20))}${tile(2, "vs 50-DAY", fp1(r.d50), caption(r.d50))}${tile(3, "PRICE", Number.isFinite(r.close) ? r.close.toFixed(2) : "—")}</div>
 <div class="d200">vs 200-day ${fp1(r.d200)}<span class="bandleg">${esc(BAND_LEGEND)}</span></div>
-${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r, coh)}${sizeLine(r.size, r.close, closeRuleState(r))}${actionLine(r)}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${nearBandLine(r)}${episodes(r.hist, r.state)}${lt}
+${sparkSvg(r.spark, r._as_of, r.px_src, r._basis, r._lastlbl)}${intradayStrip(r.intraday)}${st}${cl}${profileLine(r, coh, near)}${sizeLine(r.size, r.close, closeRuleState(r))}${actionLine(r)}${nextLine(r.next_moves)}${dangerLine(r)}${historyLine(r.history)}${nearBandLine(r)}${episodes(r.hist, r.state)}${lt}
 </div>`;
 }
 // The on-demand reply is the cmd_listener's text block for "state TICKER".
@@ -1620,7 +1639,7 @@ ${stretchLegendHtml()}
 <b>Danger</b> — STRESSED cards only. Of every HEALTHY-to-STRESSED entry on the five-year panel in the same ATR14% tercile (calm under 2.73, middle 2.73 to 3.62, violent over 3.62), the share that reached BROKEN first and the share that got back to HEALTHY first within 20 sessions. It describes the cell, not this run, and it does not predict it. The panel is today's names only, so the BROKEN share is understated.<br><br>
 <b>Next &amp; history</b> — <b>Next</b> is where the state machine's lines sit at tonight's averages: the close at which this name would turn stressed, broken, or reclaim healthy, plus its 20-day, 50-day and 2.5-ATR stop. It is not a forecast that price will reach them. <b>History</b> is how this name's runs in the current state have ended over the past year. <b>Run counts include today, which the close can still change</b> — the same number the state badge shows. A statistic from fewer than 5 episodes is marked thin.<br><br>
 <b>Markers</b> — <b>PULLBACK</b> on a STRESSED or BROKEN card whose close is still above its MA50: the off-high rule flagged it, the 50-day did not break. <b>NEAR BAND</b> on a HEALTHY card within 1.5% above its MA50: on the five-year test fold such touch entries went STRESSED within 10 sessions 54% of the time against 38% for random HEALTHY days (study 11). Both describe; neither predicts.<br><br>
-<b>Cohort</b> — a name with a roster cohort shows that cohort on its header and its profile. Without one the header reads <i>no named cohort</i> with its nearest cluster and how much of the name that cluster explains; <i>own story</i> only when it explains under 50%.<br><br>
+<b>Cohort</b> — a name with a roster cohort shows that cohort on its header and its profile. A name without one that is measured against a roster cohort shows it as <i>nearest named cohort</i>, with that cohort's breadth and RS20. Otherwise the header reads <i>no named cohort</i> with its nearest cluster and how much of the name that cluster explains; <i>own story</i> only when it explains under 50%.<br><br>
 <b>Profile</b> — Character: the traits that persisted across halves (vol 0.84, ATR 0.88, beta/R2 0.6+). Describes how the name has moved, not where it will go. Rebuilt nightly over the trailing 106 sessions. A name in no block shows its <i>nearest</i> block, named as such. beta/R2 persistence is an upper bound: cohort membership was fitted across both windows.<br><br>
 <b>Not shown: walls, MA crosses, chain depth, dark pool.</b>
 </div></details>`;
