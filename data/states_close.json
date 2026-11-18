@@ -1,14 +1,14 @@
 {
- "as_of": "2026-11-17T17:00:40-05:00",
- "session": "2026-11-17",
+ "as_of": "2026-11-18T17:02:09-05:00",
+ "session": "2026-11-18",
  "basis": "close",
- "reference_session": "2026-11-17",
+ "reference_session": "2026-11-18",
  "counts": {
-  "BROKEN": 9,
-  "STRESSED": 2,
+  "BROKEN": 5,
+  "STRESSED": 3,
   "EARLY": 1,
-  "HEALTHY": 4,
-  "NONE": 7,
+  "HEALTHY": 3,
+  "NONE": 11,
   "NO BARS": 0
  },
  "cohorts": [
@@ -17,8 +17,8 @@
    "label": "Cybersecurity",
    "n_live": 5,
    "n": 5,
-   "breadth": 0.0,
-   "rs20": -0.1148,
+   "breadth": 0.2,
+   "rs20": -0.0721,
    "note": ""
   },
   {
@@ -26,8 +26,8 @@
    "label": "Life-science",
    "n_live": 9,
    "n": 9,
-   "breadth": 0.1111,
-   "rs20": -0.0152,
+   "breadth": 0.3333,
+   "rs20": -0.0322,
    "note": ""
   },
   {
@@ -35,8 +35,8 @@
    "label": "Hardware",
    "n_live": 53,
    "n": 53,
-   "breadth": 0.1132,
-   "rs20": -0.1161,
+   "breadth": 0.1509,
+   "rs20": -0.1292,
    "note": ""
   },
   {
@@ -45,7 +45,7 @@
    "n_live": 3,
    "n": 3,
    "breadth": 0.3333,
-   "rs20": -0.1893,
+   "rs20": -0.1659,
    "note": "triple, below cohort floor"
   },
   {
@@ -53,8 +53,8 @@
    "label": "Pharma",
    "n_live": 10,
    "n": 10,
-   "breadth": 0.6,
-   "rs20": 0.0153,
+   "breadth": 0.2,
+   "rs20": 0.0081,
    "note": ""
   },
   {
@@ -62,8 +62,8 @@
    "label": "Banks",
    "n_live": 35,
    "n": 35,
-   "breadth": 0.2857,
-   "rs20": -0.0082,
+   "breadth": 0.1429,
+   "rs20": -0.0255,
    "note": ""
   },
   {
@@ -72,7 +72,7 @@
    "n_live": 5,
    "n": 5,
    "breadth": 0.4,
-   "rs20": -0.1007,
+   "rs20": -0.0891,
    "note": ""
   }
  ],
@@ -82,14 +82,14 @@
    "role": "index",
    "cohort_id": 16,
    "single": false,
-   "state": "BROKEN",
+   "state": "NONE",
    "prev": "BROKEN",
-   "days": 12,
-   "close": 219.505,
-   "pull": -0.1029,
-   "d20": -0.0844,
-   "d50": -0.1045,
-   "d200": 0.2643,
+   "days": 1,
+   "close": 237.03,
+   "pull": -0.0165,
+   "d20": -0.0097,
+   "d50": -0.0338,
+   "d200": 0.361,
    "stretch": "",
    "hist": {
     "n": 12,
@@ -101,7 +101,6 @@
    },
    "spark": {
     "close": [
-     262.49,
      259.67,
      252.13,
      259.25,
@@ -140,10 +139,10 @@
      229.87,
      226.61,
      223.21,
-     219.505
+     219.58,
+     237.03
     ],
     "ma20": [
-     221.6945,
      225.55,
      229.0745,
      230.283,
@@ -182,10 +181,10 @@
      240.768,
      240.033,
      239.994,
-     239.7495
+     239.7495,
+     239.36
     ],
     "ma50": [
-     209.5706,
      210.6058,
      211.6638,
      212.6312,
@@ -224,10 +223,10 @@
      244.159,
      244.688,
      244.9208,
-     245.123
+     245.123,
+     245.3142
     ],
     "ma200": [
-     148.1664,
      148.8375,
      149.4958,
      150.1124,
@@ -266,9 +265,10 @@
      171.9067,
      172.4696,
      173.0468,
-     173.6111
+     173.6111,
+     174.1604
     ],
-    "hi10": 244.68
+    "hi10": 241.0
    },
    "px_src": "close",
    "intraday": {
@@ -280,95 +280,93 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     223.2,
-     219.19,
-     215.68,
-     218.41,
-     218.13,
-     216.32,
-     216.7399,
-     218.27,
-     217.26,
-     219.96,
-     220.26,
-     218.22,
-     218.32,
-     219.145
+     223.67,
+     227.26,
+     230.61,
+     233.4,
+     232.31,
+     232.605,
+     235.81,
+     235.48,
+     239.4287,
+     239.61,
+     237.08,
+     238.06,
+     237.4,
+     238.125
     ],
-    "ref": 223.21
+    "ref": 219.58
    },
    "size": {
-    "atr": 14.9252,
-    "atr_pct": 0.06799,
+    "atr": 15.1517,
+    "atr_pct": 0.06392,
     "stop_atr": 2.5,
-    "stop_dollars": 37.3131,
+    "stop_dollars": 37.8793,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
-    "shares": 4,
-    "notional": 878.02
+    "shares": 3,
+    "notional": 711.09
    },
    "profile": {
-    "vol20": 61.13,
+    "vol20": 61.2,
     "atr_pct": 5.099,
-    "beta": 1.161,
-    "r2": 0.8141,
+    "beta": 1.152,
+    "r2": 0.819,
     "block_label": "Cybersecurity",
     "block_kind": "cohort",
     "block_id": "16",
     "header": "",
     "named_near": "",
-    "line": "moves 61% vol  \u00b7  beta 1.16 to Cybersecurity  \u00b7  cohort explains 81%"
+    "line": "moves 61% vol  \u00b7  beta 1.15 to Cybersecurity  \u00b7  cohort explains 82%"
    },
    "next_moves": {
     "levels": [
      {
-      "key": "reclaim_above",
-      "price": 234.8928,
-      "label": "NONE",
-      "state": "NONE",
-      "pct": 7.010227557458837
+      "key": "ma20_at",
+      "price": 239.35999999999999,
+      "label": "MA20",
+      "state": "EARLY",
+      "pct": 0.9829979327511174
      },
      {
-      "key": "ma50_at",
-      "price": 245.123,
-      "label": "MA50",
-      "state": "HEALTHY",
-      "pct": 11.670804765267295
+      "key": "broken_below",
+      "price": 221.72,
+      "label": "BROKEN",
+      "state": "BROKEN",
+      "pct": -6.459098004472008
      }
     ],
-    "stressed_below": 232.446,
-    "broken_below": 225.1056,
-    "reclaim_above": 234.8928,
-    "ma20_at": 239.7495,
-    "ma50_at": 245.123,
-    "stop_at": 182.192,
-    "line": "NEXT  \u00b7  NONE 234.89 (+7.0%)  \u00b7  MA50 245.12 (+11.7%) \u2192 HEALTHY"
+    "stressed_below": 228.95,
+    "broken_below": 221.72,
+    "reclaim_above": null,
+    "ma20_at": 239.36,
+    "ma50_at": 245.3142,
+    "stop_at": 199.1508,
+    "line": "NEXT  \u00b7  MA20 239.36 (+1.0%) \u2192 EARLY  \u00b7  BROKEN 221.72 (-6.5%)"
    },
    "history": {
-    "run_sessions": 12,
-    "state": "BROKEN",
-    "n": 11,
+    "run_sessions": 1,
+    "state": "NONE",
+    "n": 9,
     "thin": false,
-    "sentence": "Broken for 12 sessions. In the past year it broke 11 times; 9 of 11 got back to healthy within 40 sessions, typically taking 9. The other 2 did not.",
-    "compact": "past 11 BROKEN \u00b7 median 9 sessions to HEALTHY \u00b7 9 of 11 within 40",
-    "broken_median_sessions_to_healthy": 9,
-    "broken_reclaimed_within_40": 9
+    "sentence": "Below the 20-day for 1 sessions. In the past year it spent 19 percent of sessions here, in 8 episodes that typically lasted 3 sessions (longest 19). 5 of them ended with a close back above the 20-day; 3 slid on to broken.",
+    "compact": "past 8 below the 20-day \u00b7 median 3 sessions \u00b7 19% of the year \u00b7 reclaimed 5 \u00b7 broke 3"
    },
    "last_transition": {
-    "date": "2026-11-02",
-    "from": "STRESSED",
-    "to": "BROKEN"
+    "date": "2026-11-18",
+    "from": "BROKEN",
+    "to": "NONE"
    }
   },
   {
@@ -376,14 +374,14 @@
    "role": "amplifier",
    "cohort_id": 16,
    "single": false,
-   "state": "BROKEN",
+   "state": "NONE",
    "prev": "BROKEN",
-   "days": 13,
-   "close": 309.22,
-   "pull": -0.117,
-   "d20": -0.1149,
-   "d50": -0.1578,
-   "d200": 0.1126,
+   "days": 1,
+   "close": 339.92,
+   "pull": -0.0233,
+   "d20": -0.0227,
+   "d50": -0.0728,
+   "d200": 0.2201,
    "stretch": "",
    "hist": {
     "n": 14,
@@ -395,7 +393,6 @@
    },
    "spark": {
     "close": [
-     393.3,
      389.92,
      374.74,
      392.09,
@@ -434,10 +431,10 @@
      322.66,
      322.24,
      316.09,
-     309.22
+     309.29,
+     339.92
     ],
     "ma20": [
-     356.121,
      358.791,
      361.3215,
      360.916,
@@ -476,10 +473,10 @@
      354.275,
      351.8945,
      350.9065,
-     349.3635
+     349.3635,
+     347.814
     ],
     "ma50": [
-     354.5816,
      355.3898,
      356.1078,
      356.5228,
@@ -518,10 +515,10 @@
      367.8146,
      367.6982,
      367.5042,
-     367.1608
+     367.1608,
+     366.607
     ],
     "ma200": [
-     242.3925,
      243.3806,
      244.3361,
      245.233,
@@ -560,9 +557,10 @@
      275.8082,
      276.5028,
      277.233,
-     277.9286
+     277.9286,
+     278.5979
     ],
-    "hi10": 350.2
+    "hi10": 348.04
    },
    "px_src": "close",
    "intraday": {
@@ -574,95 +572,93 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     311.54,
-     306.89,
-     305.39,
-     307.0228,
-     304.57,
-     302.21,
-     303.981,
-     305.355,
-     307.075,
-     309.53,
-     309.0,
-     307.52,
-     308.54,
-     309.125
+     313.06,
+     324.79,
+     326.04,
+     329.65,
+     325.79,
+     329.8,
+     331.525,
+     328.25,
+     333.28,
+     335.1,
+     328.38,
+     333.82,
+     336.895,
+     337.87
     ],
-    "ref": 316.09
+    "ref": 309.29
    },
    "size": {
-    "atr": 19.7636,
-    "atr_pct": 0.06391,
+    "atr": 20.1978,
+    "atr_pct": 0.05942,
     "stop_atr": 2.5,
-    "stop_dollars": 49.4089,
+    "stop_dollars": 50.4946,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
-    "shares": 3,
-    "notional": 927.66
+    "shares": 2,
+    "notional": 679.84
    },
    "profile": {
     "vol20": 59.61,
-    "atr_pct": 4.855,
-    "beta": 0.969,
-    "r2": 0.783,
+    "atr_pct": 4.893,
+    "beta": 0.987,
+    "r2": 0.7896,
     "block_label": "Cybersecurity",
     "block_kind": "cohort",
     "block_id": "16",
     "header": "",
     "named_near": "",
-    "line": "moves 60% vol  \u00b7  beta 0.97 to Cybersecurity  \u00b7  cohort explains 78%"
+    "line": "moves 60% vol  \u00b7  beta 0.99 to Cybersecurity  \u00b7  cohort explains 79%"
    },
    "next_moves": {
     "levels": [
      {
-      "key": "reclaim_above",
-      "price": 336.19199999999995,
-      "label": "NONE",
-      "state": "NONE",
-      "pct": 8.722592329086055
+      "key": "ma20_at",
+      "price": 347.81399999999996,
+      "label": "MA20",
+      "state": "EARLY",
+      "pct": 2.322311132031052
      },
      {
-      "key": "ma50_at",
-      "price": 367.1608,
-      "label": "MA50",
-      "state": "HEALTHY",
-      "pct": 18.737727184528797
+      "key": "broken_below",
+      "price": 320.19680000000005,
+      "label": "BROKEN",
+      "state": "BROKEN",
+      "pct": -5.80230642504117
      }
     ],
-    "stressed_below": 332.69,
-    "broken_below": 322.184,
-    "reclaim_above": 336.192,
-    "ma20_at": 349.3635,
-    "ma50_at": 367.1608,
-    "stop_at": 259.811,
-    "line": "NEXT  \u00b7  NONE 336.19 (+8.7%)  \u00b7  MA50 367.16 (+18.7%) \u2192 HEALTHY"
+    "stressed_below": 330.638,
+    "broken_below": 320.1968,
+    "reclaim_above": null,
+    "ma20_at": 347.814,
+    "ma50_at": 366.607,
+    "stop_at": 289.4255,
+    "line": "NEXT  \u00b7  MA20 347.81 (+2.3%) \u2192 EARLY  \u00b7  BROKEN 320.20 (-5.8%)"
    },
    "history": {
-    "run_sessions": 13,
-    "state": "BROKEN",
-    "n": 11,
+    "run_sessions": 1,
+    "state": "NONE",
+    "n": 9,
     "thin": false,
-    "sentence": "Broken for 13 sessions. In the past year it broke 11 times; 11 of 11 got back to healthy within 40 sessions, typically taking 6.",
-    "compact": "past 11 BROKEN \u00b7 median 6 sessions to HEALTHY \u00b7 11 of 11 within 40",
-    "broken_median_sessions_to_healthy": 6,
-    "broken_reclaimed_within_40": 11
+    "sentence": "Below the 20-day for 1 sessions. In the past year it spent 14 percent of sessions here, in 8 episodes that typically lasted 2 sessions (longest 10). 6 of them ended with a close back above the 20-day; 2 slid on to broken.",
+    "compact": "past 8 below the 20-day \u00b7 median 2 sessions \u00b7 14% of the year \u00b7 reclaimed 6 \u00b7 broke 2"
    },
    "last_transition": {
-    "date": "2026-10-30",
-    "from": "STRESSED",
-    "to": "BROKEN"
+    "date": "2026-11-18",
+    "from": "BROKEN",
+    "to": "NONE"
    }
   },
   {
@@ -672,12 +668,12 @@
    "single": false,
    "state": "NONE",
    "prev": "NONE",
-   "days": 2,
-   "close": 686.88,
-   "pull": -0.0482,
-   "d20": -0.0136,
-   "d50": 0.0219,
-   "d200": 0.2355,
+   "days": 3,
+   "close": 692.74,
+   "pull": -0.04,
+   "d20": -0.0052,
+   "d50": 0.028,
+   "d200": 0.2449,
    "stretch": "",
    "hist": {
     "n": 3,
@@ -689,7 +685,6 @@
    },
    "spark": {
     "close": [
-     665.3,
      678.39,
      675.0,
      678.6,
@@ -728,10 +723,10 @@
      699.44,
      700.22,
      691.33,
-     686.88
+     686.79,
+     692.74
     ],
     "ma20": [
-     626.2645,
      628.122,
      630.356,
      632.571,
@@ -770,10 +765,10 @@
      695.1125,
      695.26,
      695.771,
-     696.3685
+     696.3685,
+     696.3395
     ],
     "ma50": [
-     596.1336,
      598.7582,
      601.6202,
      604.2564,
@@ -812,10 +807,10 @@
      667.1668,
      668.9848,
      670.6206,
-     672.1716
+     672.1716,
+     673.847
     ],
     "ma200": [
-     538.7125,
      539.1629,
      539.691,
      540.2249,
@@ -854,7 +849,8 @@
      554.3768,
      554.8339,
      555.3742,
-     555.9378
+     555.9378,
+     556.4629
     ],
     "hi10": 721.63
    },
@@ -868,49 +864,49 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     690.7,
-     688.245,
-     691.31,
-     691.32,
-     690.61,
-     689.77,
-     690.96,
-     690.67,
-     691.255,
-     689.41,
-     688.74,
-     686.9725,
-     687.31,
-     685.895
+     685.13,
+     685.77,
+     686.71,
+     689.275,
+     686.42,
+     690.1,
+     692.06,
+     692.78,
+     692.985,
+     691.0,
+     689.405,
+     692.14,
+     691.295,
+     692.8
     ],
-    "ref": 691.33
+    "ref": 686.79
    },
    "size": {
-    "atr": 20.1109,
-    "atr_pct": 0.02928,
+    "atr": 20.2448,
+    "atr_pct": 0.02922,
     "stop_atr": 2.5,
-    "stop_dollars": 50.2772,
+    "stop_dollars": 50.6121,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 2,
-    "notional": 1373.76
+    "notional": 1385.48
    },
    "profile": {
-    "vol20": 28.04,
+    "vol20": 28.13,
     "atr_pct": 2.822,
-    "beta": 0.934,
-    "r2": 0.7245,
+    "beta": 0.927,
+    "r2": 0.7203,
     "block_label": "Life-science",
     "block_kind": "cohort",
     "block_id": "12",
@@ -921,41 +917,41 @@
    "next_moves": {
     "levels": [
      {
+      "key": "ma20_at",
+      "price": 696.3395,
+      "label": "MA20",
+      "state": "HEALTHY",
+      "pct": 0.5196033143748169
+     },
+     {
       "key": "stressed_below",
       "price": 685.5485,
       "label": "STRESSED",
       "state": "STRESSED",
-      "pct": -0.19384754251106084
-     },
-     {
-      "key": "ma20_at",
-      "price": 696.3685,
-      "label": "MA20",
-      "state": "HEALTHY",
-      "pct": 1.3813912182622845
+      "pct": -1.0381239714755908
      },
      {
       "key": "broken_below",
       "price": 663.8996000000001,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -3.345620778010705
+      "pct": -4.163235846060564
      }
     ],
     "stressed_below": 685.5485,
     "broken_below": 663.8996,
     "reclaim_above": null,
-    "ma20_at": 696.3685,
-    "ma50_at": 672.1716,
-    "stop_at": 636.6028,
-    "line": "NEXT  \u00b7  STRESSED 685.55 (-0.2%)  \u00b7  MA20 696.37 (+1.4%) \u2192 HEALTHY  \u00b7  BROKEN 663.90 (-3.3%)"
+    "ma20_at": 696.3395,
+    "ma50_at": 673.847,
+    "stop_at": 642.128,
+    "line": "NEXT  \u00b7  MA20 696.34 (+0.5%) \u2192 HEALTHY  \u00b7  STRESSED 685.55 (-1.0%)  \u00b7  BROKEN 663.90 (-4.2%)"
    },
    "history": {
-    "run_sessions": 2,
+    "run_sessions": 3,
     "state": "NONE",
     "n": 8,
     "thin": false,
-    "sentence": "Below the 20-day for 2 sessions. In the past year it spent 24 percent of sessions here, in 7 episodes that typically lasted 4 sessions (longest 15). 5 of them ended with a close back above the 20-day; 1 slid on to broken.",
+    "sentence": "Below the 20-day for 3 sessions. In the past year it spent 24 percent of sessions here, in 7 episodes that typically lasted 4 sessions (longest 15). 5 of them ended with a close back above the 20-day; 1 slid on to broken.",
     "compact": "past 7 below the 20-day \u00b7 median 4 sessions \u00b7 24% of the year \u00b7 reclaimed 5 \u00b7 broke 1"
    },
    "last_transition": {
@@ -971,24 +967,23 @@
    "single": false,
    "state": "NONE",
    "prev": "NONE",
-   "days": 3,
-   "close": 332.11,
-   "pull": -0.0601,
-   "d20": -0.0366,
-   "d50": 0.0644,
-   "d200": 0.4545,
+   "days": 4,
+   "close": 333.25,
+   "pull": -0.0569,
+   "d20": -0.0356,
+   "d50": 0.0646,
+   "d200": 0.4557,
    "stretch": "",
    "hist": {
     "n": 6,
-    "trough_vs_ma50": 0.0792,
+    "trough_vs_ma50": 0.0793,
     "held": 0.8333,
     "broken_n": 8,
-    "broken_ret20": -0.0164,
+    "broken_ret20": -0.0147,
     "broken_deep": 0.5
    },
    "spark": {
     "close": [
-     277.33,
      294.44,
      292.84,
      294.59,
@@ -1027,10 +1022,10 @@
      340.81,
      337.97,
      335.52,
-     332.11
+     332.16,
+     333.25
     ],
     "ma20": [
-     283.923,
      282.9075,
      282.8745,
      282.696,
@@ -1069,10 +1064,10 @@
      339.3215,
      341.05,
      342.941,
-     344.716
+     344.716,
+     345.5515
     ],
     "ma50": [
-     265.5236,
      266.446,
      267.7704,
      269.044,
@@ -1111,10 +1106,10 @@
      309.191,
      310.172,
      311.0644,
-     312.0048
+     312.0048,
+     313.0328
     ],
     "ma200": [
-     205.9438,
      206.4103,
      206.961,
      207.4896,
@@ -1153,7 +1148,8 @@
      226.4592,
      227.0788,
      227.7103,
-     228.3355
+     228.3355,
+     228.9302
     ],
     "hi10": 353.34
    },
@@ -1167,55 +1163,55 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     332.75,
-     339.08,
-     340.08,
-     336.57,
-     336.9225,
-     334.925,
-     336.8501,
-     335.345,
-     335.195,
-     333.51,
-     333.5,
-     332.205,
-     331.92,
-     332.485
+     334.635,
+     337.54,
+     333.41,
+     333.78,
+     333.185,
+     332.34,
+     333.89,
+     333.53,
+     334.31,
+     332.64,
+     331.84,
+     333.8575,
+     333.02,
+     333.518
     ],
-    "ref": 335.52
+    "ref": 332.16
    },
    "size": {
-    "atr": 18.0361,
-    "atr_pct": 0.05431,
+    "atr": 17.8307,
+    "atr_pct": 0.05351,
     "stop_atr": 2.5,
-    "stop_dollars": 45.0902,
+    "stop_dollars": 44.5768,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 3,
-    "notional": 996.33
+    "notional": 999.75
    },
    "profile": {
     "vol20": 44.02,
     "atr_pct": 3.852,
-    "beta": 1.362,
-    "r2": 0.5435,
+    "beta": 1.341,
+    "r2": 0.5365,
     "block_label": "Life-science",
     "block_kind": "cohort",
     "block_id": "12",
     "header": "",
     "named_near": "",
-    "line": "moves 44% vol  \u00b7  beta 1.36 to Life-science  \u00b7  cohort explains 54%"
+    "line": "moves 44% vol  \u00b7  beta 1.34 to Life-science  \u00b7  cohort explains 54%"
    },
    "next_moves": {
     "levels": [
@@ -1224,30 +1220,30 @@
       "price": 325.0728,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -2.1189364969437907
+      "pct": -2.4537734433608516
      },
      {
       "key": "ma20_at",
-      "price": 344.716,
+      "price": 345.5515,
       "label": "MA20",
       "state": "HEALTHY",
-      "pct": 3.7957303303122414
+      "pct": 3.691372843210794
      }
     ],
     "stressed_below": 335.673,
     "broken_below": 325.0728,
     "reclaim_above": null,
-    "ma20_at": 344.716,
-    "ma50_at": 312.0048,
-    "stop_at": 287.0197,
-    "line": "NEXT  \u00b7  BROKEN 325.07 (-2.1%)  \u00b7  MA20 344.72 (+3.8%) \u2192 HEALTHY"
+    "ma20_at": 345.5515,
+    "ma50_at": 313.0328,
+    "stop_at": 288.6732,
+    "line": "NEXT  \u00b7  BROKEN 325.07 (-2.5%)  \u00b7  MA20 345.55 (+3.7%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 3,
+    "run_sessions": 4,
     "state": "NONE",
     "n": 9,
     "thin": false,
-    "sentence": "Below the 20-day for 3 sessions. In the past year it spent 10 percent of sessions here, in 9 episodes that typically lasted 2 sessions (longest 5). 8 of them ended with a close back above the 20-day; 1 slid on to broken.",
+    "sentence": "Below the 20-day for 4 sessions. In the past year it spent 10 percent of sessions here, in 9 episodes that typically lasted 2 sessions (longest 5). 8 of them ended with a close back above the 20-day; 1 slid on to broken.",
     "compact": "past 9 below the 20-day \u00b7 median 2 sessions \u00b7 10% of the year \u00b7 reclaimed 8 \u00b7 broke 1"
    },
    "last_transition": {
@@ -1263,12 +1259,12 @@
    "single": false,
    "state": "STRESSED",
    "prev": "STRESSED",
-   "days": 2,
-   "close": 257.525,
-   "pull": -0.0764,
-   "d20": -0.0497,
-   "d50": -0.0368,
-   "d200": 0.2193,
+   "days": 3,
+   "close": 257.84,
+   "pull": -0.0753,
+   "d20": -0.0467,
+   "d50": -0.0355,
+   "d200": 0.2201,
    "stretch": "",
    "hist": {
     "n": 9,
@@ -1280,7 +1276,6 @@
    },
    "spark": {
     "close": [
-     267.86,
      275.02,
      270.37,
      270.97,
@@ -1319,10 +1314,10 @@
      271.11,
      265.12,
      264.73,
-     257.525
+     257.6,
+     257.84
     ],
     "ma20": [
-     264.154,
      264.576,
      265.2515,
      265.651,
@@ -1361,10 +1356,10 @@
      271.1305,
      271.134,
      271.045,
-     270.9875
+     270.9875,
+     270.475
     ],
     "ma50": [
-     243.8306,
      245.0312,
      246.3954,
      247.593,
@@ -1403,10 +1398,10 @@
      267.3984,
      267.5438,
      267.4138,
-     267.353
+     267.353,
+     267.3208
     ],
     "ma200": [
-     204.0637,
      204.2785,
      204.5243,
      204.7583,
@@ -1445,7 +1440,8 @@
      210.7249,
      210.8816,
      211.0291,
-     211.202
+     211.202,
+     211.3338
     ],
     "hi10": 278.84
    },
@@ -1459,55 +1455,55 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     262.75,
-     261.615,
-     260.48,
-     259.16,
-     259.35,
-     259.065,
-     259.94,
-     260.4,
-     260.23,
-     259.14,
-     258.82,
-     258.17,
-     257.81,
-     257.82
+     258.0,
+     258.6,
+     255.95,
+     256.04,
+     255.96,
+     258.195,
+     259.1,
+     258.59,
+     259.08,
+     258.325,
+     257.685,
+     258.675,
+     258.29,
+     258.62
     ],
-    "ref": 264.73
+    "ref": 257.6
    },
    "size": {
-    "atr": 8.8721,
-    "atr_pct": 0.03445,
+    "atr": 8.8553,
+    "atr_pct": 0.03434,
     "stop_atr": 2.5,
-    "stop_dollars": 22.1802,
+    "stop_dollars": 22.1382,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 6,
-    "notional": 1545.15
+    "notional": 1547.04
    },
    "profile": {
     "vol20": 28.92,
     "atr_pct": 3.07,
-    "beta": 0.922,
-    "r2": 0.4392,
+    "beta": 0.909,
+    "r2": 0.4322,
     "block_label": "Life-science",
     "block_kind": "cohort",
     "block_id": "12",
     "header": "",
     "named_near": "",
-    "line": "moves 29% vol  \u00b7  beta 0.92 to Life-science  \u00b7  cohort explains 44%"
+    "line": "moves 29% vol  \u00b7  beta 0.91 to Life-science  \u00b7  cohort explains 43%"
    },
    "next_moves": {
     "levels": [
@@ -1516,37 +1512,37 @@
       "price": 256.5328,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -0.3852829822347248
+      "pct": -0.506981073533963
      },
      {
       "key": "reclaim_above",
       "price": 267.6864,
       "label": "NONE",
       "state": "NONE",
-      "pct": 3.9457916707115848
+      "pct": 3.8188023580515207
      },
      {
       "key": "ma20_at",
-      "price": 270.9875,
+      "price": 270.475,
       "label": "MA20",
       "state": "HEALTHY",
-      "pct": 5.227647801184365
+      "pct": 4.900325783431603
      }
     ],
     "stressed_below": 264.898,
     "broken_below": 256.5328,
     "reclaim_above": 267.6864,
-    "ma20_at": 270.9875,
-    "ma50_at": 267.353,
-    "stop_at": 235.3447,
-    "line": "NEXT  \u00b7  BROKEN 256.53 (-0.4%)  \u00b7  NONE 267.69 (+3.9%)  \u00b7  MA20 270.99 (+5.2%) \u2192 HEALTHY"
+    "ma20_at": 270.475,
+    "ma50_at": 267.3208,
+    "stop_at": 235.7017,
+    "line": "NEXT  \u00b7  BROKEN 256.53 (-0.5%)  \u00b7  NONE 267.69 (+3.8%)  \u00b7  MA20 270.48 (+4.9%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 2,
+    "run_sessions": 3,
     "state": "STRESSED",
     "n": 7,
     "thin": false,
-    "sentence": "Stressed for 2 sessions. In the past year it was stressed 7 times: 5 times it recovered to healthy and 0 times it fell to broken, usually resolving within 2 sessions. Hysteresis means it stays stressed until a close above 267.69.",
+    "sentence": "Stressed for 3 sessions. In the past year it was stressed 7 times: 5 times it recovered to healthy and 0 times it fell to broken, usually resolving within 2 sessions. Hysteresis means it stays stressed until a close above 267.69.",
     "compact": "past 7 STRESSED \u00b7 reclaimed 5 \u00b7 broke 0 \u00b7 median 2 sessions",
     "stressed_reclaimed": 5,
     "stressed_broke": 0,
@@ -1565,24 +1561,23 @@
    "single": false,
    "state": "BROKEN",
    "prev": "BROKEN",
-   "days": 2,
-   "close": 210.68,
-   "pull": -0.1068,
-   "d20": -0.0891,
-   "d50": -0.2359,
-   "d200": -0.2575,
+   "days": 3,
+   "close": 211.67,
+   "pull": -0.1026,
+   "d20": -0.0742,
+   "d50": -0.2262,
+   "d200": -0.2537,
    "stretch": "",
    "hist": {
     "n": 13,
     "trough_vs_ma50": 0.0549,
     "held": 0.6923,
     "broken_n": 16,
-    "broken_ret20": 0.0113,
+    "broken_ret20": 0.0137,
     "broken_deep": 0.375
    },
    "spark": {
     "close": [
-     307.28,
      307.16,
      315.21,
      314.47,
@@ -1621,10 +1616,10 @@
      233.78,
      225.92,
      210.83,
-     210.68
+     210.69,
+     211.67
     ],
     "ma20": [
-     297.254,
      296.885,
      296.599,
      296.4305,
@@ -1663,10 +1658,10 @@
      238.4355,
      236.2515,
      234.3505,
-     231.282
+     231.282,
+     228.644
     ],
     "ma50": [
-     306.0406,
      305.2642,
      304.6988,
      304.5838,
@@ -1705,10 +1700,10 @@
      280.0876,
      278.9968,
      277.662,
-     275.7256
+     275.7256,
+     273.531
     ],
     "ma200": [
-     268.6766,
      269.4276,
      270.1699,
      270.9323,
@@ -1747,7 +1742,8 @@
      284.012,
      283.983,
      283.8718,
-     283.7586
+     283.7586,
+     283.6245
     ],
     "hi10": 235.88
    },
@@ -1761,55 +1757,55 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     211.43,
-     211.88,
-     207.6145,
-     207.365,
-     207.0125,
-     207.95,
-     208.95,
-     207.08,
-     207.3,
-     207.919,
-     206.6,
-     205.49,
-     207.4,
-     207.155
+     212.5,
+     210.995,
+     211.065,
+     210.835,
+     208.795,
+     210.26,
+     210.7924,
+     208.83,
+     210.595,
+     208.42,
+     209.29,
+     209.27,
+     210.21,
+     211.08
     ],
-    "ref": 210.83
+    "ref": 210.69
    },
    "size": {
-    "atr": 17.4949,
-    "atr_pct": 0.08304,
+    "atr": 17.4461,
+    "atr_pct": 0.08242,
     "stop_atr": 2.5,
-    "stop_dollars": 43.7373,
+    "stop_dollars": 43.6152,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 3,
-    "notional": 632.04
+    "notional": 635.01
    },
    "profile": {
     "vol20": 60.73,
     "atr_pct": 6.565,
-    "beta": 1.667,
-    "r2": 0.788,
+    "beta": 1.663,
+    "r2": 0.7856,
     "block_label": "Hardware",
     "block_kind": "cohort",
     "block_id": "1",
     "header": "",
     "named_near": "",
-    "line": "moves 61% vol  \u00b7  beta 1.67 to Hardware  \u00b7  cohort explains 79%"
+    "line": "moves 61% vol  \u00b7  beta 1.66 to Hardware  \u00b7  cohort explains 79%"
    },
    "next_moves": {
     "levels": [
@@ -1818,30 +1814,30 @@
       "price": 226.4448,
       "label": "NONE",
       "state": "NONE",
-      "pct": 7.482817543193465
+      "pct": 6.980110549440166
      },
      {
       "key": "ma50_at",
-      "price": 275.7256,
+      "price": 273.531,
       "label": "MA50",
       "state": "HEALTHY",
-      "pct": 30.874121891019545
+      "pct": 29.225209051825974
      }
     ],
     "stressed_below": 224.086,
     "broken_below": 217.0096,
     "reclaim_above": 226.4448,
-    "ma20_at": 231.282,
-    "ma50_at": 275.7256,
-    "stop_at": 166.9427,
-    "line": "NEXT  \u00b7  NONE 226.44 (+7.5%)  \u00b7  MA50 275.73 (+30.9%) \u2192 HEALTHY"
+    "ma20_at": 228.644,
+    "ma50_at": 273.531,
+    "stop_at": 168.0547,
+    "line": "NEXT  \u00b7  NONE 226.44 (+7.0%)  \u00b7  MA50 273.53 (+29.2%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 2,
+    "run_sessions": 3,
     "state": "BROKEN",
     "n": 14,
     "thin": false,
-    "sentence": "Broken for 2 sessions. In the past year it broke 14 times; 14 of 14 got back to healthy within 40 sessions, typically taking 6.5.",
+    "sentence": "Broken for 3 sessions. In the past year it broke 14 times; 14 of 14 got back to healthy within 40 sessions, typically taking 6.5.",
     "compact": "past 14 BROKEN \u00b7 median 6.5 sessions to HEALTHY \u00b7 14 of 14 within 40",
     "broken_median_sessions_to_healthy": 6.5,
     "broken_reclaimed_within_40": 14
@@ -1859,24 +1855,23 @@
    "single": false,
    "state": "BROKEN",
    "prev": "BROKEN",
-   "days": 2,
-   "close": 349.23,
-   "pull": -0.1161,
-   "d20": -0.0805,
-   "d50": -0.1987,
-   "d200": -0.2182,
+   "days": 3,
+   "close": 352.3,
+   "pull": -0.1083,
+   "d20": -0.0655,
+   "d50": -0.187,
+   "d200": -0.2115,
    "stretch": "",
    "hist": {
-    "n": 11,
-    "trough_vs_ma50": 0.0651,
-    "held": 0.8182,
+    "n": 10,
+    "trough_vs_ma50": 0.0604,
+    "held": 0.8,
     "broken_n": 16,
     "broken_ret20": -0.0408,
     "broken_deep": 0.4375
    },
    "spark": {
     "close": [
-     474.38,
      474.25,
      485.0,
      486.76,
@@ -1915,10 +1910,10 @@
      380.95,
      370.5,
      350.25,
-     349.23
+     349.23,
+     352.3
     ],
     "ma20": [
-     452.236,
      451.953,
      451.6775,
      451.8095,
@@ -1957,10 +1952,10 @@
      387.3197,
      384.8668,
      382.9273,
-     379.7842
+     379.7842,
+     376.9967
     ],
     "ma50": [
-     496.2944,
      493.868,
      491.7644,
      490.2458,
@@ -1999,10 +1994,10 @@
      440.3673,
      439.2171,
      437.9089,
-     435.8197
+     435.8197,
+     433.3485
     ],
     "ma200": [
-     418.2768,
      419.3015,
      420.3328,
      421.417,
@@ -2041,7 +2036,8 @@
      446.1727,
      446.3937,
      446.5395,
-     446.6791
+     446.6791,
+     446.7833
     ],
     "hi10": 395.08
    },
@@ -2055,87 +2051,87 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     352.725,
-     352.77,
-     347.21,
-     346.25,
-     344.83,
-     345.0,
-     348.1,
-     344.96,
-     344.515,
-     344.99,
-     342.34,
-     341.5792,
-     344.245,
-     343.7862
+     352.71,
+     350.025,
+     350.58,
+     350.85,
+     349.315,
+     349.79,
+     351.8,
+     349.36,
+     351.4,
+     348.16,
+     350.1,
+     351.09,
+     351.9701,
+     350.95
     ],
-    "ref": 350.25
+    "ref": 349.23
    },
    "size": {
-    "atr": 27.5132,
-    "atr_pct": 0.07878,
+    "atr": 27.3025,
+    "atr_pct": 0.0775,
     "stop_atr": 2.5,
-    "stop_dollars": 68.783,
+    "stop_dollars": 68.2561,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 2,
-    "notional": 698.46
+    "notional": 704.6
    },
    "profile": {
     "vol20": 53.62,
     "atr_pct": 5.662,
-    "beta": 1.525,
-    "r2": 0.7325,
+    "beta": 1.527,
+    "r2": 0.7307,
     "block_label": "Hardware",
     "block_kind": "cohort",
     "block_id": "1",
     "header": "",
     "named_near": "",
-    "line": "moves 54% vol  \u00b7  beta 1.52 to Hardware  \u00b7  cohort explains 73%"
+    "line": "moves 54% vol  \u00b7  beta 1.53 to Hardware  \u00b7  cohort explains 73%"
    },
    "next_moves": {
     "levels": [
      {
       "key": "reclaim_above",
       "price": 379.2768,
-      "label": "NONE",
-      "state": "NONE",
-      "pct": 8.603728202044492
+      "label": "EARLY",
+      "state": "EARLY",
+      "pct": 7.657337496451877
      },
      {
       "key": "ma50_at",
-      "price": 435.8197,
+      "price": 433.3485,
       "label": "MA50",
       "state": "HEALTHY",
-      "pct": 24.79446210233942
+      "pct": 23.005535055350546
      }
     ],
     "stressed_below": 375.326,
     "broken_below": 363.4736,
     "reclaim_above": 379.2768,
-    "ma20_at": 379.7842,
-    "ma50_at": 435.8197,
-    "stop_at": 280.447,
-    "line": "NEXT  \u00b7  NONE 379.28 (+8.6%)  \u00b7  MA50 435.82 (+24.8%) \u2192 HEALTHY"
+    "ma20_at": 376.9967,
+    "ma50_at": 433.3485,
+    "stop_at": 284.0438,
+    "line": "NEXT  \u00b7  EARLY 379.28 (+7.7%)  \u00b7  MA50 433.35 (+23.0%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 2,
+    "run_sessions": 3,
     "state": "BROKEN",
     "n": 13,
     "thin": false,
-    "sentence": "Broken for 2 sessions. In the past year it broke 13 times; 13 of 13 got back to healthy within 40 sessions, typically taking 7.",
+    "sentence": "Broken for 3 sessions. In the past year it broke 13 times; 13 of 13 got back to healthy within 40 sessions, typically taking 7.",
     "compact": "past 13 BROKEN \u00b7 median 7 sessions to HEALTHY \u00b7 13 of 13 within 40",
     "broken_median_sessions_to_healthy": 7,
     "broken_reclaimed_within_40": 13
@@ -2153,24 +2149,23 @@
    "single": false,
    "state": "NONE",
    "prev": "NONE",
-   "days": 4,
-   "close": 277.58,
-   "pull": -0.0602,
-   "d20": -0.0683,
-   "d50": -0.1433,
-   "d200": -0.1742,
+   "days": 5,
+   "close": 279.2,
+   "pull": -0.0547,
+   "d20": -0.0536,
+   "d50": -0.1353,
+   "d200": -0.1685,
    "stretch": "",
    "hist": {
     "n": 6,
     "trough_vs_ma50": -0.0701,
     "held": 0.0,
     "broken_n": 9,
-    "broken_ret20": -0.0168,
+    "broken_ret20": -0.0111,
     "broken_deep": 0.1111
    },
    "spark": {
     "close": [
-     334.98,
      339.01,
      341.08,
      339.16,
@@ -2209,10 +2204,10 @@
      295.35,
      292.52,
      281.26,
-     277.58
+     277.6,
+     279.2
     ],
     "ma20": [
-     339.0555,
      338.6375,
      338.633,
      338.8015,
@@ -2251,10 +2246,10 @@
      305.583,
      303.105,
      300.8855,
-     297.9405
+     297.9405,
+     295.0005
     ],
     "ma50": [
-     343.3288,
      342.8818,
      342.2578,
      342.0032,
@@ -2293,10 +2288,10 @@
      326.8104,
      326.0418,
      325.1106,
-     324.0296
+     324.0296,
+     322.874
     ],
     "ma200": [
-     336.4869,
      336.5699,
      336.6544,
      336.7876,
@@ -2335,7 +2330,8 @@
      336.8468,
      336.6422,
      336.4115,
-     336.1252
+     336.1252,
+     335.7886
     ],
     "hi10": 295.35
    },
@@ -2349,55 +2345,55 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     279.74,
-     279.9842,
-     279.34,
-     278.13,
-     277.925,
-     278.185,
-     279.0901,
-     278.83,
-     278.64,
-     278.185,
-     277.18,
-     277.55,
-     277.305,
-     276.96
+     280.78,
+     281.07,
+     279.365,
+     279.12,
+     278.2,
+     278.265,
+     278.51,
+     278.065,
+     280.71,
+     280.83,
+     280.55,
+     281.085,
+     280.43,
+     280.29
     ],
-    "ref": 281.26
+    "ref": 277.6
    },
    "size": {
-    "atr": 12.142,
-    "atr_pct": 0.04374,
+    "atr": 9.4191,
+    "atr_pct": 0.03374,
     "stop_atr": 2.5,
-    "stop_dollars": 30.355,
+    "stop_dollars": 23.5478,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
-    "shares": 4,
-    "notional": 1110.32
+    "shares": 6,
+    "notional": 1675.2
    },
    "profile": {
     "vol20": 34.34,
     "atr_pct": 2.983,
-    "beta": 0.95,
-    "r2": 0.8291,
+    "beta": 0.94,
+    "r2": 0.8179,
     "block_label": "Mega-cap-internet",
     "block_kind": "cohort",
     "block_id": "36",
     "header": "",
     "named_near": "",
-    "line": "moves 34% vol  \u00b7  beta 0.95 to Mega-cap-internet  \u00b7  cohort explains 83%"
+    "line": "moves 34% vol  \u00b7  beta 0.94 to Mega-cap-internet  \u00b7  cohort explains 82%"
    },
    "next_moves": {
     "levels": [
@@ -2406,30 +2402,30 @@
       "price": 271.72200000000004,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -2.1103825924057795
+      "pct": -2.678366762177631
      },
      {
       "key": "ma20_at",
-      "price": 297.9405,
+      "price": 295.0005,
       "label": "MA20",
       "state": "EARLY",
-      "pct": 7.335002521795531
+      "pct": 5.659204871060175
      }
     ],
     "stressed_below": 280.5825,
     "broken_below": 271.722,
     "reclaim_above": null,
-    "ma20_at": 297.9405,
-    "ma50_at": 324.0296,
-    "stop_at": 247.225,
-    "line": "NEXT  \u00b7  BROKEN 271.72 (-2.1%)  \u00b7  MA20 297.94 (+7.3%) \u2192 EARLY"
+    "ma20_at": 295.0005,
+    "ma50_at": 322.874,
+    "stop_at": 255.6522,
+    "line": "NEXT  \u00b7  BROKEN 271.72 (-2.7%)  \u00b7  MA20 295.00 (+5.7%) \u2192 EARLY"
    },
    "history": {
-    "run_sessions": 4,
+    "run_sessions": 5,
     "state": "NONE",
     "n": 8,
     "thin": false,
-    "sentence": "Below the 20-day for 4 sessions. In the past year it spent 36 percent of sessions here, in 18 episodes that typically lasted 2 sessions (longest 17). 13 of them ended with a close back above the 20-day; 3 slid on to broken.",
+    "sentence": "Below the 20-day for 5 sessions. In the past year it spent 36 percent of sessions here, in 18 episodes that typically lasted 2 sessions (longest 17). 13 of them ended with a close back above the 20-day; 3 slid on to broken.",
     "compact": "past 18 below the 20-day \u00b7 median 2 sessions \u00b7 36% of the year \u00b7 reclaimed 13 \u00b7 broke 3"
    },
    "last_transition": {
@@ -2445,12 +2441,12 @@
    "single": false,
    "state": "HEALTHY",
    "prev": "HEALTHY",
-   "days": 10,
-   "close": 257.84,
-   "pull": -0.0481,
-   "d20": 0.0029,
-   "d50": 0.0119,
-   "d200": 0.0538,
+   "days": 11,
+   "close": 267.74,
+   "pull": -0.0116,
+   "d20": 0.0423,
+   "d50": 0.0507,
+   "d200": 0.0939,
    "stretch": "",
    "hist": {
     "n": 6,
@@ -2462,7 +2458,6 @@
    },
    "spark": {
     "close": [
-     249.27,
      249.38,
      249.67,
      246.15,
@@ -2501,10 +2496,10 @@
      267.44,
      266.66,
      257.75,
-     257.84
+     257.89,
+     267.74
     ],
     "ma20": [
-     255.77,
      255.1805,
      254.6355,
      254.306,
@@ -2543,10 +2538,10 @@
      255.8675,
      256.5015,
      257.3345,
-     257.0995
+     257.0995,
+     256.8625
     ],
     "ma50": [
-     256.2554,
      256.291,
      256.1794,
      256.175,
@@ -2585,10 +2580,10 @@
      254.4072,
      254.6564,
      254.8116,
-     254.7964
+     254.7964,
+     254.8148
     ],
     "ma200": [
-     240.5339,
      240.6347,
      240.7339,
      240.8478,
@@ -2627,7 +2622,8 @@
      244.3487,
      244.4708,
      244.5955,
-     244.6878
+     244.6878,
+     244.7624
     ],
     "hi10": 270.87
    },
@@ -2641,55 +2637,55 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     258.235,
-     258.86,
-     258.0723,
-     255.4296,
-     254.97,
-     255.25,
-     257.11,
-     257.055,
-     256.495,
-     257.11,
-     256.57,
-     257.19,
-     257.155,
-     256.76
+     261.45,
+     263.55,
+     264.16,
+     263.785,
+     264.49,
+     265.11,
+     266.12,
+     266.155,
+     267.85,
+     267.73,
+     267.22,
+     266.9001,
+     266.88,
+     267.59
     ],
-    "ref": 257.75
+    "ref": 257.89
    },
    "size": {
-    "atr": 11.2113,
-    "atr_pct": 0.04348,
+    "atr": 10.9999,
+    "atr_pct": 0.04108,
     "stop_atr": 2.5,
-    "stop_dollars": 28.0283,
+    "stop_dollars": 27.4997,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 5,
-    "notional": 1289.2
+    "notional": 1338.7
    },
    "profile": {
-    "vol20": 30.22,
+    "vol20": 28.98,
     "atr_pct": 2.866,
-    "beta": 0.718,
-    "r2": 0.4518,
+    "beta": 0.71,
+    "r2": 0.4316,
     "block_label": "Mega-cap-internet",
     "block_kind": "cohort",
     "block_id": "36",
     "header": "",
     "named_near": "",
-    "line": "moves 30% vol  \u00b7  beta 0.72 to Mega-cap-internet  \u00b7  cohort explains 45%"
+    "line": "moves 29% vol  \u00b7  beta 0.71 to Mega-cap-internet  \u00b7  cohort explains 43%"
    },
    "next_moves": {
     "levels": [
@@ -2698,45 +2694,45 @@
       "price": 257.3265,
       "label": "STRESSED",
       "state": "STRESSED",
-      "pct": -0.1991545144275353
+      "pct": -3.8894076342720574
      },
      {
       "key": "ma20_at",
-      "price": 257.0995,
+      "price": 256.8625,
       "label": "MA20",
       "state": "STRESSED",
-      "pct": -0.28719360843934005
+      "pct": -4.062710091880184
      },
      {
       "key": "broken_below",
       "price": 249.2004,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -3.3507601613403604
+      "pct": -6.924478972137149
      },
      {
       "key": "stop_at",
-      "price": 229.81174999999996,
+      "price": 240.24025,
       "label": "stop",
       "state": "BROKEN",
-      "pct": -10.870404126590138
+      "pct": -10.271065212519614
      }
     ],
     "stressed_below": 257.3265,
     "broken_below": 249.2004,
     "reclaim_above": null,
-    "ma20_at": 257.0995,
-    "ma50_at": 254.7964,
-    "stop_at": 229.8117,
-    "line": "NEXT  \u00b7  STRESSED 257.33 (-0.2%)  \u00b7  MA20 257.10 (-0.3%) \u2192 STRESSED  \u00b7  BROKEN 249.20 (-3.4%)  \u00b7  stop 229.81 (-10.9%) \u2192 BROKEN"
+    "ma20_at": 256.8625,
+    "ma50_at": 254.8148,
+    "stop_at": 240.2403,
+    "line": "NEXT  \u00b7  STRESSED 257.33 (-3.9%)  \u00b7  MA20 256.86 (-4.1%) \u2192 STRESSED  \u00b7  BROKEN 249.20 (-6.9%)  \u00b7  stop 240.24 (-10.3%) \u2192 BROKEN"
    },
    "history": {
-    "run_sessions": 10,
+    "run_sessions": 11,
     "state": "HEALTHY",
     "n": 10,
     "thin": false,
-    "sentence": "Healthy for 10 sessions. Over the past year this name's healthy runs usually lasted about 4 sessions (half ended between 1 and 7.8; the longest was 29). This run is longer than usual.",
-    "compact": "run 10 \u00b7 typical 4 (IQR 1-7.8, longest 29, n=10)",
+    "sentence": "Healthy for 11 sessions. Over the past year this name's healthy runs usually lasted about 4 sessions (half ended between 1 and 7.8; the longest was 29). This run is longer than usual.",
+    "compact": "run 11 \u00b7 typical 4 (IQR 1-7.8, longest 29, n=10)",
     "healthy_median": 4,
     "healthy_p25": 1,
     "healthy_p75": 7.75,
@@ -2753,14 +2749,14 @@
    "role": "index",
    "cohort_id": 11,
    "single": false,
-   "state": "HEALTHY",
+   "state": "STRESSED",
    "prev": "HEALTHY",
-   "days": 28,
-   "close": 457.86,
-   "pull": -0.0431,
-   "d20": 0.0003,
-   "d50": 0.0753,
-   "d200": 0.1998,
+   "days": 1,
+   "close": 443.89,
+   "pull": -0.0723,
+   "d20": -0.0322,
+   "d50": 0.0393,
+   "d200": 0.1615,
    "stretch": "",
    "hist": {
     "n": 5,
@@ -2772,7 +2768,6 @@
    },
    "spark": {
     "close": [
-     406.09,
      406.04,
      414.61,
      418.13,
@@ -2811,10 +2806,10 @@
      467.06,
      465.67,
      462.32,
-     457.86
+     457.93,
+     443.89
     ],
     "ma20": [
-     409.5385,
      407.731,
      406.016,
      404.897,
@@ -2853,10 +2848,10 @@
      452.5445,
      454.196,
      455.855,
-     457.724
+     457.724,
+     458.6735
     ],
     "ma50": [
-     401.8635,
      402.8803,
      403.8347,
      404.6953,
@@ -2895,10 +2890,10 @@
      424.3898,
      424.8742,
      425.3052,
-     425.807
+     425.807,
+     427.1022
     ],
     "ma200": [
-     360.946,
      361.2756,
      361.6564,
      362.1232,
@@ -2937,7 +2932,8 @@
      379.7697,
      380.3939,
      381.0076,
-     381.6098
+     381.6098,
+     382.1761
     ],
     "hi10": 478.48
    },
@@ -2951,111 +2947,96 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     459.45,
-     458.925,
-     460.915,
-     457.51,
-     455.54,
-     458.46,
-     458.91,
-     459.5301,
-     459.2325,
-     458.5,
-     456.995,
-     456.1,
-     457.51,
-     456.4
+     451.23,
+     451.605,
+     448.8,
+     447.47,
+     446.955,
+     449.285,
+     447.11,
+     446.455,
+     446.71,
+     443.0,
+     443.055,
+     444.49,
+     444.19,
+     443.58
     ],
-    "ref": 462.32
+    "ref": 457.93
    },
    "size": {
-    "atr": 12.4589,
-    "atr_pct": 0.02721,
+    "atr": 12.4492,
+    "atr_pct": 0.02805,
     "stop_atr": 2.5,
-    "stop_dollars": 31.1472,
+    "stop_dollars": 31.1231,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 4,
-    "notional": 1831.44
+    "notional": 1775.56
    },
    "profile": {
     "vol20": 28.54,
     "atr_pct": 2.523,
-    "beta": 1.102,
-    "r2": 0.5735,
+    "beta": 1.108,
+    "r2": 0.5816,
     "block_label": "Pharma",
     "block_kind": "cohort",
     "block_id": "11",
     "header": "",
     "named_near": "",
-    "line": "moves 29% vol  \u00b7  beta 1.10 to Pharma  \u00b7  cohort explains 57%"
+    "line": "moves 29% vol  \u00b7  beta 1.11 to Pharma  \u00b7  cohort explains 58%"
    },
    "next_moves": {
     "levels": [
-     {
-      "key": "ma20_at",
-      "price": 457.724,
-      "label": "MA20",
-      "state": "NONE",
-      "pct": -0.02970340278688477
-     },
-     {
-      "key": "stressed_below",
-      "price": 454.556,
-      "label": "STRESSED",
-      "state": "STRESSED",
-      "pct": -0.7216179618223961
-     },
      {
       "key": "broken_below",
       "price": 440.20160000000004,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -3.8567247630279966
+      "pct": -0.8309265809096744
      },
      {
-      "key": "stop_at",
-      "price": 426.71275,
-      "label": "stop",
-      "state": "BROKEN",
-      "pct": -6.802789062158732
+      "key": "reclaim_above",
+      "price": 459.3408,
+      "label": "HEALTHY",
+      "state": "HEALTHY",
+      "pct": 3.4807722633986016
      }
     ],
     "stressed_below": 454.556,
     "broken_below": 440.2016,
-    "reclaim_above": null,
-    "ma20_at": 457.724,
-    "ma50_at": 425.807,
-    "stop_at": 426.7128,
-    "line": "NEXT  \u00b7  MA20 457.72 (-0.0%) \u2192 NONE  \u00b7  STRESSED 454.56 (-0.7%)  \u00b7  BROKEN 440.20 (-3.9%)  \u00b7  stop 426.71 (-6.8%) \u2192 BROKEN"
+    "reclaim_above": 459.3408,
+    "ma20_at": 458.6735,
+    "ma50_at": 427.1022,
+    "stop_at": 412.767,
+    "line": "NEXT  \u00b7  BROKEN 440.20 (-0.8%)  \u00b7  HEALTHY 459.34 (+3.5%)"
    },
    "history": {
-    "run_sessions": 28,
-    "state": "HEALTHY",
-    "n": 13,
+    "run_sessions": 1,
+    "state": "STRESSED",
+    "n": 6,
     "thin": false,
-    "sentence": "Healthy for 28 sessions. Over the past year this name's healthy runs usually lasted about 4 sessions (half ended between 1 and 13; the longest was 37). This run is longer than usual.",
-    "compact": "run 28 \u00b7 typical 4 (IQR 1-13, longest 37, n=13)",
-    "healthy_median": 4,
-    "healthy_p25": 1,
-    "healthy_p75": 13,
-    "healthy_max": 37
+    "sentence": "Stressed for 1 sessions. In the past year it was stressed 6 times: 3 times it recovered to healthy and 0 times it fell to broken, usually resolving within 1.5 sessions. Hysteresis means it stays stressed until a close above 459.34.",
+    "compact": "past 6 STRESSED \u00b7 reclaimed 3 \u00b7 broke 0 \u00b7 median 1.5 sessions",
+    "stressed_reclaimed": 3,
+    "stressed_broke": 0,
+    "stressed_median_sessions": 1.5
    },
    "last_transition": {
-    "date": "2026-10-09",
-    "from": "EARLY",
-    "to": "HEALTHY"
+    "date": "2026-11-18",
+    "from": "HEALTHY",
+    "to": "STRESSED"
    }
   },
   {
@@ -3065,12 +3046,12 @@
    "single": false,
    "state": "HEALTHY",
    "prev": "HEALTHY",
-   "days": 25,
-   "close": 1416.06,
-   "pull": -0.019,
-   "d20": 0.0368,
-   "d50": 0.1358,
-   "d200": 0.2742,
+   "days": 26,
+   "close": 1382.75,
+   "pull": -0.0421,
+   "d20": 0.0075,
+   "d50": 0.1039,
+   "d200": 0.2422,
    "stretch": "",
    "hist": {
     "n": 6,
@@ -3082,7 +3063,6 @@
    },
    "spark": {
     "close": [
-     1150.99,
      1181.89,
      1183.46,
      1184.78,
@@ -3121,10 +3101,10 @@
      1427.28,
      1443.5,
      1431.67,
-     1416.06
+     1415.55,
+     1382.75
     ],
     "ma20": [
-     1154.949,
      1150.8155,
      1150.4395,
      1150.8075,
@@ -3163,10 +3143,10 @@
      1338.1375,
      1346.921,
      1356.2445,
-     1365.811
+     1365.811,
+     1372.4055
     ],
     "ma50": [
-     1176.6516,
      1176.6206,
      1177.1258,
      1177.4116,
@@ -3205,10 +3185,10 @@
      1230.0564,
      1235.4004,
      1241.0784,
-     1246.7246
+     1246.7246,
+     1252.5574
     ],
     "ma200": [
-     1067.6236,
      1068.3061,
      1069.164,
      1070.0934,
@@ -3247,7 +3227,8 @@
      1105.2099,
      1107.2274,
      1109.3241,
-     1111.2967
+     1111.2967,
+     1113.1538
     ],
     "hi10": 1443.5
    },
@@ -3261,102 +3242,102 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     1425.97,
-     1424.145,
-     1428.3925,
-     1415.075,
-     1418.91,
-     1414.58,
-     1415.96,
-     1415.69,
-     1407.49,
-     1404.955,
-     1405.965,
-     1403.6,
-     1413.79,
-     1411.2125
+     1408.236,
+     1402.2901,
+     1399.11,
+     1390.64,
+     1389.615,
+     1389.745,
+     1395.53,
+     1392.57,
+     1396.255,
+     1388.89,
+     1380.375,
+     1388.2499,
+     1386.42,
+     1383.345
     ],
-    "ref": 1431.67
+    "ref": 1415.55
    },
    "size": {
-    "atr": 51.9791,
-    "atr_pct": 0.03671,
+    "atr": 46.4812,
+    "atr_pct": 0.03362,
     "stop_atr": 2.5,
-    "stop_dollars": 129.9477,
+    "stop_dollars": 116.203,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 1,
-    "notional": 1416.06
+    "notional": 1382.75
    },
    "profile": {
     "vol20": 32.32,
     "atr_pct": 3.169,
-    "beta": 1.102,
-    "r2": 0.5212,
+    "beta": 1.109,
+    "r2": 0.5319,
     "block_label": "Pharma",
     "block_kind": "cohort",
     "block_id": "11",
     "header": "",
     "named_near": "",
-    "line": "moves 32% vol  \u00b7  beta 1.10 to Pharma  \u00b7  cohort explains 52%"
+    "line": "moves 32% vol  \u00b7  beta 1.11 to Pharma  \u00b7  cohort explains 53%"
    },
    "next_moves": {
     "levels": [
+     {
+      "key": "ma20_at",
+      "price": 1372.4055,
+      "label": "MA20",
+      "state": "NONE",
+      "pct": -0.7481106490688783
+     },
      {
       "key": "stressed_below",
       "price": 1371.325,
       "label": "STRESSED",
       "state": "STRESSED",
-      "pct": -3.1591175515161662
-     },
-     {
-      "key": "ma20_at",
-      "price": 1365.8110000000001,
-      "label": "MA20",
-      "state": "STRESSED",
-      "pct": -3.548507831589043
+      "pct": -0.8262520339902379
      },
      {
       "key": "broken_below",
       "price": 1328.02,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -6.2172506814683
+      "pct": -3.9580546013379125
      },
      {
       "key": "stop_at",
-      "price": 1286.11225,
+      "price": 1266.547,
       "label": "stop",
       "state": "BROKEN",
-      "pct": -9.176712144965615
+      "pct": -8.403760621949008
      }
     ],
     "stressed_below": 1371.325,
     "broken_below": 1328.02,
     "reclaim_above": null,
-    "ma20_at": 1365.811,
-    "ma50_at": 1246.7246,
-    "stop_at": 1286.1122,
-    "line": "NEXT  \u00b7  STRESSED 1371.33 (-3.2%)  \u00b7  MA20 1365.81 (-3.5%) \u2192 STRESSED  \u00b7  BROKEN 1328.02 (-6.2%)  \u00b7  stop 1286.11 (-9.2%) \u2192 BROKEN"
+    "ma20_at": 1372.4055,
+    "ma50_at": 1252.5574,
+    "stop_at": 1266.547,
+    "line": "NEXT  \u00b7  MA20 1372.41 (-0.7%) \u2192 NONE  \u00b7  STRESSED 1371.33 (-0.8%)  \u00b7  BROKEN 1328.02 (-4.0%)  \u00b7  stop 1266.55 (-8.4%) \u2192 BROKEN"
    },
    "history": {
-    "run_sessions": 25,
+    "run_sessions": 26,
     "state": "HEALTHY",
     "n": 13,
     "thin": false,
-    "sentence": "Healthy for 25 sessions. Over the past year this name's healthy runs usually lasted about 6 sessions (half ended between 2 and 10; the longest was 21). This run is among its longest.",
-    "compact": "run 25 \u00b7 typical 6 (IQR 2-10, longest 21, n=13)",
+    "sentence": "Healthy for 26 sessions. Over the past year this name's healthy runs usually lasted about 6 sessions (half ended between 2 and 10; the longest was 21). This run is among its longest.",
+    "compact": "run 26 \u00b7 typical 6 (IQR 2-10, longest 21, n=13)",
     "healthy_median": 6,
     "healthy_p25": 2,
     "healthy_p75": 10,
@@ -3374,13 +3355,13 @@
    "cohort_id": 3,
    "single": false,
    "state": "NONE",
-   "prev": "HEALTHY",
-   "days": 1,
-   "close": 20.735,
-   "pull": -0.0378,
-   "d20": -0.0233,
-   "d50": -0.0039,
-   "d200": -0.0378,
+   "prev": "NONE",
+   "days": 2,
+   "close": 20.48,
+   "pull": -0.0497,
+   "d20": -0.0351,
+   "d50": -0.0152,
+   "d200": -0.0494,
    "stretch": "",
    "hist": {
     "n": 4,
@@ -3392,7 +3373,6 @@
    },
    "spark": {
     "close": [
-     20.24,
      20.25,
      20.61,
      20.4,
@@ -3431,10 +3411,10 @@
      21.33,
      21.46,
      21.23,
-     20.735
+     20.74,
+     20.48
     ],
     "ma20": [
-     21.569,
      21.4865,
      21.3945,
      21.324,
@@ -3473,10 +3453,10 @@
      21.021,
      21.0905,
      21.164,
-     21.2295
+     21.2295,
+     21.226
     ],
     "ma50": [
-     22.3098,
      22.2486,
      22.183,
      22.1154,
@@ -3515,10 +3495,10 @@
      20.858,
      20.8486,
      20.8354,
-     20.8164
+     20.8164,
+     20.7954
     ],
     "ma200": [
-     21.5994,
      21.6051,
      21.61,
      21.6161,
@@ -3557,7 +3537,8 @@
      21.5523,
      21.5524,
      21.5515,
-     21.5501
+     21.5501,
+     21.5437
     ],
     "hi10": 21.55
    },
@@ -3571,49 +3552,49 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     21.19,
-     21.16,
-     21.005,
-     20.835,
-     20.795,
-     20.885,
-     20.88,
-     20.8696,
-     20.8799,
-     20.845,
-     20.7999,
-     20.7699,
-     20.785,
-     20.77
+     20.7,
+     20.655,
+     20.575,
+     20.5401,
+     20.625,
+     20.6101,
+     20.675,
+     20.5701,
+     20.69,
+     20.5899,
+     20.5501,
+     20.57,
+     20.515,
+     20.51
     ],
-    "ref": 21.23
+    "ref": 20.74
    },
    "size": {
-    "atr": 0.5157,
-    "atr_pct": 0.02487,
+    "atr": 0.5114,
+    "atr_pct": 0.02497,
     "stop_atr": 2.5,
-    "stop_dollars": 1.2893,
+    "stop_dollars": 1.2786,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
-    "shares": 116,
-    "notional": 2405.26
+    "shares": 117,
+    "notional": 2396.16
    },
    "profile": {
-    "vol20": 21.16,
+    "vol20": 21.29,
     "atr_pct": 1.995,
-    "beta": 0.986,
-    "r2": 0.6878,
+    "beta": 0.987,
+    "r2": 0.6872,
     "block_label": "Banks",
     "block_kind": "cohort",
     "block_id": "3",
@@ -3628,37 +3609,37 @@
       "price": 20.4725,
       "label": "STRESSED",
       "state": "STRESSED",
-      "pct": -1.2659754039064386
-     },
-     {
-      "key": "ma20_at",
-      "price": 21.229499999999998,
-      "label": "MA20",
-      "state": "HEALTHY",
-      "pct": 2.3848565227875484
+      "pct": -0.03662109375
      },
      {
       "key": "broken_below",
       "price": 19.826,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -4.383891970098864
+      "pct": -3.1933593750000044
+     },
+     {
+      "key": "ma20_at",
+      "price": 21.226,
+      "label": "MA20",
+      "state": "HEALTHY",
+      "pct": 3.6425781249999956
      }
     ],
     "stressed_below": 20.4725,
     "broken_below": 19.826,
     "reclaim_above": null,
-    "ma20_at": 21.2295,
-    "ma50_at": 20.8164,
-    "stop_at": 19.4458,
-    "line": "NEXT  \u00b7  STRESSED 20.47 (-1.3%)  \u00b7  MA20 21.23 (+2.4%) \u2192 HEALTHY  \u00b7  BROKEN 19.83 (-4.4%)"
+    "ma20_at": 21.226,
+    "ma50_at": 20.7954,
+    "stop_at": 19.2015,
+    "line": "NEXT  \u00b7  STRESSED 20.47 (-0.0%)  \u00b7  BROKEN 19.83 (-3.2%)  \u00b7  MA20 21.23 (+3.6%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 1,
+    "run_sessions": 2,
     "state": "NONE",
     "n": 11,
     "thin": false,
-    "sentence": "Below the 20-day for 1 sessions. In the past year it spent 40 percent of sessions here, in 16 episodes that typically lasted 3 sessions (longest 31). 11 of them ended with a close back above the 20-day; 1 slid on to broken.",
+    "sentence": "Below the 20-day for 2 sessions. In the past year it spent 40 percent of sessions here, in 16 episodes that typically lasted 3 sessions (longest 31). 11 of them ended with a close back above the 20-day; 1 slid on to broken.",
     "compact": "past 16 below the 20-day \u00b7 median 3 sessions \u00b7 40% of the year \u00b7 reclaimed 11 \u00b7 broke 1"
    },
    "last_transition": {
@@ -3673,17 +3654,17 @@
    "cohort_id": 3,
    "single": false,
    "state": "STRESSED",
-   "prev": "NONE",
-   "days": 1,
-   "close": 329.99,
-   "pull": -0.0628,
-   "d20": -0.0274,
-   "d50": -0.0295,
-   "d200": 0.0153,
+   "prev": "STRESSED",
+   "days": 2,
+   "close": 324.11,
+   "pull": -0.0795,
+   "d20": -0.044,
+   "d50": -0.0455,
+   "d200": -0.0031,
    "stretch": "",
    "hist": {
-    "n": 2,
-    "trough_vs_ma50": -0.0693,
+    "n": 3,
+    "trough_vs_ma50": -0.0529,
     "held": 0.0,
     "broken_n": 0,
     "broken_ret20": null,
@@ -3691,7 +3672,6 @@
    },
    "spark": {
     "close": [
-     337.53,
      338.56,
      343.06,
      336.59,
@@ -3730,10 +3710,10 @@
      342.82,
      346.19,
      338.21,
-     329.99
+     329.96,
+     324.11
     ],
     "ma20": [
-     353.6745,
      352.7165,
      351.8195,
      351.2615,
@@ -3772,10 +3752,10 @@
      338.357,
      338.7215,
      339.045,
-     339.279
+     339.279,
+     339.014
     ],
     "ma50": [
-     353.6198,
      353.5126,
      353.3456,
      353.3438,
@@ -3814,10 +3794,10 @@
      341.008,
      340.74,
      340.4226,
-     340.014
+     340.014,
+     339.543
     ],
     "ma200": [
-     320.896,
      321.0032,
      321.1207,
      321.26,
@@ -3856,7 +3836,8 @@
      324.4521,
      324.6624,
      324.8612,
-     325.0228
+     325.0228,
+     325.1319
     ],
     "hi10": 352.11
    },
@@ -3870,49 +3851,49 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     333.275,
-     335.14,
-     333.74,
-     331.565,
-     330.195,
-     330.91,
-     330.125,
-     330.29,
-     330.15,
-     330.04,
-     329.74,
-     329.73,
-     329.93,
-     329.065
+     328.3575,
+     329.15,
+     326.76,
+     326.3599,
+     325.96,
+     326.56,
+     326.8896,
+     324.72,
+     326.2801,
+     324.89,
+     324.75,
+     325.24,
+     324.62,
+     324.3
     ],
-    "ref": 338.21
+    "ref": 329.96
    },
    "size": {
-    "atr": 8.505,
-    "atr_pct": 0.02577,
+    "atr": 8.5,
+    "atr_pct": 0.02623,
     "stop_atr": 2.5,
-    "stop_dollars": 21.2625,
+    "stop_dollars": 21.25,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 7,
-    "notional": 2309.93
+    "notional": 2268.77
    },
    "profile": {
     "vol20": 18.21,
     "atr_pct": 2.002,
-    "beta": 0.909,
-    "r2": 0.631,
+    "beta": 0.908,
+    "r2": 0.63,
     "block_label": "Banks",
     "block_kind": "cohort",
     "block_id": "3",
@@ -3927,37 +3908,37 @@
       "price": 323.94120000000004,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -1.8330252431891791
+      "pct": -0.05208108358272234
      },
      {
       "key": "reclaim_above",
       "price": 338.0256,
       "label": "NONE",
       "state": "NONE",
-      "pct": 2.435104094063445
+      "pct": 4.293480608435396
      },
      {
       "key": "ma20_at",
-      "price": 339.279,
+      "price": 339.014,
       "label": "MA20",
       "state": "EARLY",
-      "pct": 2.814933785872298
+      "pct": 4.5984388016414135
      }
     ],
     "stressed_below": 334.5045,
     "broken_below": 323.9412,
     "reclaim_above": 338.0256,
-    "ma20_at": 339.279,
-    "ma50_at": 340.014,
-    "stop_at": 308.7275,
-    "line": "NEXT  \u00b7  BROKEN 323.94 (-1.8%)  \u00b7  NONE 338.03 (+2.4%)  \u00b7  MA20 339.28 (+2.8%) \u2192 EARLY"
+    "ma20_at": 339.014,
+    "ma50_at": 339.543,
+    "stop_at": 302.86,
+    "line": "NEXT  \u00b7  BROKEN 323.94 (-0.1%)  \u00b7  NONE 338.03 (+4.3%)  \u00b7  MA20 339.01 (+4.6%) \u2192 EARLY"
    },
    "history": {
-    "run_sessions": 1,
+    "run_sessions": 2,
     "state": "STRESSED",
     "n": 2,
     "thin": true,
-    "sentence": "Stressed for 1 sessions. In the past year it was stressed 2 times: 0 times it recovered to healthy and 1 times it fell to broken, usually resolving within 3 sessions. Hysteresis means it stays stressed until a close above 338.03.  (n=2, thin)",
+    "sentence": "Stressed for 2 sessions. In the past year it was stressed 2 times: 0 times it recovered to healthy and 1 times it fell to broken, usually resolving within 3 sessions. Hysteresis means it stays stressed until a close above 338.03.  (n=2, thin)",
     "compact": "past 2 STRESSED \u00b7 n=2, thin",
     "stressed_reclaimed": 0,
     "stressed_broke": 1,
@@ -3976,24 +3957,23 @@
    "single": true,
    "state": "BROKEN",
    "prev": "BROKEN",
-   "days": 10,
-   "close": 155.45,
-   "pull": -0.2479,
-   "d20": -0.2054,
-   "d50": -0.2707,
-   "d200": -0.238,
+   "days": 11,
+   "close": 150.96,
+   "pull": -0.2457,
+   "d20": -0.2162,
+   "d50": -0.2871,
+   "d200": -0.2595,
    "stretch": "",
    "hist": {
-    "n": 12,
-    "trough_vs_ma50": -0.0288,
-    "held": 0.4167,
+    "n": 11,
+    "trough_vs_ma50": -0.004,
+    "held": 0.4545,
     "broken_n": 14,
     "broken_ret20": 0.0098,
     "broken_deep": 0.2143
    },
    "spark": {
     "close": [
-     225.51,
      224.58,
      225.07,
      228.86,
@@ -4032,10 +4012,10 @@
      166.19,
      162.85,
      156.14,
-     155.45
+     155.46,
+     150.96
     ],
     "ma20": [
-     220.531,
      221.154,
      221.9,
      221.7545,
@@ -4074,10 +4054,10 @@
      203.8045,
      201.2525,
      198.6885,
-     195.641
+     195.641,
+     192.5905
     ],
     "ma50": [
-     215.1078,
      215.382,
      215.6236,
      215.977,
@@ -4116,10 +4096,10 @@
      217.1236,
      215.9592,
      214.6472,
-     213.1628
+     213.1628,
+     211.7574
     ],
     "ma200": [
-     198.8542,
      199.0648,
      199.2756,
      199.4733,
@@ -4158,9 +4138,10 @@
      204.4658,
      204.3391,
      204.1908,
-     204.0159
+     204.0159,
+     203.8651
     ],
-    "hi10": 206.69
+    "hi10": 200.13
    },
    "px_src": "close",
    "intraday": {
@@ -4172,49 +4153,49 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     156.385,
-     154.84,
-     152.44,
-     154.02,
-     153.6399,
-     154.02,
-     153.755,
-     153.815,
-     153.275,
-     154.53,
-     153.59,
-     153.175,
-     153.445,
-     153.858
+     158.1001,
+     154.9877,
+     153.3402,
+     152.31,
+     152.115,
+     152.28,
+     152.13,
+     151.35,
+     152.3299,
+     151.76,
+     150.61,
+     150.92,
+     150.9,
+     150.9312
     ],
-    "ref": 156.14
+    "ref": 155.46
    },
    "size": {
-    "atr": 11.495,
-    "atr_pct": 0.07395,
+    "atr": 11.9236,
+    "atr_pct": 0.07898,
     "stop_atr": 2.5,
-    "stop_dollars": 28.7375,
+    "stop_dollars": 29.8089,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 5,
-    "notional": 777.25
+    "notional": 754.8
    },
    "profile": {
-    "vol20": 38.88,
+    "vol20": 39.29,
     "atr_pct": 3.247,
     "beta": 0.291,
-    "r2": 0.345,
+    "r2": 0.3401,
     "block_label": "cluster 21",
     "block_kind": "cohort",
     "block_id": "21",
@@ -4226,33 +4207,33 @@
     "levels": [
      {
       "key": "reclaim_above",
-      "price": 198.42239999999998,
-      "label": "EARLY",
-      "state": "EARLY",
-      "pct": 27.643872627854616
+      "price": 192.1248,
+      "label": "NONE",
+      "state": "NONE",
+      "pct": 27.268680445151027
      },
      {
       "key": "ma50_at",
-      "price": 213.16279999999998,
+      "price": 211.75740000000002,
       "label": "MA50",
       "state": "HEALTHY",
-      "pct": 37.126278546156314
+      "pct": 40.27384737678857
      }
     ],
-    "stressed_below": 196.3555,
-    "broken_below": 190.1548,
-    "reclaim_above": 198.4224,
-    "ma20_at": 195.641,
-    "ma50_at": 213.1628,
-    "stop_at": 126.7125,
-    "line": "NEXT  \u00b7  EARLY 198.42 (+27.6%)  \u00b7  MA50 213.16 (+37.1%) \u2192 HEALTHY"
+    "stressed_below": 190.1235,
+    "broken_below": 184.1196,
+    "reclaim_above": 192.1248,
+    "ma20_at": 192.5905,
+    "ma50_at": 211.7574,
+    "stop_at": 121.151,
+    "line": "NEXT  \u00b7  NONE 192.12 (+27.3%)  \u00b7  MA50 211.76 (+40.3%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 10,
+    "run_sessions": 11,
     "state": "BROKEN",
     "n": 11,
     "thin": false,
-    "sentence": "Broken for 10 sessions. In the past year it broke 11 times; 11 of 11 got back to healthy within 40 sessions, typically taking 5.",
+    "sentence": "Broken for 11 sessions. In the past year it broke 11 times; 11 of 11 got back to healthy within 40 sessions, typically taking 5.",
     "compact": "past 11 BROKEN \u00b7 median 5 sessions to HEALTHY \u00b7 11 of 11 within 40",
     "broken_median_sessions_to_healthy": 5,
     "broken_reclaimed_within_40": 11
@@ -4270,12 +4251,12 @@
    "single": true,
    "state": "BROKEN",
    "prev": "BROKEN",
-   "days": 2,
-   "close": 712.975,
-   "pull": -0.1662,
-   "d20": -0.1397,
-   "d50": -0.2398,
-   "d200": -0.0706,
+   "days": 3,
+   "close": 705.27,
+   "pull": -0.1307,
+   "d20": -0.1394,
+   "d50": -0.2433,
+   "d200": -0.0823,
    "stretch": "",
    "hist": {
     "n": 13,
@@ -4287,7 +4268,6 @@
    },
    "spark": {
     "close": [
-     1071.88,
      1080.53,
      1082.28,
      1053.98,
@@ -4326,10 +4306,10 @@
      798.44,
      778.31,
      719.02,
-     712.975
+     712.42,
+     705.27
     ],
     "ma20": [
-     972.746,
      979.6915,
      986.798,
      994.1425,
@@ -4368,10 +4348,10 @@
      849.6665,
      843.0265,
      838.0,
-     828.706
+     828.706,
+     819.5235
     ],
     "ma50": [
-     931.7333,
      933.5085,
      937.0335,
      941.6151,
@@ -4410,10 +4390,10 @@
      950.5264,
      947.3736,
      943.7766,
-     937.8252
+     937.8252,
+     932.0684
     ],
     "ma200": [
-     648.4787,
      652.7048,
      656.9214,
      661.0982,
@@ -4452,9 +4432,10 @@
      762.078,
      763.8938,
      765.6064,
-     767.1271
+     767.1271,
+     768.5002
     ],
-    "hi10": 855.1
+    "hi10": 811.3
    },
    "px_src": "close",
    "intraday": {
@@ -4466,37 +4447,37 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     713.5474,
-     706.5638,
-     687.45,
-     692.9893,
-     689.84,
-     691.1457,
-     693.97,
-     695.1539,
-     696.685,
-     702.44,
-     696.01,
-     694.0,
-     701.76,
-     700.385
+     719.1,
+     707.285,
+     705.1592,
+     700.95,
+     691.8938,
+     699.67,
+     701.93,
+     697.18,
+     704.06,
+     698.64,
+     697.32,
+     697.985,
+     702.1,
+     705.065
     ],
-    "ref": 719.02
+    "ref": 712.42
    },
    "size": {
-    "atr": 66.9096,
-    "atr_pct": 0.09385,
+    "atr": 65.4518,
+    "atr_pct": 0.0928,
     "stop_atr": 2.5,
-    "stop_dollars": 167.2741,
+    "stop_dollars": 163.6294,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
@@ -4507,46 +4488,46 @@
    "profile": {
     "vol20": 58.67,
     "atr_pct": 6.321,
-    "beta": 1.659,
-    "r2": 0.6703,
+    "beta": 1.648,
+    "r2": 0.6649,
     "block_label": "Hardware",
     "block_kind": "cohort",
     "block_id": "1",
-    "header": "nearest named cohort \u00b7 Hardware \u00b7 explains 67%",
+    "header": "nearest named cohort \u00b7 Hardware \u00b7 explains 66%",
     "named_near": "Hardware",
-    "line": "moves 59% vol  \u00b7  beta 1.66 to Hardware  \u00b7  cohort explains 67%"
+    "line": "moves 59% vol  \u00b7  beta 1.65 to Hardware  \u00b7  cohort explains 66%"
    },
    "next_moves": {
     "levels": [
      {
       "key": "reclaim_above",
-      "price": 795.243,
+      "price": 754.509,
       "label": "NONE",
       "state": "NONE",
-      "pct": 11.538693502577235
+      "pct": 6.981581521970304
      },
      {
       "key": "ma50_at",
-      "price": 937.8252,
+      "price": 932.0684,
       "label": "MA50",
       "state": "HEALTHY",
-      "pct": 31.53689820821206
+      "pct": 32.15767011215562
      }
     ],
-    "stressed_below": 786.692,
-    "broken_below": 743.937,
-    "reclaim_above": 795.243,
-    "ma20_at": 828.706,
-    "ma50_at": 937.8252,
-    "stop_at": 545.701,
-    "line": "NEXT  \u00b7  NONE 795.24 (+11.5%)  \u00b7  MA50 937.83 (+31.5%) \u2192 HEALTHY"
+    "stressed_below": 746.396,
+    "broken_below": 705.831,
+    "reclaim_above": 754.509,
+    "ma20_at": 819.5235,
+    "ma50_at": 932.0684,
+    "stop_at": 541.6405,
+    "line": "NEXT  \u00b7  NONE 754.51 (+7.0%)  \u00b7  MA50 932.07 (+32.2%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 2,
+    "run_sessions": 3,
     "state": "BROKEN",
     "n": 12,
     "thin": false,
-    "sentence": "Broken for 2 sessions. In the past year it broke 12 times; 12 of 12 got back to healthy within 40 sessions, typically taking 4.5.",
+    "sentence": "Broken for 3 sessions. In the past year it broke 12 times; 12 of 12 got back to healthy within 40 sessions, typically taking 4.5.",
     "compact": "past 12 BROKEN \u00b7 median 4.5 sessions to HEALTHY \u00b7 12 of 12 within 40",
     "broken_median_sessions_to_healthy": 4.5,
     "broken_reclaimed_within_40": 12
@@ -4564,24 +4545,23 @@
    "single": true,
    "state": "BROKEN",
    "prev": "BROKEN",
-   "days": 3,
-   "close": 503.41,
-   "pull": -0.1399,
-   "d20": -0.0269,
-   "d50": -0.0931,
-   "d200": 0.186,
+   "days": 4,
+   "close": 530.14,
+   "pull": -0.0942,
+   "d20": 0.0279,
+   "d50": -0.0449,
+   "d200": 0.2452,
    "stretch": "",
    "hist": {
     "n": 22,
     "trough_vs_ma50": -0.0746,
     "held": 0.3636,
-    "broken_n": 22,
-    "broken_ret20": 0.001,
-    "broken_deep": 0.4091
+    "broken_n": 21,
+    "broken_ret20": 0.0309,
+    "broken_deep": 0.381
    },
    "spark": {
     "close": [
-     614.61,
      629.26,
      630.63,
      607.87,
@@ -4620,10 +4600,10 @@
      585.3,
      534.06,
      504.28,
-     503.41
+     503.41,
+     530.14
     ],
     "ma20": [
-     506.2177,
      512.9892,
      520.4058,
      528.1037,
@@ -4662,10 +4642,10 @@
      517.603,
      518.7565,
      519.022,
-     517.3335
+     517.3335,
+     515.767
     ],
     "ma50": [
-     498.7869,
      500.1165,
      502.1189,
      504.7127,
@@ -4704,10 +4684,10 @@
      550.4293,
      552.9941,
      554.5521,
-     555.0863
+     555.0863,
+     555.0397
     ],
     "ma200": [
-     358.6562,
      360.6494,
      362.7058,
      364.7534,
@@ -4746,7 +4726,8 @@
      420.0457,
      421.7085,
      423.1179,
-     424.4557
+     424.4557,
+     425.7414
     ],
     "hi10": 585.3
    },
@@ -4760,87 +4741,87 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     507.8795,
-     504.01,
-     496.93,
-     494.775,
-     492.63,
-     489.305,
-     491.51,
-     489.695,
-     489.21,
-     493.5,
-     490.935,
-     488.7,
-     491.82,
-     490.74
+     512.5,
+     515.7425,
+     509.055,
+     511.0708,
+     507.505,
+     511.8671,
+     515.67,
+     514.6552,
+     521.33,
+     519.13,
+     521.35,
+     524.02,
+     525.99,
+     526.17
     ],
-    "ref": 504.28
+    "ref": 503.41
    },
    "size": {
-    "atr": 48.8211,
-    "atr_pct": 0.09698,
+    "atr": 50.1625,
+    "atr_pct": 0.09462,
     "stop_atr": 2.5,
-    "stop_dollars": 122.0527,
+    "stop_dollars": 125.4063,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 1,
-    "notional": 503.41
+    "notional": 530.14
    },
    "profile": {
     "vol20": 58.59,
     "atr_pct": 6.153,
-    "beta": 1.533,
-    "r2": 0.6901,
+    "beta": 1.547,
+    "r2": 0.6882,
     "block_label": "Hardware",
     "block_kind": "cohort",
     "block_id": "1",
     "header": "nearest named cohort \u00b7 Hardware \u00b7 explains 69%",
     "named_near": "Hardware",
-    "line": "moves 59% vol  \u00b7  beta 1.53 to Hardware  \u00b7  cohort explains 69%"
+    "line": "moves 59% vol  \u00b7  beta 1.55 to Hardware  \u00b7  cohort explains 69%"
    },
    "next_moves": {
     "levels": [
      {
       "key": "ma50_at",
-      "price": 555.0862999999999,
+      "price": 555.0397,
       "label": "MA50",
       "state": "STRESSED",
-      "pct": 10.265250988260055
+      "pct": 4.69681593541329
      },
      {
       "key": "reclaim_above",
       "price": 561.8879999999999,
       "label": "HEALTHY",
       "state": "HEALTHY",
-      "pct": 11.616376313541622
+      "pct": 5.988606783113881
      }
     ],
     "stressed_below": 556.035,
     "broken_below": 538.476,
     "reclaim_above": 561.888,
-    "ma20_at": 517.3335,
-    "ma50_at": 555.0863,
-    "stop_at": 381.3573,
-    "line": "NEXT  \u00b7  MA50 555.09 (+10.3%) \u2192 STRESSED  \u00b7  HEALTHY 561.89 (+11.6%)"
+    "ma20_at": 515.767,
+    "ma50_at": 555.0397,
+    "stop_at": 404.7337,
+    "line": "NEXT  \u00b7  MA50 555.04 (+4.7%) \u2192 STRESSED  \u00b7  HEALTHY 561.89 (+6.0%)"
    },
    "history": {
-    "run_sessions": 3,
+    "run_sessions": 4,
     "state": "BROKEN",
     "n": 20,
     "thin": false,
-    "sentence": "Broken for 3 sessions. In the past year it broke 20 times; 20 of 20 got back to healthy within 40 sessions, typically taking 6.5.",
+    "sentence": "Broken for 4 sessions. In the past year it broke 20 times; 20 of 20 got back to healthy within 40 sessions, typically taking 6.5.",
     "compact": "past 20 BROKEN \u00b7 median 6.5 sessions to HEALTHY \u00b7 20 of 20 within 40",
     "broken_median_sessions_to_healthy": 6.5,
     "broken_reclaimed_within_40": 20
@@ -4858,12 +4839,12 @@
    "single": true,
    "state": "NONE",
    "prev": "NONE",
-   "days": 2,
-   "close": 618.6705,
-   "pull": -0.0359,
-   "d20": -0.0228,
-   "d50": -0.0902,
-   "d200": -0.0185,
+   "days": 3,
+   "close": 616.38,
+   "pull": -0.0394,
+   "d20": -0.0206,
+   "d50": -0.0937,
+   "d200": -0.0214,
    "stretch": "",
    "hist": {
     "n": 6,
@@ -4875,7 +4856,6 @@
    },
    "spark": {
     "close": [
-     744.1,
      777.59,
      751.66,
      715.62,
@@ -4914,10 +4894,10 @@
      623.61,
      641.69,
      626.41,
-     618.6705
+     618.87,
+     616.38
     ],
     "ma20": [
-     633.056,
      641.7585,
      651.831,
      660.859,
@@ -4956,10 +4936,10 @@
      646.0998,
      640.4443,
      637.0625,
-     633.111
+     633.111,
+     629.342
     ],
     "ma50": [
-     610.417,
      612.0782,
      614.0038,
      615.7462,
@@ -4998,10 +4978,10 @@
      678.5705,
      679.1857,
      679.8059,
-     679.9987
+     679.9987,
+     680.1065
     ],
     "ma200": [
-     625.1141,
      625.527,
      626.0479,
      626.4721,
@@ -5040,7 +5020,8 @@
      631.476,
      631.2504,
      630.7673,
-     630.3168
+     630.3168,
+     629.8791
     ],
     "hi10": 641.69
    },
@@ -5054,87 +5035,87 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     623.05,
-     623.96,
-     621.31,
-     618.96,
-     616.07,
-     618.028,
-     620.805,
-     619.63,
-     621.4058,
-     622.08,
-     619.78,
-     619.92,
-     618.825,
-     618.21
+     617.4,
+     617.275,
+     615.03,
+     613.65,
+     614.2951,
+     616.2,
+     617.45,
+     614.89,
+     618.095,
+     615.65,
+     614.34,
+     616.065,
+     614.755,
+     617.99
     ],
-    "ref": 626.41
+    "ref": 618.87
    },
    "size": {
-    "atr": 21.5832,
-    "atr_pct": 0.03489,
+    "atr": 20.7489,
+    "atr_pct": 0.03366,
     "stop_atr": 2.5,
-    "stop_dollars": 53.958,
+    "stop_dollars": 51.8723,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 2,
-    "notional": 1237.34
+    "notional": 1232.76
    },
    "profile": {
-    "vol20": 45.79,
-    "atr_pct": 3.767,
-    "beta": 0.293,
-    "r2": 0.1153,
+    "vol20": 45.38,
+    "atr_pct": 3.745,
+    "beta": 0.289,
+    "r2": 0.1112,
     "block_label": "cluster 47",
     "block_kind": "nearest",
     "block_id": "47",
-    "header": "no named cohort \u00b7 own story \u00b7 nearest cluster 47 explains 12%",
+    "header": "no named cohort \u00b7 own story \u00b7 nearest cluster 47 explains 11%",
     "named_near": "",
-    "line": "moves 46% vol  \u00b7  beta 0.29 to nearest cluster 47  \u00b7  explains 12%"
+    "line": "moves 45% vol  \u00b7  beta 0.29 to nearest cluster 47  \u00b7  explains 11%"
    },
    "next_moves": {
     "levels": [
      {
       "key": "ma20_at",
-      "price": 633.111,
+      "price": 629.342,
       "label": "MA20",
       "state": "EARLY",
-      "pct": 2.334118080626113
+      "pct": 2.1029235212044473
      },
      {
       "key": "broken_below",
       "price": 590.3548000000001,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -4.57686280499876
+      "pct": -4.22226548557707
      }
     ],
     "stressed_below": 609.6055,
     "broken_below": 590.3548,
     "reclaim_above": null,
-    "ma20_at": 633.111,
-    "ma50_at": 679.9987,
-    "stop_at": 564.7125,
-    "line": "NEXT  \u00b7  MA20 633.11 (+2.3%) \u2192 EARLY  \u00b7  BROKEN 590.35 (-4.6%)"
+    "ma20_at": 629.342,
+    "ma50_at": 680.1065,
+    "stop_at": 564.5077,
+    "line": "NEXT  \u00b7  MA20 629.34 (+2.1%) \u2192 EARLY  \u00b7  BROKEN 590.35 (-4.2%)"
    },
    "history": {
-    "run_sessions": 2,
+    "run_sessions": 3,
     "state": "NONE",
     "n": 11,
     "thin": false,
-    "sentence": "Below the 20-day for 2 sessions. In the past year it spent 29 percent of sessions here, in 18 episodes that typically lasted 2 sessions (longest 10). 10 of them ended with a close back above the 20-day; 7 slid on to broken.",
+    "sentence": "Below the 20-day for 3 sessions. In the past year it spent 29 percent of sessions here, in 18 episodes that typically lasted 2 sessions (longest 10). 10 of them ended with a close back above the 20-day; 7 slid on to broken.",
     "compact": "past 18 below the 20-day \u00b7 median 2 sessions \u00b7 29% of the year \u00b7 reclaimed 10 \u00b7 broke 7"
    },
    "last_transition": {
@@ -5148,14 +5129,14 @@
    "role": "single",
    "cohort_id": 40,
    "single": true,
-   "state": "BROKEN",
-   "prev": "NONE",
+   "state": "NONE",
+   "prev": "BROKEN",
    "days": 1,
-   "close": 127.16,
-   "pull": -0.089,
-   "d20": -0.0672,
-   "d50": -0.1098,
-   "d200": -0.1622,
+   "close": 125.58,
+   "pull": -0.0664,
+   "d20": -0.0709,
+   "d50": -0.1178,
+   "d200": -0.1719,
    "stretch": "",
    "hist": {
     "n": 15,
@@ -5167,7 +5148,6 @@
    },
    "spark": {
     "close": [
-     137.97,
      137.94,
      138.46,
      138.02,
@@ -5206,10 +5186,10 @@
      134.51,
      133.01,
      130.16,
-     127.16
+     127.15,
+     125.58
     ],
     "ma20": [
-     142.7355,
      142.6825,
      142.578,
      142.5105,
@@ -5248,10 +5228,10 @@
      139.225,
      138.242,
      137.2915,
-     136.3145
+     136.3145,
+     135.156
     ],
     "ma50": [
-     146.7398,
      146.3306,
      145.8848,
      145.6028,
@@ -5290,10 +5270,10 @@
      143.623,
      143.444,
      143.2198,
-     142.837
+     142.837,
+     142.3456
     ],
     "ma200": [
-     156.118,
      155.9275,
      155.7813,
      155.643,
@@ -5332,9 +5312,10 @@
      152.2224,
      152.0667,
      151.9189,
-     151.778
+     151.778,
+     151.6424
     ],
-    "hi10": 139.59
+    "hi10": 134.51
    },
    "px_src": "close",
    "intraday": {
@@ -5346,95 +5327,93 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     131.6,
-     130.97,
-     129.375,
-     128.93,
-     128.87,
-     128.85,
-     128.57,
-     128.01,
-     127.715,
+     127.61,
      127.815,
-     127.785,
-     127.715,
-     126.96,
-     126.755
+     127.17,
+     127.19,
+     126.625,
+     126.53,
+     127.42,
+     127.035,
+     127.6519,
+     126.885,
+     126.88,
+     126.38,
+     125.85,
+     125.585
     ],
-    "ref": 130.16
+    "ref": 127.15
    },
    "size": {
-    "atr": 8.0731,
-    "atr_pct": 0.06349,
+    "atr": 8.0301,
+    "atr_pct": 0.06394,
     "stop_atr": 2.5,
-    "stop_dollars": 20.1827,
+    "stop_dollars": 20.0752,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 7,
-    "notional": 890.12
+    "notional": 879.06
    },
    "profile": {
-    "vol20": 50.24,
-    "atr_pct": 4.438,
-    "beta": 1.004,
-    "r2": 0.794,
+    "vol20": 50.85,
+    "atr_pct": 4.45,
+    "beta": 1.003,
+    "r2": 0.7923,
     "block_label": "cluster 40",
     "block_kind": "cohort",
     "block_id": "40",
     "header": "no named cohort \u00b7 nearest cluster 40 explains 79%",
     "named_near": "",
-    "line": "moves 50% vol  \u00b7  beta 1.00 to nearest cluster 40  \u00b7  explains 79%"
+    "line": "moves 51% vol  \u00b7  beta 1.00 to nearest cluster 40  \u00b7  explains 79%"
    },
    "next_moves": {
     "levels": [
      {
-      "key": "reclaim_above",
-      "price": 134.00639999999999,
-      "label": "NONE",
-      "state": "NONE",
-      "pct": 5.384083044982679
+      "key": "broken_below",
+      "price": 123.7492,
+      "label": "BROKEN",
+      "state": "BROKEN",
+      "pct": -1.4578754578754571
      },
      {
-      "key": "ma50_at",
-      "price": 142.837,
-      "label": "MA50",
-      "state": "HEALTHY",
-      "pct": 12.328562441019187
+      "key": "ma20_at",
+      "price": 135.156,
+      "label": "MA20",
+      "state": "EARLY",
+      "pct": 7.625418060200673
      }
     ],
-    "stressed_below": 132.6105,
-    "broken_below": 128.4228,
-    "reclaim_above": 134.0064,
-    "ma20_at": 136.3145,
-    "ma50_at": 142.837,
-    "stop_at": 106.9772,
-    "line": "NEXT  \u00b7  NONE 134.01 (+5.4%)  \u00b7  MA50 142.84 (+12.3%) \u2192 HEALTHY"
+    "stressed_below": 127.7845,
+    "broken_below": 123.7492,
+    "reclaim_above": null,
+    "ma20_at": 135.156,
+    "ma50_at": 142.3456,
+    "stop_at": 105.5048,
+    "line": "NEXT  \u00b7  BROKEN 123.75 (-1.5%)  \u00b7  MA20 135.16 (+7.6%) \u2192 EARLY"
    },
    "history": {
     "run_sessions": 1,
-    "state": "BROKEN",
-    "n": 15,
+    "state": "NONE",
+    "n": 13,
     "thin": false,
-    "sentence": "Broken for 1 sessions. In the past year it broke 15 times; 15 of 15 got back to healthy within 40 sessions, typically taking 10.",
-    "compact": "past 15 BROKEN \u00b7 median 10 sessions to HEALTHY \u00b7 15 of 15 within 40",
-    "broken_median_sessions_to_healthy": 10,
-    "broken_reclaimed_within_40": 15
+    "sentence": "Below the 20-day for 1 sessions. In the past year it spent 29 percent of sessions here, in 17 episodes that typically lasted 2 sessions (longest 11). 10 of them ended with a close back above the 20-day; 5 slid on to broken.",
+    "compact": "past 17 below the 20-day \u00b7 median 2 sessions \u00b7 29% of the year \u00b7 reclaimed 10 \u00b7 broke 5"
    },
    "last_transition": {
-    "date": "2026-11-17",
-    "from": "NONE",
-    "to": "BROKEN"
+    "date": "2026-11-18",
+    "from": "BROKEN",
+    "to": "NONE"
    }
   },
   {
@@ -5442,26 +5421,25 @@
    "role": "index",
    "cohort_id": 901,
    "single": false,
-   "state": "BROKEN",
+   "state": "NONE",
    "prev": "BROKEN",
-   "days": 10,
-   "close": 190.195,
-   "pull": -0.194,
-   "d20": -0.0861,
-   "d50": -0.1712,
-   "d200": -0.2997,
+   "days": 1,
+   "close": 194.48,
+   "pull": -0.0723,
+   "d20": -0.0625,
+   "d50": -0.145,
+   "d200": -0.2839,
    "stretch": "",
    "hist": {
     "n": 11,
     "trough_vs_ma50": 0.1097,
     "held": 0.8182,
     "broken_n": 15,
-    "broken_ret20": -0.0732,
+    "broken_ret20": -0.0624,
     "broken_deep": 0.6667
    },
    "spark": {
     "close": [
-     248.78,
      245.3,
      253.28,
      244.04,
@@ -5500,10 +5478,10 @@
      209.64,
      202.07,
      188.67,
-     190.195
+     190.37,
+     194.48
     ],
     "ma20": [
-     256.6095,
      256.261,
      255.3355,
      254.5355,
@@ -5542,10 +5520,10 @@
      209.456,
      209.2005,
      208.983,
-     208.1125
+     208.1125,
+     207.453
     ],
     "ma50": [
-     269.044,
      267.948,
      266.7626,
      265.946,
@@ -5584,10 +5562,10 @@
      233.5858,
      232.6446,
      231.3094,
-     229.4722
+     229.4722,
+     227.463
     ],
     "ma200": [
-     261.8095,
      262.1407,
      262.4221,
      262.7604,
@@ -5626,9 +5604,10 @@
      271.4638,
      271.5431,
      271.578,
-     271.5904
+     271.5904,
+     271.5922
     ],
-    "hi10": 235.97
+    "hi10": 209.64
    },
    "px_src": "close",
    "intraday": {
@@ -5640,95 +5619,93 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     195.49,
-     194.0,
-     188.695,
-     187.42,
-     186.17,
-     186.04,
-     187.68,
-     186.972,
-     187.45,
-     188.7,
-     187.62,
-     186.26,
-     188.56,
-     188.2
+     192.85,
+     194.655,
+     194.43,
+     195.17,
+     193.4634,
+     193.725,
+     195.55,
+     194.46,
+     195.93,
+     193.41,
+     193.615,
+     194.61,
+     193.89,
+     194.4
     ],
-    "ref": 188.67
+    "ref": 190.37
    },
    "size": {
-    "atr": 19.2924,
-    "atr_pct": 0.10143,
+    "atr": 18.6603,
+    "atr_pct": 0.09595,
     "stop_atr": 2.5,
-    "stop_dollars": 48.2311,
+    "stop_dollars": 46.6507,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 3,
-    "notional": 570.59
+    "notional": 583.44
    },
    "profile": {
     "vol20": 65.52,
-    "atr_pct": 6.092,
-    "beta": 1.247,
-    "r2": 0.4994,
+    "atr_pct": 6.119,
+    "beta": 1.239,
+    "r2": 0.5087,
     "block_label": "Data-center cooling",
     "block_kind": "cohort",
     "block_id": "901",
     "header": "",
     "named_near": "",
-    "line": "moves 66% vol  \u00b7  beta 1.25 to Data-center cooling  \u00b7  cohort explains 50%"
+    "line": "moves 66% vol  \u00b7  beta 1.24 to Data-center cooling  \u00b7  cohort explains 51%"
    },
    "next_moves": {
     "levels": [
      {
-      "key": "reclaim_above",
-      "price": 226.53119999999998,
-      "label": "EARLY",
-      "state": "EARLY",
-      "pct": 19.104708325665754
+      "key": "broken_below",
+      "price": 192.8688,
+      "label": "BROKEN",
+      "state": "BROKEN",
+      "pct": -0.8284656519950584
      },
      {
-      "key": "ma50_at",
-      "price": 229.47220000000002,
-      "label": "MA50",
-      "state": "HEALTHY",
-      "pct": 20.651016062462226
+      "key": "ma20_at",
+      "price": 207.45300000000003,
+      "label": "MA20",
+      "state": "EARLY",
+      "pct": 6.670608802961775
      }
     ],
-    "stressed_below": 224.1715,
-    "broken_below": 217.0924,
-    "reclaim_above": 226.5312,
-    "ma20_at": 208.1125,
-    "ma50_at": 229.4722,
-    "stop_at": 141.964,
-    "line": "NEXT  \u00b7  EARLY 226.53 (+19.1%)  \u00b7  MA50 229.47 (+20.7%) \u2192 HEALTHY"
+    "stressed_below": 199.158,
+    "broken_below": 192.8688,
+    "reclaim_above": null,
+    "ma20_at": 207.453,
+    "ma50_at": 227.463,
+    "stop_at": 147.8293,
+    "line": "NEXT  \u00b7  BROKEN 192.87 (-0.8%)  \u00b7  MA20 207.45 (+6.7%) \u2192 EARLY"
    },
    "history": {
-    "run_sessions": 10,
-    "state": "BROKEN",
+    "run_sessions": 1,
+    "state": "NONE",
     "n": 14,
     "thin": false,
-    "sentence": "Broken for 10 sessions. In the past year it broke 14 times; 11 of 14 got back to healthy within 40 sessions, typically taking 13. The other 3 did not.",
-    "compact": "past 14 BROKEN \u00b7 median 13 sessions to HEALTHY \u00b7 11 of 14 within 40",
-    "broken_median_sessions_to_healthy": 13,
-    "broken_reclaimed_within_40": 11
+    "sentence": "Below the 20-day for 1 sessions. In the past year it spent 13 percent of sessions here, in 11 episodes that typically lasted 2 sessions (longest 7). 4 of them ended with a close back above the 20-day; 5 slid on to broken.",
+    "compact": "past 11 below the 20-day \u00b7 median 2 sessions \u00b7 13% of the year \u00b7 reclaimed 4 \u00b7 broke 5"
    },
    "last_transition": {
-    "date": "2026-11-04",
-    "from": "EARLY",
-    "to": "BROKEN"
+    "date": "2026-11-18",
+    "from": "BROKEN",
+    "to": "NONE"
    }
   },
   {
@@ -5738,12 +5715,12 @@
    "single": false,
    "state": "HEALTHY",
    "prev": "HEALTHY",
-   "days": 4,
-   "close": 78.7,
-   "pull": -0.0193,
-   "d20": 0.1156,
-   "d50": 0.0242,
-   "d200": -0.1838,
+   "days": 5,
+   "close": 79.8,
+   "pull": -0.0056,
+   "d20": 0.1273,
+   "d50": 0.0387,
+   "d200": -0.1719,
    "stretch": "S2",
    "hist": {
     "n": 11,
@@ -5755,7 +5732,6 @@
    },
    "spark": {
     "close": [
-     82.36,
      84.27,
      89.1,
      85.34,
@@ -5794,10 +5770,10 @@
      78.8,
      80.25,
      78.2,
-     78.7
+     78.71,
+     79.8
     ],
     "ma20": [
-     77.0162,
      77.3248,
      77.5493,
      78.0968,
@@ -5836,10 +5812,10 @@
      70.0035,
      70.0785,
      70.4045,
-     70.5475
+     70.5475,
+     70.787
     ],
     "ma50": [
-     87.2777,
      86.6663,
      86.0895,
      85.6075,
@@ -5878,10 +5854,10 @@
      76.7344,
      76.818,
      76.8634,
-     76.8394
+     76.8394,
+     76.8256
     ],
     "ma200": [
-     97.7448,
      97.7223,
      97.706,
      97.7364,
@@ -5920,35 +5896,36 @@
      96.618,
      96.5559,
      96.4907,
-     96.4263
+     96.4263,
+     96.3695
     ],
     "hi10": 80.25
    },
    "px_src": "close",
    "intraday": null,
    "size": {
-    "atr": 6.9821,
-    "atr_pct": 0.08872,
+    "atr": 6.985,
+    "atr_pct": 0.08753,
     "stop_atr": 2.5,
-    "stop_dollars": 17.4554,
+    "stop_dollars": 17.4625,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 8,
-    "notional": 629.6
+    "notional": 638.4
    },
    "profile": {
-    "vol20": 53.85,
+    "vol20": 53.87,
     "atr_pct": 6.162,
-    "beta": 1.049,
-    "r2": 0.4944,
+    "beta": 1.052,
+    "r2": 0.4977,
     "block_label": "Data-center cooling",
     "block_kind": "cohort",
     "block_id": "901",
     "header": "",
     "named_near": "",
-    "line": "moves 54% vol  \u00b7  beta 1.05 to Data-center cooling  \u00b7  cohort explains 49%"
+    "line": "moves 54% vol  \u00b7  beta 1.05 to Data-center cooling  \u00b7  cohort explains 50%"
    },
    "next_moves": {
     "levels": [
@@ -5957,45 +5934,45 @@
       "price": 76.2375,
       "label": "STRESSED",
       "state": "STRESSED",
-      "pct": -3.1289707750953077
+      "pct": -4.46428571428571
      },
      {
       "key": "broken_below",
       "price": 73.83,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -6.188055908513346
+      "pct": -7.4812030075188
      },
      {
       "key": "ma20_at",
-      "price": 70.5475,
+      "price": 70.787,
       "label": "MA20",
       "state": "BROKEN",
-      "pct": -10.358958068615
+      "pct": -11.294486215538836
      },
      {
       "key": "stop_at",
-      "price": 61.24475,
+      "price": 62.33749999999999,
       "label": "stop",
       "state": "BROKEN",
-      "pct": -22.17947903430749
+      "pct": -21.882832080200508
      }
     ],
     "stressed_below": 76.2375,
     "broken_below": 73.83,
     "reclaim_above": null,
-    "ma20_at": 70.5475,
-    "ma50_at": 76.8394,
-    "stop_at": 61.2448,
-    "line": "NEXT  \u00b7  STRESSED 76.24 (-3.1%)  \u00b7  BROKEN 73.83 (-6.2%)  \u00b7  MA20 70.55 (-10.4%) \u2192 BROKEN  \u00b7  stop 61.24 (-22.2%) \u2192 BROKEN"
+    "ma20_at": 70.787,
+    "ma50_at": 76.8256,
+    "stop_at": 62.3375,
+    "line": "NEXT  \u00b7  STRESSED 76.24 (-4.5%)  \u00b7  BROKEN 73.83 (-7.5%)  \u00b7  MA20 70.79 (-11.3%) \u2192 BROKEN  \u00b7  stop 62.34 (-21.9%) \u2192 BROKEN"
    },
    "history": {
-    "run_sessions": 4,
+    "run_sessions": 5,
     "state": "HEALTHY",
     "n": 11,
     "thin": false,
-    "sentence": "Healthy for 4 sessions. Over the past year this name's healthy runs usually lasted about 2 sessions (half ended between 1 and 7; the longest was 19). This run is about usual.",
-    "compact": "run 4 \u00b7 typical 2 (IQR 1-7, longest 19, n=11)",
+    "sentence": "Healthy for 5 sessions. Over the past year this name's healthy runs usually lasted about 2 sessions (half ended between 1 and 7; the longest was 19). This run is about usual.",
+    "compact": "run 5 \u00b7 typical 2 (IQR 1-7, longest 19, n=11)",
     "healthy_median": 2,
     "healthy_p25": 1,
     "healthy_p75": 7,
@@ -6014,12 +5991,12 @@
    "single": false,
    "state": "EARLY",
    "prev": "EARLY",
-   "days": 3,
-   "close": 129.72,
-   "pull": -0.0438,
-   "d20": 0.0515,
-   "d50": -0.1796,
-   "d200": -0.3939,
+   "days": 4,
+   "close": 137.88,
+   "pull": 0.0164,
+   "d20": 0.1253,
+   "d50": -0.1211,
+   "d200": -0.3548,
    "stretch": "",
    "hist": {
     "n": 10,
@@ -6031,7 +6008,6 @@
    },
    "spark": {
     "close": [
-     193.11,
      196.95,
      198.07,
      175.04,
@@ -6070,10 +6046,10 @@
      106.1,
      135.66,
      130.55,
-     129.72
+     129.73,
+     137.88
     ],
     "ma20": [
-     185.783,
      186.038,
      186.5205,
      187.1085,
@@ -6112,10 +6088,10 @@
      127.3785,
      124.983,
      124.323,
-     123.371
+     123.371,
+     122.522
     ],
     "ma50": [
-     200.6364,
      199.9072,
      199.207,
      198.6438,
@@ -6154,10 +6130,10 @@
      161.8934,
      160.4252,
      159.4058,
-     158.1236
+     158.1236,
+     156.8712
     ],
     "ma200": [
-     212.4418,
      212.6078,
      212.7782,
      212.9991,
@@ -6196,35 +6172,36 @@
      214.7072,
      214.5033,
      214.2979,
-     214.0274
+     214.0274,
+     213.6957
     ],
     "hi10": 135.66
    },
    "px_src": "close",
    "intraday": null,
    "size": {
-    "atr": 12.8107,
-    "atr_pct": 0.09876,
+    "atr": 13.4452,
+    "atr_pct": 0.09751,
     "stop_atr": 2.5,
-    "stop_dollars": 32.0267,
+    "stop_dollars": 33.613,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
     "shares": 4,
-    "notional": 518.88
+    "notional": 551.52
    },
    "profile": {
-    "vol20": 65.67,
-    "atr_pct": 6.896,
-    "beta": 1.334,
-    "r2": 0.4334,
+    "vol20": 65.93,
+    "atr_pct": 6.975,
+    "beta": 1.355,
+    "r2": 0.4392,
     "block_label": "Data-center cooling",
     "block_kind": "cohort",
     "block_id": "901",
     "header": "",
     "named_near": "",
-    "line": "moves 66% vol  \u00b7  beta 1.33 to Data-center cooling  \u00b7  cohort explains 43%"
+    "line": "moves 66% vol  \u00b7  beta 1.35 to Data-center cooling  \u00b7  cohort explains 44%"
    },
    "next_moves": {
     "levels": [
@@ -6233,37 +6210,37 @@
       "price": 124.80720000000001,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -3.787234042553189
+      "pct": -9.481288076588324
      },
      {
       "key": "ma20_at",
-      "price": 123.37100000000001,
+      "price": 122.522,
       "label": "MA20",
       "state": "BROKEN",
-      "pct": -4.894387912426756
+      "pct": -11.138671308384096
      },
      {
       "key": "ma50_at",
-      "price": 158.1236,
+      "price": 156.87120000000002,
       "label": "MA50",
       "state": "HEALTHY",
-      "pct": 21.89608387295714
+      "pct": 13.773716275021775
      }
     ],
     "stressed_below": 128.877,
     "broken_below": 124.8072,
     "reclaim_above": null,
-    "ma20_at": 123.371,
-    "ma50_at": 158.1236,
-    "stop_at": 97.6933,
-    "line": "NEXT  \u00b7  BROKEN 124.81 (-3.8%)  \u00b7  MA20 123.37 (-4.9%) \u2192 BROKEN  \u00b7  MA50 158.12 (+21.9%) \u2192 HEALTHY"
+    "ma20_at": 122.522,
+    "ma50_at": 156.8712,
+    "stop_at": 104.267,
+    "line": "NEXT  \u00b7  BROKEN 124.81 (-9.5%)  \u00b7  MA20 122.52 (-11.1%) \u2192 BROKEN  \u00b7  MA50 156.87 (+13.8%) \u2192 HEALTHY"
    },
    "history": {
-    "run_sessions": 3,
+    "run_sessions": 4,
     "state": "EARLY",
     "n": 6,
     "thin": false,
-    "sentence": "Early for 3 sessions: above the 20-day, not yet above the 50-day. In the past year 6 early episodes resolved 0 times to healthy and 6 times back below the 20-day; conversions took about ? sessions.",
+    "sentence": "Early for 4 sessions: above the 20-day, not yet above the 50-day. In the past year 6 early episodes resolved 0 times to healthy and 6 times back below the 20-day; conversions took about ? sessions.",
     "compact": "past 6 EARLY \u00b7 HEALTHY first 0 \u00b7 median ? sessions",
     "early_healthy_first": 0,
     "early_median_sessions_to_healthy": null
@@ -6281,12 +6258,12 @@
    "single": false,
    "state": "NONE",
    "prev": "NONE",
-   "days": 5,
-   "close": 405.72,
-   "pull": -0.045,
-   "d20": -0.0547,
-   "d50": -0.0834,
-   "d200": -0.1099,
+   "days": 6,
+   "close": 409.8,
+   "pull": -0.0354,
+   "d20": -0.039,
+   "d50": -0.0725,
+   "d200": -0.1008,
    "stretch": "",
    "hist": {
     "n": 13,
@@ -6298,7 +6275,6 @@
    },
    "spark": {
     "close": [
-     437.09,
      438.54,
      454.44,
      452.06,
@@ -6337,10 +6313,10 @@
      424.05,
      417.99,
      407.99,
-     405.72
+     405.81,
+     409.8
     ],
     "ma20": [
-     440.255,
      439.347,
      438.104,
      438.1105,
@@ -6379,10 +6355,10 @@
      435.758,
      434.0925,
      432.0475,
-     429.195
+     429.195,
+     426.4145
     ],
     "ma50": [
-     458.1726,
      457.2434,
      456.4102,
      455.999,
@@ -6421,10 +6397,10 @@
      444.2906,
      443.9912,
      443.4472,
-     442.649
+     442.649,
+     441.8452
     ],
     "ma200": [
-     445.5993,
      445.7581,
      445.9436,
      446.2294,
@@ -6463,7 +6439,8 @@
      455.7757,
      455.9249,
      455.8845,
-     455.8216
+     455.8216,
+     455.7251
     ],
     "hi10": 424.84
    },
@@ -6477,48 +6454,48 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     407.71,
-     408.45,
-     406.415,
-     405.055,
-     403.53,
-     404.21,
-     405.77,
-     406.16,
-     405.115,
-     405.04,
-     404.92,
-     403.505,
-     406.36,
-     404.875
+     403.26,
+     407.935,
+     406.32,
+     408.27,
+     408.56,
+     409.895,
+     411.555,
+     410.99,
+     412.28,
+     410.31,
+     410.21,
+     410.71,
+     409.915,
+     409.23
     ],
-    "ref": 407.99
+    "ref": 405.81
    },
    "size": {
-    "atr": 15.9502,
-    "atr_pct": 0.03931,
+    "atr": 14.1024,
+    "atr_pct": 0.03441,
     "stop_atr": 2.5,
-    "stop_dollars": 39.8756,
+    "stop_dollars": 35.256,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
-    "shares": 3,
-    "notional": 1217.16
+    "shares": 4,
+    "notional": 1639.2
    },
    "profile": {
     "vol20": 26.05,
-    "atr_pct": 3.038,
-    "beta": 0.383,
+    "atr_pct": 3.053,
+    "beta": 0.381,
     "r2": 0.4738,
     "block_label": "Data-center cooling",
     "block_kind": "cohort",
@@ -6530,34 +6507,34 @@
    "next_moves": {
     "levels": [
      {
+      "key": "ma20_at",
+      "price": 426.41450000000003,
+      "label": "MA20",
+      "state": "EARLY",
+      "pct": 4.054294777940459
+     },
+     {
       "key": "broken_below",
       "price": 390.8528,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -3.6643990929705272
-     },
-     {
-      "key": "ma20_at",
-      "price": 429.195,
-      "label": "MA20",
-      "state": "EARLY",
-      "pct": 5.786010056196389
+      "pct": -4.6235236700829745
      }
     ],
     "stressed_below": 403.598,
     "broken_below": 390.8528,
     "reclaim_above": null,
-    "ma20_at": 429.195,
-    "ma50_at": 442.649,
-    "stop_at": 365.8445,
-    "line": "NEXT  \u00b7  BROKEN 390.85 (-3.7%)  \u00b7  MA20 429.19 (+5.8%) \u2192 EARLY"
+    "ma20_at": 426.4145,
+    "ma50_at": 441.8452,
+    "stop_at": 374.544,
+    "line": "NEXT  \u00b7  MA20 426.41 (+4.1%) \u2192 EARLY  \u00b7  BROKEN 390.85 (-4.6%)"
    },
    "history": {
-    "run_sessions": 5,
+    "run_sessions": 6,
     "state": "NONE",
     "n": 12,
     "thin": false,
-    "sentence": "Below the 20-day for 5 sessions. In the past year it spent 39 percent of sessions here, in 20 episodes that typically lasted 1 sessions (longest 22). 13 of them ended with a close back above the 20-day; 1 slid on to broken.",
+    "sentence": "Below the 20-day for 6 sessions. In the past year it spent 39 percent of sessions here, in 20 episodes that typically lasted 1 sessions (longest 22). 13 of them ended with a close back above the 20-day; 1 slid on to broken.",
     "compact": "past 20 below the 20-day \u00b7 median 1 sessions \u00b7 39% of the year \u00b7 reclaimed 13 \u00b7 broke 1"
    },
    "last_transition": {
@@ -6573,24 +6550,23 @@
    "single": false,
    "state": "NONE",
    "prev": "NONE",
-   "days": 5,
-   "close": 51.325,
-   "pull": -0.0779,
-   "d20": -0.0651,
-   "d50": -0.072,
-   "d200": -0.1671,
+   "days": 6,
+   "close": 52.06,
+   "pull": -0.0647,
+   "d20": -0.0475,
+   "d50": -0.056,
+   "d200": -0.1545,
    "stretch": "",
    "hist": {
     "n": 7,
     "trough_vs_ma50": -0.0243,
     "held": 0.4286,
     "broken_n": 12,
-    "broken_ret20": -0.0342,
+    "broken_ret20": -0.0273,
     "broken_deep": 0.0833
    },
    "spark": {
     "close": [
-     55.1,
      54.87,
      56.37,
      55.87,
@@ -6629,10 +6605,10 @@
      54.37,
      54.2,
      51.67,
-     51.325
+     51.32,
+     52.06
     ],
     "ma20": [
-     57.155,
      56.984,
      56.7905,
      56.667,
@@ -6671,10 +6647,10 @@
      55.1475,
      55.118,
      55.078,
-     54.901
+     54.901,
+     54.6585
     ],
     "ma50": [
-     61.5848,
      61.2916,
      61.0142,
      60.7548,
@@ -6713,10 +6689,10 @@
      55.6278,
      55.5636,
      55.466,
-     55.3052
+     55.3052,
+     55.1494
     ],
     "ma200": [
-     61.5495,
      61.5526,
      61.5555,
      61.5722,
@@ -6755,7 +6731,8 @@
      61.7048,
      61.6871,
      61.6591,
-     61.6196
+     61.6196,
+     61.5744
     ],
     "hi10": 55.66
    },
@@ -6769,55 +6746,55 @@
      "11:40",
      "12:11",
      "12:42",
-     "13:14",
-     "13:45",
+     "13:13",
+     "13:44",
      "14:16",
      "14:47",
      "15:18",
      "15:49",
-     "15:56"
+     "15:57"
     ],
     "px": [
-     51.57,
-     51.77,
-     51.67,
-     51.155,
-     51.0505,
-     51.2,
-     51.11,
-     51.07,
-     50.99,
-     50.93,
-     50.99,
-     50.87,
-     51.195,
-     51.055
+     51.17,
+     51.895,
+     51.86,
+     51.98,
+     52.07,
+     52.5,
+     52.56,
+     52.43,
+     52.59,
+     52.52,
+     52.36,
+     52.42,
+     52.19,
+     52.145
     ],
-    "ref": 51.67
+    "ref": 51.32
    },
    "size": {
-    "atr": 1.9354,
-    "atr_pct": 0.03771,
+    "atr": 1.8375,
+    "atr_pct": 0.0353,
     "stop_atr": 2.5,
-    "stop_dollars": 4.8384,
+    "stop_dollars": 4.5937,
     "account": 10000.0,
     "risk_pct": 0.015,
     "source": "sizing.json",
     "risk_dollars": 150.0,
-    "shares": 31,
-    "notional": 1591.08
+    "shares": 32,
+    "notional": 1665.92
    },
    "profile": {
     "vol20": 25.34,
     "atr_pct": 3.183,
-    "beta": 0.287,
-    "r2": 0.2637,
+    "beta": 0.289,
+    "r2": 0.2675,
     "block_label": "Data-center cooling",
     "block_kind": "cohort",
     "block_id": "901",
     "header": "",
     "named_near": "",
-    "line": "moves 25% vol  \u00b7  beta 0.29 to Data-center cooling  \u00b7  cohort explains 26%"
+    "line": "moves 25% vol  \u00b7  beta 0.29 to Data-center cooling  \u00b7  cohort explains 27%"
    },
    "next_moves": {
     "levels": [
@@ -6826,30 +6803,30 @@
       "price": 51.2072,
       "label": "BROKEN",
       "state": "BROKEN",
-      "pct": -0.22951777886021096
+      "pct": -1.6381098732232036
      },
      {
       "key": "ma20_at",
-      "price": 54.900999999999996,
+      "price": 54.658500000000004,
       "label": "MA20",
       "state": "EARLY",
-      "pct": 6.9673648319532155
+      "pct": 4.991356127545132
      }
     ],
     "stressed_below": 52.877,
     "broken_below": 51.2072,
     "reclaim_above": null,
-    "ma20_at": 54.901,
-    "ma50_at": 55.3052,
-    "stop_at": 46.4865,
-    "line": "NEXT  \u00b7  BROKEN 51.21 (-0.2%)  \u00b7  MA20 54.90 (+7.0%) \u2192 EARLY"
+    "ma20_at": 54.6585,
+    "ma50_at": 55.1494,
+    "stop_at": 47.4663,
+    "line": "NEXT  \u00b7  BROKEN 51.21 (-1.6%)  \u00b7  MA20 54.66 (+5.0%) \u2192 EARLY"
    },
    "history": {
-    "run_sessions": 5,
+    "run_sessions": 6,
     "state": "NONE",
     "n": 7,
     "thin": false,
-    "sentence": "Below the 20-day for 5 sessions. In the past year it spent 38 percent of sessions here, in 14 episodes that typically lasted 4 sessions (longest 14). 8 of them ended with a close back above the 20-day; 5 slid on to broken.",
+    "sentence": "Below the 20-day for 6 sessions. In the past year it spent 38 percent of sessions here, in 14 episodes that typically lasted 4 sessions (longest 14). 8 of them ended with a close back above the 20-day; 5 slid on to broken.",
     "compact": "past 14 below the 20-day \u00b7 median 4 sessions \u00b7 38% of the year \u00b7 reclaimed 8 \u00b7 broke 5"
    },
    "last_transition": {
@@ -6859,32 +6836,53 @@
    }
   }
  ],
- "alerts": [],
+ "alerts": [
+  {
+   "time": "13:44",
+   "name": "CRWD",
+   "from": "NONE",
+   "to": "EARLY",
+   "pull": -0.0065,
+   "d20": 0.0003,
+   "d50": -0.024,
+   "card": "monitor/alert_2026-11-18_1344_CRWD.png"
+  },
+  {
+   "time": "10:07",
+   "name": "PANW",
+   "from": "BROKEN",
+   "to": "NONE",
+   "pull": -0.0668,
+   "d20": -0.0662,
+   "d50": -0.1141,
+   "card": "monitor/alert_2026-11-18_1007_PANW.png"
+  }
+ ],
  "stretch": {
   "bands": {
    "S1": {
     "five_year": 16.6,
     "five_year_n": 73756,
     "past_year": 24.6,
-    "past_year_n": 10679
+    "past_year_n": 10744
    },
    "S2": {
     "five_year": 22.2,
     "five_year_n": 16739,
     "past_year": 33.8,
-    "past_year_n": 3079
+    "past_year_n": 3089
    },
    "S3": {
     "five_year": 30.0,
     "five_year_n": 7951,
     "past_year": 39.9,
-    "past_year_n": 2035
+    "past_year_n": 2037
    },
    "under5": {
     "five_year": 12.6,
     "five_year_n": 179973,
-    "past_year": 16.9,
-    "past_year_n": 19480
+    "past_year": 17.0,
+    "past_year_n": 19424
    }
   },
   "legend": [
@@ -6904,7 +6902,7 @@
    "S3": "15%+ over MA20"
   },
   "fallback": false,
-  "computed": "2026-11-17T16:59:35",
+  "computed": "2026-11-18T17:01:01",
   "five_year_span": [
    "2021-07-08",
    "2026-10-07"
@@ -6912,7 +6910,7 @@
   "five_year_names": 526,
   "past_year_span": [
    "2025-08-28",
-   "2026-11-17"
+   "2026-11-18"
   ],
   "past_year_sessions": 252
  },
